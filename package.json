@@ -10,6 +10,8 @@
     "package": "plasmo package"
   },
   "dependencies": {
+    "@plasmohq/messaging": "^0.5.0",
+    "@plasmohq/storage": "^1.8.1",
     "plasmo": "0.83.0",
     "svelte": "4.2.0",
     "svelte-preprocess": "5.0.4"
