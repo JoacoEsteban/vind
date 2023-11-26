@@ -1,27 +1,37 @@
 <script lang="ts">
-  export let count = 0
-  let action: string = null
-  function increment() {
-    count += 1
-    action = "increment"
+  import { onMount } from "svelte";
+  import { getBindingsForSite, Binding } from "~lib/binding";
+  import { sendToContentScript } from "@plasmohq/messaging";
+
+  let bindings: Binding[] = [];
+  async function loadCurrentBindings() {
+    bindings = await getBindingsForSite(new URL(location.href));
   }
-  function decrement() {
-    count -= 1
-    action = "decrement"
+
+  async function register() {
+    sendToContentScript({ name: "register" });
   }
+
+  onMount(() => {
+    loadCurrentBindings();
+  });
 </script>
 
 <div>
-  <h2 class="text-center">
-    Welcome to your <a href="https://www.plasmo.com" target="_blank">Plasmo</a> Extension!
-  </h2>
+  <h2 class="text-center">Vind</h2>
   <div class="container">
-    <button on:click={decrement}>-</button>
-    <p>Current count: <b>{count}</b></p>
-    <button on:click={increment}>+</button>
+    <div>
+      <h3>Current bindings</h3>
+      {#each bindings as binding}
+        <div>
+          <span>{binding.key}</span>
+        </div>
+      {/each}
+    </div>
+    <div>
+      <button on:click="{register}">Click to register</button>
+    </div>
   </div>
-  {#if action}<p class="action text-center">{action}</p>{/if}
-  <a href="https://docs.plasmo.com" target="_blank"> View Docs </a>
 </div>
 
 <style>
@@ -31,10 +41,6 @@
     align-items: center;
     justify-content: center;
     gap: 47px;
-  }
-  .action {
-    color: #470;
-    font-weight: bold;
   }
   .text-center {
     text-align: center;
