@@ -1,24 +1,25 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { getBindingsForSite, Binding } from "~lib/binding";
-  import { sendToContentScript } from "@plasmohq/messaging";
+  import './style.css'
+  import { onMount } from 'svelte'
+  import { askForBinding } from '~/messages'
+  import { Binding, getBindingsForSite } from '~lib/binding'
 
-  let bindings: Binding[] = [];
+  let bindings: Binding[] = []
   async function loadCurrentBindings() {
-    bindings = await getBindingsForSite(new URL(location.href));
+    bindings = await getBindingsForSite(new URL(location.href))
   }
 
-  async function register() {
-    sendToContentScript({ name: "register" });
+  async function registerNewBinding() {
+    askForBinding()
   }
 
   onMount(() => {
-    loadCurrentBindings();
-  });
+    loadCurrentBindings()
+  })
 </script>
 
 <div>
-  <h2 class="text-center">Vind</h2>
+  <h2 class="text-center px-5 py-2.5">Vind</h2>
   <div class="container">
     <div>
       <h3>Current bindings</h3>
@@ -29,7 +30,8 @@
       {/each}
     </div>
     <div>
-      <button on:click="{register}">Click to register</button>
+      <button class="btn btn-danger" on:click={registerNewBinding}
+        >Click to register</button>
     </div>
   </div>
 </div>
@@ -38,6 +40,7 @@
   .container {
     min-width: 470px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 47px;
