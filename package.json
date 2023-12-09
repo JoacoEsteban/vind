@@ -10,28 +10,41 @@
     "package": "plasmo package"
   },
   "dependencies": {
+    "@extend-chrome/messages": "^1.2.2",
     "@plasmohq/messaging": "^0.5.0",
     "@plasmohq/storage": "^1.8.1",
     "assert": "^2.1.0",
+    "bulma": "^0.9.4",
     "minimatch": "^9.0.3",
     "nanoid": "^5.0.2",
-    "plasmo": "0.83.0",
+    "plasmo": "0.84.0",
     "px-robula-plus": "^1.0.1",
+    "sharp": "^0.33.0",
     "svelte": "4.2.0",
     "svelte-preprocess": "5.0.4"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "4.1.0",
+    "@rgossiaux/svelte-headlessui": "^2.0.0",
+    "@tailwindcss/typography": "^0.5.10",
     "@types/assert": "^1.5.8",
     "@types/chrome": "0.0.245",
     "@types/node": "20.5.9",
+    "autoprefixer": "^10.4.16",
+    "daisyui": "latest",
+    "postcss": "^8.4.32",
+    "postcss-cli": "^10.1.0",
     "prettier": "3.0.3",
     "prettier-plugin-svelte": "^3.0.3",
+    "tailwindcss": "^3.3.5",
     "typescript": "5.2.2"
   },
   "manifest": {
     "host_permissions": [
       "https://*/*"
     ]
+  },
+  "alias": {
+    "~": "./"
   }
 }
