@@ -19,8 +19,10 @@ async function sanitizeStorage () {
 
 
 askForBindingStream.subscribe(async ([, sender]) => {
+  const tabId = await getActiveTabId()
+  if (!tabId) return
   askForBinding.toTab({
-    tabId: await getActiveTabId() || 12
+    tabId: tabId
   })
 })
 
