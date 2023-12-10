@@ -1,61 +1,9 @@
-import { Binding, getBindings, getBindingsForSite } from '~lib/binding'
+import { PageController } from '~lib/page-controller'
+import { on } from '~lib/storage'
 
+const pageController = new PageController()
 
-function handleKey (event: KeyboardEvent, bindings: Binding[]) {
-  if (event.target instanceof HTMLInputElement) {
-    return
-  }
-
-  console.log(event.key)
-
-  const matchingBindings = bindings.filter(binding => binding.key === event.key)
-
-  triggerBindings(matchingBindings)
-}
-
-async function triggerBindings (bindings: Binding[]) {
-  bindings.map(async binding => {
-    console.log('triggering binding', binding)
-    const element = binding.getElement()
-    console.log('element', element)
-    if (element) {
-      await click(element)
-    } else {
-      console.log('no element found for binding', binding)
-    }
-  })
-}
-
-async function click (element: HTMLElement) {
-  // TODO do workaround
-  await new Promise<void>((resolve) => {
-    element.addEventListener('click', function onClick (e) {
-      element.removeEventListener('click', onClick)
-      if (e.defaultPrevented)
-        element.click()
-
-      resolve()
-    })
-    element.click()
-  })
-}
-
-
-async function init () {
-  console.log('All bindings', await getBindings())
-
-  let bindings: Binding[] = []
-  async function updateBindings () {
-    bindings = await getBindingsForSite(new URL(window.location.href))
-    console.log('Bindings for current site', bindings)
-  }
-
-  await updateBindings()
-
-  const onKeyPress = (e: KeyboardEvent) => handleKey(e, bindings)
-
-  document.addEventListener('keypress', onKeyPress)
-}
-
-
-init()
+on('bindings', () => {
+  console.log('storage bindings changed')
+  pageController.updateBindings()
+})

@@ -1,4 +1,4 @@
-import { Storage } from '@plasmohq/storage'
+import { Storage, type StorageWatchCallback } from '@plasmohq/storage'
 import assert from 'assert'
 
 type WithId<T> = T & { id: string }
@@ -76,4 +76,21 @@ export async function remove (key: string) {
 
 export async function clear () {
   await storage.clear()
+}
+
+
+export function on (key: string, callback: StorageWatchCallback) {
+  storage.watch({
+    [key]: callback
+  })
+
+  return () => {
+    off(key, callback)
+  }
+}
+
+export function off (key: string, callback: StorageWatchCallback) {
+  storage.unwatch({
+    [key]: callback
+  })
 }
