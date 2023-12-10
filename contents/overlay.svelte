@@ -62,7 +62,10 @@
       confirmElement()
     }
 
-    const [listen, clear] = makeEventListenerStack(document, { passive: true })
+    const [listen, clear] = makeEventListenerStack(document, {
+      passive: true,
+      capture: true,
+    })
 
     listen('mouseover', mouseoverListener)
     listen('click', clickListener)
@@ -76,9 +79,11 @@
     }
 
     const key = await recordInputKey()
+    console.log('key', key)
 
     const binding = Binding.fromElement(highlightedElement, key)
     await binding.save()
+    console.log('saved')
   }
 
   askForBindingStream.subscribe(register)
