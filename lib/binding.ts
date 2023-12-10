@@ -67,5 +67,6 @@ export async function getBindings (): Promise<Binding[]> {
 
 export async function getBindingsForSite (site: URL): Promise<Binding[]> {
   const bindings = await getBindings()
+  site = sanitizeUrl(site)
   return bindings.filter(binding => match(site.href, binding.site))
 }

@@ -6,6 +6,9 @@ export function sanitizeUrl (url: URL): URL {
   console.log('sanitized', sanitized)
   return sanitized
 }
+export function sanitizeHref (url: string): string {
+  return sanitizeUrl(new URL(url)).href
+}
 
 function sanitizePathname (url: URL): string {
   const parts = url.pathname.split('/')

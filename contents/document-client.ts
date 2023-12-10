@@ -47,21 +47,10 @@ async function init () {
   let bindings: Binding[] = []
   async function updateBindings () {
     bindings = await getBindingsForSite(new URL(window.location.href))
-    console.log('bindings', bindings)
+    console.log('Bindings for current site', bindings)
   }
 
   await updateBindings()
-
-  if (!bindings.length) {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    const element = document.querySelector('#q2sIQ')
-    if (!element)
-      throw new Error('no element found')
-
-    const testBinding = Binding.fromElement(element as HTMLElement, 's')
-    await testBinding.save()
-    await updateBindings()
-  }
 
   const onKeyPress = (e: KeyboardEvent) => handleKey(e, bindings)
 
