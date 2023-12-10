@@ -34,7 +34,8 @@ export function highlightElementUntilLeave (element: HTMLElement) {
 }
 
 export async function recordInputKey (): Promise<string> {
-  const { key } = await pEvent<string, KeyboardEvent>(document, 'keydown', {
+  console.log('recordInputKey')
+  const { key } = await pEvent<string, KeyboardEvent>(document, 'keypress', {
     filter: (e) => {
       return !(
         (e.target instanceof HTMLInputElement) ||
