@@ -12,5 +12,5 @@ export function sanitizeHref (url: string): string {
 
 function sanitizePathname (url: URL): string {
   const parts = url.pathname.split('/')
-  return parts.filter(part => /^[a-zA-Z0-9-_]+$/.test(part)).concat('*').join('/')
+  return parts.filter(part => /^[a-z0-9-_]+$/.test(part)).concat('*').join('/')
 }
