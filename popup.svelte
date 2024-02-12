@@ -1,23 +1,24 @@
 <script lang="ts">
-  import './style.css'
+  // import './style.css'
   import { onMount } from 'svelte'
   import { askForBinding } from '~/messages'
-  import { Binding, getBindingsForSite } from '~lib/binding'
-  import { sanitizeHref, sanitizeUrl } from '~lib/url'
+  import BindingButton from '~components/binding-button.svelte'
+  import DisplayUrl from '~components/display-url.svelte'
+  import { Binding, getBindingsForSiteAsUrlMap } from '~lib/binding'
+  import { makeDisplayPattern, makeDisplayUrl } from '~lib/url'
   import { getCurrentUrl } from '~messages/tabs'
 
-  let currentUrl: string | null = null
-  $: displayUrl = currentUrl && sanitizeHref(currentUrl)
-  let bindings: Binding[] = []
+  let currentUrl: string = ''
+  let bindingsMap: Map<string, Binding[]> = new Map()
 
   async function loadCurrentBindings() {
-    currentUrl = await getCurrentUrl()
+    currentUrl = (await getCurrentUrl()) || ''
 
     if (!currentUrl) {
       throw new Error('No current url')
     }
 
-    bindings = await getBindingsForSite(new URL(currentUrl))
+    bindingsMap = await getBindingsForSiteAsUrlMap(new URL(currentUrl))
   }
 
   async function registerNewBinding() {
@@ -36,27 +37,35 @@
 
 <div class="container">
   <main class="prose prose-2xs">
-    <h1 class="text-right prose-headings">Vind</h1>
-    <div>
+    <h2 class=" text-neutral font-black m-0">Vind</h2>
+    <h1 class="text-center prose-headings">
+      <DisplayUrl url={currentUrl} />
+    </h1>
+    <div class="text-center">
       <div>
-        <h4>
-          Current bindings for
-          <b>
-            {displayUrl || ''}
-          </b>
-        </h4>
-        {#each bindings as binding}
-          <div>
-            <span><b>{binding.key.toUpperCase()}</b></span>
-            <span>{binding.selector}</span>
-            <button
-              on:click={() => deleteBinding(binding)}
-              class="btn btn-delete">Delete</button>
+        <h3 class="text-neutral-content font-bold">
+          {#if bindingsMap.size === 0}
+            No bindings found
+          {:else}
+            Matching Bindings
+          {/if}
+        </h3>
+
+        {#each bindingsMap as [url, bindings]}
+          <h5 class="w-full flex justify-center mb-3">
+            <b> <DisplayUrl {url} /> </b>
+          </h5>
+          <div class="grid grid-cols-5 gap-4 mb-5">
+            {#each bindings as binding}
+              <BindingButton
+                {binding}
+                on:delete={() => deleteBinding(binding)} />
+            {/each}
           </div>
         {/each}
       </div>
-      <div>
-        <button class="btn btn-danger" on:click={registerNewBinding}
+      <div class="flex justify-center">
+        <button class="btn btn-primary" on:click={registerNewBinding}
           >Click to register</button>
       </div>
     </div>
@@ -67,7 +76,8 @@
   .container {
     $width: 470px;
     min-width: $width;
-    max-width: $width;
-    padding: 10px;
+    // max-width: $width;
+
+    padding: 16px;
   }
 </style>
