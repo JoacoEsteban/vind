@@ -10,6 +10,7 @@
   import { makeDisplayPattern, makeDisplayUrl } from '~lib/url'
   import { getCurrentUrl } from '~messages/tabs'
 
+  export let visible: boolean = false
   let currentUrl: string = ''
   let bindingsMap: Map<string, Binding[]> = new Map()
 
@@ -44,7 +45,7 @@
   })
 </script>
 
-<div class="popup-container bg-blur" use:draggable>
+<div class="popup-container bg-blur" use:draggable class:visible>
   <main class="prose prose-2xs">
     <div class="flex justify-between">
       <h2 class="text-neutral-content font-black m-0 opacity-25">Vind</h2>

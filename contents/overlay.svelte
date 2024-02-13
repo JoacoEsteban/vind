@@ -31,8 +31,10 @@
   } from '~lib/element'
   import { PromiseWithResolvers } from '~lib/polyfills'
   import { getElementByXPath, getXPath } from '~lib/xpath'
+  import { showOverlayStream } from '~messages/tabs'
 
   let highlightedElement: HTMLElement | null = null
+  let showingOverlay = false
 
   async function register() {
     const { resolve: confirmElement, promise: onElementSelected } =
@@ -94,14 +96,19 @@
     }
   }
 
+  function toggleVisibility() {
+    showingOverlay = !showingOverlay
+  }
+
   askForBindingStream.subscribe(register)
+  showOverlayStream.subscribe(toggleVisibility)
 
   onMount(() => {
     console.log('mounted')
   })
 </script>
 
-<Popup />
+<Popup visible={showingOverlay} />
 <Filters />
 <!-- 
 <div class="hw-top bg-black pointer-events-none">

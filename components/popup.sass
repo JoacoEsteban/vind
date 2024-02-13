@@ -8,3 +8,17 @@
   min-width: $width
   // max-width: $width
   padding: 1.16em 1em
+  transition-property: transform, opacity
+  transition-duration: 0.3s
+  transition-timing-function:  var(--bezier-chill)
+  
+  &:not(.visible)
+    pointer-events: none
+    opacity: 0
+    transform: scale(0.85)
+    transition-timing-function:  var(--bezier-round-inverted)
+    transition-duration: .15s
+  &.visible
+    pointer-events: all
+    opacity: 1
+    transform: scale(1)

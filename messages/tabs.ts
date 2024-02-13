@@ -8,3 +8,11 @@ export const [
   'getCurrentUrl',
   { async: true }
 )
+
+export const [
+  showOverlay,
+  showOverlayStream,
+  waitForShowOverlay
+] = getMessage<void>(
+  'showOverlay'
+)

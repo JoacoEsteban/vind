@@ -1,7 +1,7 @@
 import { get, set } from '~lib/storage'
 import { askForBinding, askForBindingStream, askForOptionsPageStream } from '~/messages'
 import { getActiveTab, getActiveTabId } from './utils/tab'
-import { getCurrentUrlStream } from '~messages/tabs'
+import { getCurrentUrlStream, showOverlay } from '~messages/tabs'
 
 
 async function sanitizeStorage () {
@@ -33,4 +33,12 @@ getCurrentUrlStream.subscribe(async ([, sender, respond]) => {
 
 askForOptionsPageStream.subscribe(async ([, sender]) => {
   chrome.runtime.openOptionsPage()
+})
+
+chrome.action.onClicked.addListener(async (tab) => {
+  const tabId = await getActiveTabId()
+  if (!tabId) return
+  showOverlay.toTab({
+    tabId: tabId
+  })
 })
