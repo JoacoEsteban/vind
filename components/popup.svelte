@@ -1,15 +1,21 @@
 <script lang="ts">
-  // import './style.css'
   import { onMount } from 'svelte'
-  import { askForBinding } from '~/messages'
+  import { askForBinding, askForOptionsPage } from '~/messages'
   import BindingButton from '~components/binding-button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
+  import { pageControllerInstance } from '~contents/document-client'
   import { Binding, getBindingsForSiteAsUrlMap } from '~lib/binding'
+  import { draggable } from '~lib/draggable'
+  import { on } from '~lib/storage'
   import { makeDisplayPattern, makeDisplayUrl } from '~lib/url'
   import { getCurrentUrl } from '~messages/tabs'
 
   let currentUrl: string = ''
   let bindingsMap: Map<string, Binding[]> = new Map()
+
+  function openOptions() {
+    askForOptionsPage()
+  }
 
   async function loadCurrentBindings() {
     currentUrl = (await getCurrentUrl()) || ''
@@ -31,13 +37,20 @@
   }
 
   onMount(() => {
+    on('bindings', () => {
+      loadCurrentBindings()
+    })
     loadCurrentBindings()
   })
 </script>
 
-<div class="container">
+<div class="popup-container bg-blur" use:draggable>
   <main class="prose prose-2xs">
-    <h2 class=" text-neutral font-black m-0">Vind</h2>
+    <div class="flex justify-between">
+      <h2 class="text-neutral-content font-black m-0 opacity-25">Vind</h2>
+      <button class="btn btn-outline btn-circle" on:click={openOptions}
+        >⚙️</button>
+    </div>
     <h1 class="text-center prose-headings">
       <DisplayUrl url={currentUrl} />
     </h1>
@@ -59,7 +72,7 @@
             {#each bindings as binding}
               <BindingButton
                 {binding}
-                on:delete={() => deleteBinding(binding)} />
+                on:click={() => pageControllerInstance.clickBinding(binding)} />
             {/each}
           </div>
         {/each}
@@ -71,13 +84,3 @@
     </div>
   </main>
 </div>
-
-<style lang="scss">
-  .container {
-    $width: 470px;
-    min-width: $width;
-    // max-width: $width;
-
-    padding: 16px;
-  }
-</style>

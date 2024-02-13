@@ -1,8 +1,7 @@
-import { append, get, getAll, getAsArray, removeFrom } from './storage'
-import { minimatch as match } from 'minimatch'
+import { append, get, getAll, getAsArray, removeFrom, update } from './storage'
 import { nanoid } from 'nanoid'
 import { getElementByXPath, getXPath } from './xpath'
-import { sanitizeUrl } from './url'
+import { addGlob, match, sanitizeUrl } from './url'
 
 interface IBinding {
   id: string
@@ -19,12 +18,15 @@ export class Binding implements IBinding {
   private element: HTMLElement | null = null
 
   constructor(site: string, key: string, selector: string, id?: string) {
-    this.id = id || nanoid()
-    this.site = site
+    this.id = id || Binding.newId()
+    this.site = addGlob(site)
     this.key = key
     this.selector = selector
   }
 
+  static newId () {
+    return Math.random().toString(36).substring(2)
+  }
   static from (binding: IBinding) {
     return new Binding(binding.site, binding.key, binding.selector, binding.id)
   }
@@ -32,21 +34,20 @@ export class Binding implements IBinding {
   static fromElement (element: HTMLElement, key: string) {
     const site = new URL(location.href)
     const selector = getXPath(element)
+    const sanitized = sanitizeUrl(site)
+    // console.log('sanitized', sanitized.href)
 
-    return new Binding(sanitizeUrl(site).href, key, selector)
+    const b = new Binding(sanitized.href, key, selector)
+    // console.log('b', b)
+    return b
   }
 
   async save () {
-    await append('bindings', this)
+    await update('bindings', this, { upsert: true })
   }
 
   async remove () {
     await removeFrom('bindings', this.id)
-  }
-
-  async update () {
-    await this.remove()
-    await this.save()
   }
 
   getElement () {
@@ -65,8 +66,43 @@ export async function getBindings (): Promise<Binding[]> {
   return bindings.map(Binding.from)
 }
 
+export async function getBindingsAsUrlMap () {
+  const bindings = await getBindings()
+  return bindingsAsUrlMap(bindings)
+}
+
 export async function getBindingsForSite (site: URL): Promise<Binding[]> {
   const bindings = await getBindings()
-  site = sanitizeUrl(site)
-  return bindings.filter(binding => match(site.href, binding.site))
+  // console.log('site', site, bindings, site.href)
+  return bindings.filter(binding => {
+    // console.log('binding.site', binding.site, site.href, match(binding.site, site.href))
+    // console.log('siteGlob', siteGlob, binding.site, match(binding.site, siteGlob))
+    return match(binding.site, site)
+  })
 }
+
+export async function getBindingsForSiteAsUrlMap (site: URL): Promise<Map<string, Binding[]>> {
+  const bindings = await getBindingsForSite(site)
+  return bindingsAsUrlMap(bindings)
+}
+
+function bindingsAsUrlMap (bindings: Binding[]): Map<string, Binding[]> {
+  const map = new Map<string, Binding[]>()
+
+  bindings.forEach(binding => {
+    const site = binding.site
+    const value = map.get(site) || map.set(site, []).get(site) as Binding[]
+    value.push(binding)
+  })
+
+  return map
+}
+
+(async () => {
+  const bindings = await getBindings()
+  // for (const binding of bindings) {
+  //   binding.site = binding.site.replace('/*', '{/**,}')
+  //   await binding.save()
+  // }
+  console.log('bindings', bindings)
+})()

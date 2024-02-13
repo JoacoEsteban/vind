@@ -22,17 +22,11 @@ export class PageController {
     this.triggerBindings(matchingBindings)
   }
 
-  async triggerBindings (bindings: Binding[]) {
-    bindings.map(async binding => {
+  async triggerBindings (bindings: Binding[]): Promise<void[]> {
+    return Promise.all(bindings.map(async binding => {
       console.log('triggering binding', binding)
-      const element = binding.getElement()
-      console.log('element', element)
-      if (element) {
-        await this.click(element)
-      } else {
-        console.log('no element found for binding', binding)
-      }
-    })
+      return this.clickBinding(binding)
+    }))
   }
 
   async click (element: HTMLElement) {
@@ -47,6 +41,15 @@ export class PageController {
       })
       element.click()
     })
+  }
+
+  async clickBinding (binding: Binding) {
+    const element = binding.getElement()
+    if (element) {
+      await this.click(element)
+    } else {
+      console.log('no element found for binding', binding)
+    }
   }
 
   async init () {

@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-  import styleText from 'data-text:~/style.css'
+  import styleText from 'data-text:~/style.sass'
   import type { PlasmoCSConfig, PlasmoGetStyle } from 'plasmo'
   import { onMount } from 'svelte'
 
@@ -15,11 +15,14 @@
 </script>
 
 <script lang="ts">
+  import '~/style.sass'
   import {
     makeEventListener,
     makeEventListenerStack,
   } from '@solid-primitives/event-listener'
   import { askForBindingStream } from '~/messages'
+  import Filters from '~components/filters.svelte'
+  import Popup from '~components/popup.svelte'
   import { Binding } from '~lib/binding'
   import {
     highlightElementUntilLeave,
@@ -53,6 +56,7 @@
         return
       }
 
+      console.log('CLICKKK')
       event.preventDefault()
       event.stopPropagation()
 
@@ -68,7 +72,7 @@
     })
 
     listen('mouseover', mouseoverListener)
-    listen('click', clickListener)
+    listen('mousedown', clickListener)
     listen('keydown', (event) => event.key === 'Escape' && confirmElement())
 
     await onElementSelected
@@ -79,21 +83,26 @@
     }
 
     const key = await recordInputKey()
-    console.log('key', key)
+    console.log('ke??y', key)
 
-    const binding = Binding.fromElement(highlightedElement, key)
-    await binding.save()
-    console.log('saved')
+    try {
+      const binding = Binding.fromElement(highlightedElement, key)
+      console.log('save', binding)
+      await binding.save()
+    } catch (error) {
+      console.error('error', error)
+    }
   }
 
   askForBindingStream.subscribe(register)
 
   onMount(() => {
     console.log('mounted')
-    // register()
   })
 </script>
 
+<Popup />
+<Filters />
 <!-- 
 <div class="hw-top bg-black pointer-events-none">
   <h1>Vind Overlay</h1>

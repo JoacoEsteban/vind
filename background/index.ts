@@ -1,5 +1,5 @@
 import { get, set } from '~lib/storage'
-import { askForBinding, askForBindingStream } from '~/messages'
+import { askForBinding, askForBindingStream, askForOptionsPageStream } from '~/messages'
 import { getActiveTab, getActiveTabId } from './utils/tab'
 import { getCurrentUrlStream } from '~messages/tabs'
 
@@ -29,4 +29,8 @@ askForBindingStream.subscribe(async ([, sender]) => {
 getCurrentUrlStream.subscribe(async ([, sender, respond]) => {
   const currentTab = await getActiveTab()
   respond(currentTab?.url || null)
+})
+
+askForOptionsPageStream.subscribe(async ([, sender]) => {
+  chrome.runtime.openOptionsPage()
 })

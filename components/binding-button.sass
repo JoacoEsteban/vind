@@ -1,0 +1,46 @@
+@mixin f-center()
+  display: flex
+  justify-content: center
+  align-items: center
+@mixin round($size)
+  @include f-center
+  @include transformable
+  border-radius: 100%
+  width: $size
+  height: $size
+  min-width: $size
+  min-height: $size
+  max-width: $size
+  max-height: $size
+
+@mixin transformable()
+  transition: transform 0.3s var(--bezier-chill)
+  &, *
+    will-change: transform, opacity
+
+.binding-container
+  user-select: none
+
+.outer
+  @include round(70px)
+  background: linear-gradient(180deg, var(--_gradient-top, #329ECC) -13.04%, var(--_gradient-bottom, #ff00ff) 136.96%)
+  filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25))
+  cursor: pointer
+  &:hover 
+      transform: scale(1.04)
+  &:active 
+    transform: scale(.95)
+    opacity: 0.5
+
+
+.inner
+  z-index: 1
+  background: white
+
+  color: transparent
+  background-clip: text
+  display: inline-block
+
+  font-size: 1.5em
+  font-weight: bold
+  mix-blend-mode: overlay

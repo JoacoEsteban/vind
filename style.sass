@@ -1,0 +1,31 @@
+/* @import 'bulma/css/bulma.css' */
+@tailwind base
+@tailwind components
+@tailwind utilities
+
+.btn 
+  @apply rounded-full
+
+
+:root 
+  --bezier: cubic-bezier(0, 1, 0, 1)
+  --bezier-chill: cubic-bezier(0, 1, .5, 1)
+  --bezier-chill-inverted: cubic-bezier(1, 0, 1, .5)
+  --bezier-out: cubic-bezier(1, 0.24, 1, 0.66)
+  --bezier-relaxed: cubic-bezier(0.35, 0.7, 0.25, 1)
+  --bezier-round: cubic-bezier(0, 0.5, 0.5, 1)
+  --bezier-round-inverted: cubic-bezier(.5, 0, 1, .5)
+  --bezier-symmetric: cubic-bezier(0.7, 0, 0.25, 1)
+  --bezier-symmetric-inverted: cubic-bezier(0, .7, 1, 0.25)
+  --bezier-symmetric-hard: cubic-bezier(.5, .1, .5, .9)
+  --bezier-symmetric-hard-inverted: cubic-bezier(.1, .5, .9, .5)
+
+@import 'components/popup.sass'
+@import 'components/binding-button.sass'
+
+.bg-blur
+  backdrop-filter: blur(15px) url(#aberration)
+  background-color: rgba(20, 20, 20, 0.5)
+  border: 2px solid #ccc5
+  border-radius: 16px
+  drop-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25)
