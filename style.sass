@@ -1,13 +1,5 @@
-/* @import 'bulma/css/bulma.css' */
-@tailwind base
-@tailwind components
-@tailwind utilities
-
-.btn 
-  @apply rounded-full
-
-
-:root 
+#plasmo-shadow-container
+  font-size: 16px
   --bezier: cubic-bezier(0, 1, 0, 1)
   --bezier-chill: cubic-bezier(0, 1, .5, 1)
   --bezier-chill-inverted: cubic-bezier(1, 0, 1, .5)
@@ -20,8 +12,16 @@
   --bezier-symmetric-hard: cubic-bezier(.5, .1, .5, .9)
   --bezier-symmetric-hard-inverted: cubic-bezier(.1, .5, .9, .5)
 
+@tailwind base
+@tailwind components
+@tailwind utilities
+
 @import 'components/popup.sass'
 @import 'components/binding-button.sass'
+
+
+.btn 
+  @apply rounded-full
 
 .bg-blur
   backdrop-filter: blur(15px) url(#aberration)

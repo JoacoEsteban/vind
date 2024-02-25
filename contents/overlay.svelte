@@ -15,7 +15,6 @@
 </script>
 
 <script lang="ts">
-  import '~/style.sass'
   import {
     makeEventListener,
     makeEventListenerStack,

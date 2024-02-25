@@ -1,14 +1,3 @@
-<!-- <script context="module" lang="ts">
-  import styleText from 'data-text:~/style.sass'
-  import type { PlasmoGetStyle } from 'plasmo'
-
-  export const getStyle: PlasmoGetStyle = () => {
-    const style = document.createElement('style')
-    style.textContent = styleText
-    return style
-  }
-</script> -->
-
 <script lang="ts">
   import '~/style.sass'
   import chroma from 'chroma-js'
