@@ -51,13 +51,13 @@ export class Binding implements IBinding {
   }
 
   getElement () {
-    if (this.element) {
+    if (this.element && document.contains(this.element)) {
       return this.element
     }
 
     this.element = getElementByXPath(this.selector)
 
-    return this.element
+    return this.element || null
   }
 }
 
