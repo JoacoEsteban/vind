@@ -47,7 +47,6 @@ export function draggable (node: HTMLElement) {
   function setOffset (x = xOffset, y = yOffset) {
     xOffset = Math.min(Math.max(x, 0), window.innerWidth - dragItem.clientWidth)
     yOffset = Math.min(Math.max(y, 0), window.innerHeight - dragItem.clientHeight)
-    console.log({ xOffset, yOffset })
   }
 
   function drag (e: PointerEvent) {
