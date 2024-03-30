@@ -5,6 +5,7 @@
 
   export const config: PlasmoCSConfig = {
     matches: ['<all_urls>'],
+    css: ['./fonts.css'],
   }
 
   export const getStyle: PlasmoGetStyle = () => {
@@ -48,6 +49,10 @@
 
       highlightedElement = target
 
+      // target.addEventListener('click', (event) => {
+      //   event.preventDefault()
+      //   event.stopPropagation()
+      // })
       const { cancel } = highlightElementUntilLeave(target)
       onElementSelected.then(cancel)
     }
@@ -74,6 +79,10 @@
 
     listen('mouseover', mouseoverListener)
     listen('mousedown', clickListener)
+    // listen('click', (event) => {
+    //   event.preventDefault()
+    //   event.stopPropagation()
+    // })
     listen('keydown', (event) => event.key === 'Escape' && confirmElement())
 
     await onElementSelected
@@ -101,18 +110,7 @@
 
   askForBindingStream.subscribe(register)
   showOverlayStream.subscribe(toggleVisibility)
-
-  onMount(() => {
-    console.log('mounted')
-  })
 </script>
 
 <Popup visible={showingOverlay} />
 <Filters />
-<!-- 
-<div class="hw-top bg-black pointer-events-none">
-  <h1>Vind Overlay</h1>
-  {#if showBindingTargetOverlay}
-    <h2>Registering new binding</h2>
-  {/if}
-</div> -->

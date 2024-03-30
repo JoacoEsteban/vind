@@ -2,13 +2,12 @@
   import { onMount } from 'svelte'
   import { askForBinding, askForOptionsPage } from '~/messages'
   import BindingButton from '~components/binding-button.svelte'
+  import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
   import { pageControllerInstance } from '~contents/document-client'
   import { Binding, getBindingsForSiteAsUrlMap } from '~lib/binding'
   import { draggable } from '~lib/draggable'
   import { on } from '~lib/storage'
-  import { makeDisplayPattern, makeDisplayUrl } from '~lib/url'
-  import { getCurrentUrl } from '~messages/tabs'
 
   export let visible: boolean = false
   let currentUrl: string = ''
@@ -19,7 +18,7 @@
   }
 
   async function loadCurrentBindings() {
-    currentUrl = (await getCurrentUrl()) || ''
+    currentUrl = location.href
 
     if (!currentUrl) {
       throw new Error('No current url')
@@ -73,14 +72,15 @@
             {#each bindings as binding}
               <BindingButton
                 {binding}
-                on:click={() => pageControllerInstance.clickBinding(binding)} />
+                on:click={() => pageControllerInstance.clickBinding(binding)}
+                on:focus={() => pageControllerInstance.focusBinding(binding)}
+                on:blur={() => pageControllerInstance.blurBinding(binding)} />
             {/each}
           </div>
         {/each}
       </div>
       <div class="flex justify-center">
-        <button class="btn btn-primary" on:click={registerNewBinding}
-          >Click to register</button>
+        <Button on:click={registerNewBinding}>Click to register</Button>
       </div>
     </div>
   </main>

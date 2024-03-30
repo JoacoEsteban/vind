@@ -1,5 +1,6 @@
 <script lang="ts">
   import '~/style.sass'
+  import '~/contents/fonts.css'
   import chroma from 'chroma-js'
   import { onMount } from 'svelte'
   import BindingButton from '~components/binding-button.svelte'

@@ -1,4 +1,3 @@
-import { minimatch } from 'minimatch'
 
 type sanitizationOptions = {
   glob: boolean
@@ -21,18 +20,10 @@ function sanitizePathname (url: URL): string {
   const parts = url.pathname
     .substring(1)
     .split('/')
-    .slice(0, 1)
     .filter(part => /^[a-z0-9-_]+$/.test(part))
 
   return parts
     .join('/')
-}
-
-export function addGlob (url: string): string {
-  return url
-    .replace(/\/$/, '')
-    .replace('{/**,}', '')
-    .concat('{/**,}')
 }
 
 export function makeDisplayUrl (url: string): string {
@@ -43,13 +34,6 @@ export function makeDisplayUrl (url: string): string {
   return display
 }
 
-export function makeDisplayPattern (pattern: string): string {
-  const [url] = pattern.split('{')
-  return makeDisplayUrl(url)
-}
-
-export function match (pattern: string, url: URL): boolean {
-  const sanitized = sanitizeUrl(url).href
-  console.log('match', { sanitized, pattern }, minimatch(sanitized, pattern, { partial: true }))
-  return minimatch(sanitized, pattern)
+export function match (pattern: string, url: string): boolean {
+  return url.includes(pattern)
 }

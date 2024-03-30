@@ -52,13 +52,21 @@ export class PageController {
     }
   }
 
+  async focusBinding (binding: Binding) {
+    const element = binding.getElement()
+    if (element) {
+    }
+  }
+
+  async blurBinding (binding: Binding) {
+    const element = binding.getElement()
+    if (element) {
+    }
+  }
+
   async init () {
-    console.log('All bindings', await getBindings())
-
     await this.updateBindings()
-
     const onKeyPress = (e: KeyboardEvent) => this.handleKey(e)
-
     document.addEventListener('keypress', onKeyPress)
   }
 }

@@ -1,7 +1,7 @@
-import { append, get, getAll, getAsArray, removeFrom, update } from './storage'
-import { nanoid } from 'nanoid'
+import { getAsArray, removeFrom, update } from './storage'
 import { getElementByXPath, getXPath } from './xpath'
-import { addGlob, match, sanitizeUrl } from './url'
+import { match, sanitizeUrl } from './url'
+import { log } from './log'
 
 interface IBinding {
   id: string
@@ -19,7 +19,7 @@ export class Binding implements IBinding {
 
   constructor(site: string, key: string, selector: string, id?: string) {
     this.id = id || Binding.newId()
-    this.site = addGlob(site)
+    this.site = site
     this.key = key
     this.selector = selector
   }
@@ -73,16 +73,16 @@ export async function getBindingsAsUrlMap () {
 
 export async function getBindingsForSite (site: URL): Promise<Binding[]> {
   const bindings = await getBindings()
-  // console.log('site', site, bindings, site.href)
+  const href = sanitizeUrl(site).href
+  log.info('Finding bindings for site', href)
   return bindings.filter(binding => {
-    // console.log('binding.site', binding.site, site.href, match(binding.site, site.href))
-    // console.log('siteGlob', siteGlob, binding.site, match(binding.site, siteGlob))
-    return match(binding.site, site)
+    return match(binding.site, href)
   })
 }
 
 export async function getBindingsForSiteAsUrlMap (site: URL): Promise<Map<string, Binding[]>> {
   const bindings = await getBindingsForSite(site)
+  log.success('Found bindings:', bindings)
   return bindingsAsUrlMap(bindings)
 }
 
@@ -98,11 +98,21 @@ function bindingsAsUrlMap (bindings: Binding[]): Map<string, Binding[]> {
   return map
 }
 
-(async () => {
-  const bindings = await getBindings()
-  // for (const binding of bindings) {
-  //   binding.site = binding.site.replace('/*', '{/**,}')
-  //   await binding.save()
-  // }
-  console.log('bindings', bindings)
-})()
+// (async () => {
+//   const dosite = (site: string) => {
+//     [site] = site.split('{')
+//     if (!site.endsWith('/')) site += '/'
+//     site = sanitizeHref(site)
+//     return site
+//   }
+//   const bindings = await getBindings()
+//   for (const binding of bindings) {
+//     const old = binding.site
+
+//     binding.site = dosite(binding.site)
+
+//     log.info('Saving binding', { site: binding.site, old })
+//     await binding.save()
+//   }
+//   log.info('bindings', bindings)
+// })()
