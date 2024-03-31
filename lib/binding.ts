@@ -1,6 +1,6 @@
 import { getAsArray, removeFrom, update } from './storage'
 import { getElementByXPath, getXPath } from './xpath'
-import { match, sanitizeUrl } from './url'
+import { match, sanitizeHref, sanitizeUrl } from './url'
 import { log } from './log'
 
 interface IBinding {
@@ -71,22 +71,22 @@ export async function getBindingsAsUrlMap () {
   return bindingsAsUrlMap(bindings)
 }
 
-export async function getBindingsForSite (site: URL): Promise<Binding[]> {
+export async function getBindingsForSite (site: string): Promise<Binding[]> {
   const bindings = await getBindings()
-  const href = sanitizeUrl(site).href
+  const href = sanitizeHref(site)
   log.info('Finding bindings for site', href)
   return bindings.filter(binding => {
     return match(binding.site, href)
   })
 }
 
-export async function getBindingsForSiteAsUrlMap (site: URL): Promise<Map<string, Binding[]>> {
+export async function getBindingsForSiteAsUrlMap (site: string): Promise<Map<string, Binding[]>> {
   const bindings = await getBindingsForSite(site)
   log.success('Found bindings:', bindings)
   return bindingsAsUrlMap(bindings)
 }
 
-function bindingsAsUrlMap (bindings: Binding[]): Map<string, Binding[]> {
+export function bindingsAsUrlMap (bindings: Binding[]): Map<string, Binding[]> {
   const map = new Map<string, Binding[]>()
 
   bindings.forEach(binding => {

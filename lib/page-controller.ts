@@ -1,30 +1,49 @@
 import { Binding, getBindings, getBindingsForSite } from '~lib/binding'
+import { log } from './log'
+import { Observable, Subscriber, BehaviorSubject } from 'rxjs'
+import { sanitizeHref } from './url'
 
 export class PageController {
-  private bindings: Binding[] = []
-  constructor() {
-    this.init()
-  }
+  private currentUrlSubject: BehaviorSubject<string> = new BehaviorSubject<string>('')
+  private bindingsSubject: BehaviorSubject<Binding[]> = new BehaviorSubject<Binding[]>([])
+
+  $bindings = this.bindingsSubject.asObservable()
+  $currentUrl = this.currentUrlSubject.asObservable()
 
   async updateBindings () {
-    this.bindings = await getBindingsForSite(new URL(window.location.href))
-  }
+    log.info('Updating bindings')
+    const sanitizedUrl = sanitizeHref(window.location.href)
 
-  async handleKey (event: KeyboardEvent) {
-    if (event.target instanceof HTMLInputElement) {
+    if (this.currentUrlSubject.value === sanitizedUrl) {
+      log.info(`URL is the same (${this.currentUrlSubject.value}, ${sanitizedUrl}), not updating`)
       return
     }
 
-    console.log(event.key)
+    const bindings = await getBindingsForSite(sanitizedUrl)
 
-    const matchingBindings = this.bindings.filter(binding => binding.key === event.key)
+    this.bindingsSubject.next(bindings)
+    this.currentUrlSubject.next(sanitizedUrl)
 
-    this.triggerBindings(matchingBindings)
+    log.info('Bindings updated:', bindings)
+  }
+
+  getMatchingKey (event: KeyboardEvent): string | null {
+    if (event.target instanceof HTMLInputElement) {
+      return null
+    }
+
+    log.info(`Matching key pressed: "${event.key}"`)
+    return event.key
+  }
+
+  triggerBindingsByKey (key: string) {
+    const matchingBindings = this.bindingsSubject.value.filter(binding => binding.key === key)
+    return this.triggerBindings(matchingBindings)
   }
 
   async triggerBindings (bindings: Binding[]): Promise<void[]> {
     return Promise.all(bindings.map(async binding => {
-      console.log('triggering binding', binding)
+      log.info('triggering binding', binding)
       return this.clickBinding(binding)
     }))
   }
@@ -64,9 +83,10 @@ export class PageController {
     }
   }
 
-  async init () {
-    await this.updateBindings()
-    const onKeyPress = (e: KeyboardEvent) => this.handleKey(e)
-    document.addEventListener('keypress', onKeyPress)
+  onKeyPress (e: KeyboardEvent) {
+    const key = this.getMatchingKey(e)
+    if (key) {
+      this.triggerBindingsByKey(key)
+    }
   }
 }

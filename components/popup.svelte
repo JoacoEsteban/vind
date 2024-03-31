@@ -1,30 +1,25 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { map } from 'rxjs'
   import { askForBinding, askForOptionsPage } from '~/messages'
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
   import { pageControllerInstance } from '~contents/document-client'
-  import { Binding, getBindingsForSiteAsUrlMap } from '~lib/binding'
+  import { Binding, bindingsAsUrlMap } from '~lib/binding'
   import { draggable } from '~lib/draggable'
-  import { on } from '~lib/storage'
+  import { log } from '~lib/log'
 
   export let visible: boolean = false
-  let currentUrl: string = ''
-  let bindingsMap: Map<string, Binding[]> = new Map()
+  const currentUrl = pageControllerInstance.$currentUrl
+  const bindingsMap = pageControllerInstance.$bindings.pipe(
+    map((bindings) => {
+      log.info('Bindings updated', bindings)
+      return bindingsAsUrlMap(bindings)
+    }),
+  )
 
   function openOptions() {
     askForOptionsPage()
-  }
-
-  async function loadCurrentBindings() {
-    currentUrl = location.href
-
-    if (!currentUrl) {
-      throw new Error('No current url')
-    }
-
-    bindingsMap = await getBindingsForSiteAsUrlMap(new URL(currentUrl))
   }
 
   async function registerNewBinding() {
@@ -33,15 +28,7 @@
 
   async function deleteBinding(binding: Binding) {
     binding.remove()
-    await loadCurrentBindings()
   }
-
-  onMount(() => {
-    on('bindings', () => {
-      loadCurrentBindings()
-    })
-    loadCurrentBindings()
-  })
 </script>
 
 <div class="popup-container bg-blur" use:draggable class:visible>
@@ -52,19 +39,19 @@
         >⚙️</button>
     </div>
     <h1 class="text-center prose-headings">
-      <DisplayUrl url={currentUrl} />
+      <DisplayUrl url={$currentUrl} />
     </h1>
     <div class="text-center">
       <div>
         <h3 class="text-neutral-content font-bold">
-          {#if bindingsMap.size === 0}
+          {#if $bindingsMap.size === 0}
             No bindings found
           {:else}
             Matching Bindings
           {/if}
         </h3>
 
-        {#each bindingsMap as [url, bindings]}
+        {#each $bindingsMap as [url, bindings]}
           <h5 class="w-full flex justify-center mb-3">
             <b> <DisplayUrl {url} /> </b>
           </h5>
