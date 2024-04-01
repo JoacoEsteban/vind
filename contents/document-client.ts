@@ -1,21 +1,27 @@
 import "@virtualstate/navigation/polyfill"
 import { log } from '~lib/log'
 import { PageController } from '~lib/page-controller'
-import { on } from '~lib/storage'
+import { wakeUp } from '~messages/tabs'
 
-export const pageControllerInstance = new PageController()
+export const pageControllerInstance = new PageController('content-script')
 export const onPageControllerReady = (async () => {
   const controller = pageControllerInstance
   await controller.updateBindings()
   return controller
 })()
   .then((instance) => {
-    window.navigation?.addEventListener('navigate', () => setTimeout(() => {
-      log.info('Navigation event', window.location.href)
+    if (typeof window.navigation !== 'undefined') { // TODO validate polyfill works (firefox)
+      window.navigation?.addEventListener('navigate', () => setTimeout(() => {
+        log.info('Navigation event', window.location.href)
+        instance.softUpdateBindings()
+      }))
+    }
+    instance.onEveryBindingEvent$.subscribe(() => {
+      log.info('Binding updated, updating bindings')
       instance.updateBindings()
-    }))
-    on('bindings', () => {
-      log.info('Storage bindings changed')
+    })
+    wakeUp.stream.subscribe(() => {
+      log.info('Waking up, updating bindings')
       instance.updateBindings()
     })
     document.addEventListener('keypress', instance.onKeyPress.bind(instance))

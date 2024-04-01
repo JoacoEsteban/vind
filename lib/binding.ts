@@ -42,14 +42,6 @@ export class Binding implements IBinding {
     return b
   }
 
-  async save () {
-    await update('bindings', this, { upsert: true })
-  }
-
-  async remove () {
-    await removeFrom('bindings', this.id)
-  }
-
   getElement () {
     if (this.element && document.contains(this.element)) {
       return this.element
@@ -59,31 +51,6 @@ export class Binding implements IBinding {
 
     return this.element || null
   }
-}
-
-export async function getBindings (): Promise<Binding[]> {
-  const bindings = await getAsArray('bindings')
-  return bindings.map(Binding.from)
-}
-
-export async function getBindingsAsUrlMap () {
-  const bindings = await getBindings()
-  return bindingsAsUrlMap(bindings)
-}
-
-export async function getBindingsForSite (site: string): Promise<Binding[]> {
-  const bindings = await getBindings()
-  const href = sanitizeHref(site)
-  log.info('Finding bindings for site', href)
-  return bindings.filter(binding => {
-    return match(binding.site, href)
-  })
-}
-
-export async function getBindingsForSiteAsUrlMap (site: string): Promise<Map<string, Binding[]>> {
-  const bindings = await getBindingsForSite(site)
-  log.success('Found bindings:', bindings)
-  return bindingsAsUrlMap(bindings)
 }
 
 export function bindingsAsUrlMap (bindings: Binding[]): Map<string, Binding[]> {
@@ -97,22 +64,3 @@ export function bindingsAsUrlMap (bindings: Binding[]): Map<string, Binding[]> {
 
   return map
 }
-
-// (async () => {
-//   const dosite = (site: string) => {
-//     [site] = site.split('{')
-//     if (!site.endsWith('/')) site += '/'
-//     site = sanitizeHref(site)
-//     return site
-//   }
-//   const bindings = await getBindings()
-//   for (const binding of bindings) {
-//     const old = binding.site
-
-//     binding.site = dosite(binding.site)
-
-//     log.info('Saving binding', { site: binding.site, old })
-//     await binding.save()
-//   }
-//   log.info('bindings', bindings)
-// })()

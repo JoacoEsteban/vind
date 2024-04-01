@@ -1,7 +1,6 @@
 <script context="module" lang="ts">
   import styleText from 'data-text:~/style.sass'
   import type { PlasmoCSConfig, PlasmoGetStyle } from 'plasmo'
-  import { onMount } from 'svelte'
 
   export const config: PlasmoCSConfig = {
     matches: ['<all_urls>'],
@@ -16,10 +15,7 @@
 </script>
 
 <script lang="ts">
-  import {
-    makeEventListener,
-    makeEventListenerStack,
-  } from '@solid-primitives/event-listener'
+  import { makeEventListenerStack } from '@solid-primitives/event-listener'
   import { askForBindingStream } from '~/messages'
   import Filters from '~components/filters.svelte'
   import Popup from '~components/popup.svelte'
@@ -29,9 +25,11 @@
     isBindableElement,
     recordInputKey,
   } from '~lib/element'
+  import { log } from '~lib/log'
   import { PromiseWithResolvers } from '~lib/polyfills'
   import { getElementByXPath, getXPath } from '~lib/xpath'
   import { showOverlayStream } from '~messages/tabs'
+  import { pageControllerInstance } from './document-client'
 
   let highlightedElement: HTMLElement | null = null
   let showingOverlay = false
@@ -98,13 +96,14 @@
     try {
       const binding = Binding.fromElement(highlightedElement, key)
       console.log('save', binding)
-      await binding.save()
+      await pageControllerInstance.bindingsChannel.addBinding(binding)
     } catch (error) {
       console.error('error', error)
     }
   }
 
   function toggleVisibility() {
+    log.info('on toggle visibility')
     showingOverlay = !showingOverlay
   }
 
@@ -112,5 +111,5 @@
   showOverlayStream.subscribe(toggleVisibility)
 </script>
 
-<Popup visible={showingOverlay} />
+<Popup visible={showingOverlay} {pageControllerInstance} />
 <Filters />

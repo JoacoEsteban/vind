@@ -16,7 +16,6 @@ export function sanitizeHref (url: string): string {
 }
 
 function sanitizePathname (url: URL): string {
-  // console.log('sanitizePathname', url.pathname, url)
   const parts = url.pathname
     .substring(1)
     .split('/')
@@ -36,4 +35,20 @@ export function makeDisplayUrl (url: string): string {
 
 export function match (pattern: string, url: string): boolean {
   return url.includes(pattern)
+}
+
+export function getCurrentSite (): string {
+  return sanitizeHref(window.location.href)
+}
+
+export function getCurrentUrl (): URL {
+  return sanitizeUrl(new URL(window.location.href))
+}
+
+export function urlFromParts (domain: string, path: string): URL {
+  if (!domain.startsWith('http')) {
+    domain = 'http://' + domain
+  }
+
+  return new URL(path, domain)
 }

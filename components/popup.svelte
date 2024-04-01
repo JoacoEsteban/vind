@@ -1,22 +1,15 @@
 <script lang="ts">
-  import { map } from 'rxjs'
   import { askForBinding, askForOptionsPage } from '~/messages'
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
-  import { pageControllerInstance } from '~contents/document-client'
-  import { Binding, bindingsAsUrlMap } from '~lib/binding'
   import { draggable } from '~lib/draggable'
-  import { log } from '~lib/log'
+  import type { PageController } from '~lib/page-controller'
 
   export let visible: boolean = false
-  const currentUrl = pageControllerInstance.$currentUrl
-  const bindingsMap = pageControllerInstance.$bindings.pipe(
-    map((bindings) => {
-      log.info('Bindings updated', bindings)
-      return bindingsAsUrlMap(bindings)
-    }),
-  )
+  export let pageControllerInstance: PageController
+  const currentUrl = pageControllerInstance.currentSite$
+  const bindingsMap = pageControllerInstance.bindingsMap$
 
   function openOptions() {
     askForOptionsPage()
@@ -24,10 +17,6 @@
 
   async function registerNewBinding() {
     askForBinding()
-  }
-
-  async function deleteBinding(binding: Binding) {
-    binding.remove()
   }
 </script>
 

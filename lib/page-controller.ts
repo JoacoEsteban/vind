@@ -1,28 +1,72 @@
-import { Binding, getBindings, getBindingsForSite } from '~lib/binding'
+import { Binding, bindingsAsUrlMap } from '~lib/binding'
 import { log } from './log'
-import { Observable, Subscriber, BehaviorSubject } from 'rxjs'
-import { sanitizeHref } from './url'
+import { BehaviorSubject, map, merge } from 'rxjs'
+import { getCurrentUrl } from './url'
+import { BindingChannelImpl } from './messages'
 
 export class PageController {
-  private currentUrlSubject: BehaviorSubject<string> = new BehaviorSubject<string>('')
+  constructor(
+    public pageType: 'content-script' | 'options'
+  ) {}
+
+  public bindingsChannel = new BindingChannelImpl()
+
+  private currentUrlSubject: BehaviorSubject<URL | null> = new BehaviorSubject<URL | null>(null)
+  public currentSite$ = this.currentUrlSubject.pipe(
+    map((url) => url?.href || '')
+  )
   private bindingsSubject: BehaviorSubject<Binding[]> = new BehaviorSubject<Binding[]>([])
 
-  $bindings = this.bindingsSubject.asObservable()
-  $currentUrl = this.currentUrlSubject.asObservable()
+  public onBindingRemoved$ = this.bindingsChannel.onBindingRemoved$
+  public onBindingAdded$ = this.bindingsChannel.onBindingAdded$
+  public onBindingUpdated$ = this.bindingsChannel.onBindingUpdated$
 
-  async updateBindings () {
-    log.info('Updating bindings')
-    const sanitizedUrl = sanitizeHref(window.location.href)
+  public onEveryBindingEvent$ = merge(
+    this.onBindingRemoved$,
+    this.onBindingAdded$,
+    this.onBindingUpdated$
+  )
 
-    if (this.currentUrlSubject.value === sanitizedUrl) {
-      log.info(`URL is the same (${this.currentUrlSubject.value}, ${sanitizedUrl}), not updating`)
+  public bindings$ = this.bindingsSubject.asObservable()
+  public bindingsMap$ = this.bindings$.pipe(
+    map((bindings) => {
+      return bindingsAsUrlMap(bindings)
+    })
+  )
+
+  async softUpdateBindings () {
+    log.info('Soft updating bindings')
+    const currentUrl = getCurrentUrl()
+
+    if (this.currentUrlSubject.value?.href === currentUrl.href) {
+      log.info(`URL is the same (${this.currentUrlSubject.value}, ${currentUrl}), not updating`)
       return
     }
 
-    const bindings = await getBindingsForSite(sanitizedUrl)
+    this.updateBindings()
+  }
+
+  async updateBindings () {
+    if (this.pageType === 'options') {
+      return this.loadAllBindings()
+    }
+
+    log.info('Updating bindings')
+    const currentUrl = getCurrentUrl()
+    const bindings = await this.bindingsChannel.getBindingsForSite(currentUrl)
 
     this.bindingsSubject.next(bindings)
-    this.currentUrlSubject.next(sanitizedUrl)
+    this.currentUrlSubject.next(currentUrl)
+
+    log.info('Bindings updated:', bindings)
+  }
+
+  async loadAllBindings () {
+    log.info('Loading all bindings')
+
+    const bindings = await this.bindingsChannel.getAllBindings()
+
+    this.bindingsSubject.next(bindings)
 
     log.info('Bindings updated:', bindings)
   }

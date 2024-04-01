@@ -1,13 +1,5 @@
 import { getMessage } from '@extend-chrome/messages'
-
-export const [
-  getCurrentUrl,
-  getCurrentUrlStream,
-  waitForCurrentUrl
-] = getMessage<void, string | null>(
-  'getCurrentUrl',
-  { async: true }
-)
+import { splitMessage } from './lib'
 
 export const [
   showOverlay,
@@ -16,3 +8,5 @@ export const [
 ] = getMessage<void>(
   'showOverlay'
 )
+
+export const wakeUp = splitMessage(getMessage<void>('wakeUp'))

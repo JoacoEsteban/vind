@@ -2,31 +2,32 @@
   import '~/style.sass'
   import '~/contents/fonts.css'
   import chroma from 'chroma-js'
-  import { onMount } from 'svelte'
+  import { bindingsStorage } from '~background'
   import BindingButton from '~components/binding-button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
-  import { Binding, getBindingsAsUrlMap } from '~lib/binding'
-  import { on } from '~lib/storage'
+  import { Binding } from '~lib/binding'
+  import { log } from '~lib/log'
+  import { PageController } from '~lib/page-controller'
+  import { wakeUp } from '~messages/tabs'
 
-  let bindingsMap: Map<string, Binding[]> = new Map()
+  const pageController = new PageController('options')
+  pageController.updateBindings()
+  pageController.onEveryBindingEvent$.subscribe(() => {
+    log.info('Binding event received')
+    pageController.updateBindings()
+  })
+  wakeUp.stream.subscribe(() => {
+    log.info('Waking up options page')
+    pageController.updateBindings()
+  })
+
+  let bindingsMap = pageController.bindingsMap$
   const bg1 = chroma.random()
   const bg2 = bg1.set('hsl.h', '+25')
 
-  async function loadCurrentBindings() {
-    bindingsMap = await getBindingsAsUrlMap()
-  }
-
   async function deleteBinding(binding: Binding) {
-    binding.remove()
-    await loadCurrentBindings()
+    pageController.bindingsChannel.removeBinding(binding.id)
   }
-
-  onMount(() => {
-    on('bindings', () => {
-      loadCurrentBindings()
-    })
-    loadCurrentBindings()
-  })
 </script>
 
 <div
@@ -38,14 +39,14 @@
       <div class="">
         <div>
           <h3 class="text-neutral-content font-bold">
-            {#if bindingsMap.size === 0}
+            {#if $bindingsMap.size === 0}
               No bindings found
             {:else}
               All Bindings
             {/if}
           </h3>
 
-          {#each bindingsMap as [url, bindings]}
+          {#each $bindingsMap as [url, bindings]}
             <h5 class="w-full flex mb-3">
               <b> <DisplayUrl {url} /> </b>
             </h5>
