@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@extend-chrome/messages": "^1.2.2",
+    "@parcel/runtime-js": "2.8.3",
     "@plasmohq/messaging": "^0.5.0",
     "@plasmohq/storage": "^1.8.1",
     "@solid-primitives/event-listener": "^2.3.0",
@@ -27,7 +28,7 @@
     "minimatch": "^9.0.3",
     "nanoid": "^5.0.2",
     "p-event": "^6.0.0",
-    "plasmo": "0.84.2",
+    "plasmo": "0.85.2",
     "px-robula-plus": "^1.0.1",
     "rxjs": "^7.8.1",
     "svelte": "4.2.0",
@@ -36,7 +37,6 @@
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "4.1.0",
-    "@rgossiaux/svelte-headlessui": "^2.0.0",
     "@tailwindcss/typography": "^0.5.10",
     "@types/assert": "^1.5.8",
     "@types/chrome": "0.0.245",
@@ -59,5 +59,10 @@
   },
   "alias": {
     "~": "./"
+  },
+  "pnpm": {
+    "overrides": {
+      "@parcel/runtime-js": "2.8.3"
+    }
   }
 }
