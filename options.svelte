@@ -1,8 +1,7 @@
 <script lang="ts">
   import '~/style.sass'
-  import '~/contents/fonts.css'
+  import '~/lib/fonts-importer'
   import chroma from 'chroma-js'
-  import { bindingsStorage } from '~background'
   import BindingButton from '~components/binding-button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
   import { Binding } from '~lib/binding'
