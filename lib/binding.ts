@@ -1,44 +1,34 @@
-import { getAsArray, removeFrom, update } from './storage'
 import { getElementByXPath, getXPath } from './xpath'
-import { match, sanitizeHref, sanitizeUrl } from './url'
+import { Domain, Path, getCurrentUrl } from './url'
 import { log } from './log'
 
-interface IBinding {
-  id: string
-  site: string
-  key: string
-  selector: string
-}
-
-export class Binding implements IBinding {
-  id: string
-  site: string
-  key: string
-  selector: string
+export class Binding {
   private element: HTMLElement | null = null
+  public readonly url: URL
 
-  constructor(site: string, key: string, selector: string, id?: string) {
-    this.id = id || Binding.newId()
-    this.site = site
-    this.key = key
-    this.selector = selector
+  constructor(
+    public readonly domain: Domain,
+    public readonly path: Path,
+    public readonly key: string,
+    public readonly selector: string,
+    public readonly id: string = Binding.newId()
+  ) {
+    log.info(domain)
+    this.url = domain.withPath(path)
   }
 
   static newId () {
     return Math.random().toString(36).substring(2)
   }
-  static from (binding: IBinding) {
-    return new Binding(binding.site, binding.key, binding.selector, binding.id)
+  static from (binding: Binding) {
+    return new Binding(binding.domain, binding.path, binding.key, binding.selector, binding.id)
   }
 
   static fromElement (element: HTMLElement, key: string) {
-    const site = new URL(location.href)
     const selector = getXPath(element)
-    const sanitized = sanitizeUrl(site)
-    // console.log('sanitized', sanitized.href)
+    const url = getCurrentUrl()
 
-    const b = new Binding(sanitized.href, key, selector)
-    // console.log('b', b)
+    const b = new Binding(new Domain(url.host), new Path(url.pathname), key, selector)
     return b
   }
 
@@ -53,13 +43,17 @@ export class Binding implements IBinding {
   }
 }
 
-export function bindingsAsUrlMap (bindings: Binding[]): Map<string, Binding[]> {
-  const map = new Map<string, Binding[]>()
+export function bindingsAsMap (bindings: Binding[]): Map<Domain['value'], Map<Path['value'], Binding[]>> {
+  const map = new Map<Domain['value'], Map<Path['value'], Binding[]>>()
 
   bindings.forEach(binding => {
-    const site = binding.site
-    const value = map.get(site) || map.set(site, []).get(site) as Binding[]
-    value.push(binding)
+    const domain = binding.domain.value
+    const domMap = map.get(domain) || map.set(domain, new Map()).get(domain)!
+
+    const path = binding.path.value
+    const pathMap = domMap.get(path) || domMap.set(path, []).get(path)!
+
+    pathMap.push(binding)
   })
 
   return map

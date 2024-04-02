@@ -9,7 +9,8 @@
   export let visible: boolean = false
   export let pageControllerInstance: PageController
   const currentUrl = pageControllerInstance.currentSite$
-  const bindingsMap = pageControllerInstance.bindingsMap$
+  const currentPathBindings = pageControllerInstance.currentPathBindings$
+  const bindingsMap = pageControllerInstance.otherDomainBindingsMap$
 
   function openOptions() {
     askForOptionsPage()
@@ -32,17 +33,30 @@
     </h1>
     <div class="text-center">
       <div>
-        <h3 class="text-neutral-content font-bold">
-          {#if $bindingsMap.size === 0}
-            No bindings found
-          {:else}
-            Matching Bindings
-          {/if}
-        </h3>
+        {#if $currentPathBindings.length === 0}
+          <h3 class="text-neutral-content font-bold">
+            No bindings on this page
+          </h3>
+        {:else}
+          <h3 class="text-neutral-content font-bold">Matching Bindings</h3>
+          <div class="grid grid-cols-5 gap-4 mb-5">
+            {#each $currentPathBindings as binding}
+              <BindingButton
+                {binding}
+                on:click={() => pageControllerInstance.clickBinding(binding)}
+                on:focus={() => pageControllerInstance.focusBinding(binding)}
+                on:blur={() => pageControllerInstance.blurBinding(binding)} />
+            {/each}
+          </div>
+        {/if}
 
-        {#each $bindingsMap as [url, bindings]}
-          <h5 class="w-full flex justify-center mb-3">
-            <b> <DisplayUrl {url} /> </b>
+        {#each $bindingsMap as [path, bindings]}
+          <h5 class="w-full flex justify-between mb-3">
+            <b> {path} </b>
+            <input
+              type="checkbox"
+              class="toggle"
+              on:click={() => pageControllerInstance.togglePath(path)} />
           </h5>
           <div class="grid grid-cols-5 gap-4 mb-5">
             {#each bindings as binding}

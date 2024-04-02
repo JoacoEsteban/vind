@@ -1,8 +1,8 @@
 import { storage } from '~messages/storage'
-import { Binding } from './binding'
+import { Binding } from '../binding'
 import type { BindingDoc } from '~background/storage/db'
-import { log } from './log'
-import { urlFromParts } from './url'
+import { log } from '../log'
+import { Domain, Path, urlFromParts } from '../url'
 import { filter } from 'rxjs'
 
 export interface BindingChannel {
@@ -15,19 +15,17 @@ export interface BindingChannel {
 }
 
 export function toBindingDoc (binding: Binding): BindingDoc {
-  const url = new URL(binding.site)
   return {
     id: binding.id,
-    domain: url.host,
-    path: url.pathname,
+    domain: binding.domain.value,
+    path: binding.path.value,
     key: binding.key,
     selector: binding.selector
   }
 }
 
 export function fromBindingDoc (doc: BindingDoc): Binding {
-  const url = urlFromParts(doc.domain, doc.path).href
-  return new Binding(url, doc.key, doc.selector, doc.id)
+  return new Binding(new Domain(doc.domain), new Path(doc.path), doc.key, doc.selector, doc.id)
 }
 
 export function fromManyBindingDoc (docs: BindingDoc[]): Binding[] {

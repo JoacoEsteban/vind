@@ -1,8 +1,8 @@
-import { Binding, bindingsAsUrlMap } from '~lib/binding'
+import { Binding, bindingsAsMap } from '~lib/binding'
 import { log } from './log'
-import { BehaviorSubject, map, merge } from 'rxjs'
-import { getCurrentUrl } from './url'
-import { BindingChannelImpl } from './messages'
+import { BehaviorSubject, combineLatest, map, merge } from 'rxjs'
+import { Domain, Path, getSanitizedCurrentUrl } from './url'
+import { BindingChannelImpl } from './messages/bindings'
 
 export class PageController {
   constructor(
@@ -13,7 +13,16 @@ export class PageController {
 
   private currentUrlSubject: BehaviorSubject<URL | null> = new BehaviorSubject<URL | null>(null)
   public currentSite$ = this.currentUrlSubject.pipe(
-    map((url) => url?.href || '')
+    map((url) =>
+      url?.href || ''
+    )
+  )
+  public currentSiteSplitted$ = this.currentUrlSubject.pipe( // TODO find a better name
+    map((url) => ({
+      domain: url?.host && new Domain(url.host),
+      path: url?.pathname && new Path(url.pathname),
+    })
+    )
   )
   private bindingsSubject: BehaviorSubject<Binding[]> = new BehaviorSubject<Binding[]>([])
 
@@ -28,15 +37,43 @@ export class PageController {
   )
 
   public bindings$ = this.bindingsSubject.asObservable()
-  public bindingsMap$ = this.bindings$.pipe(
-    map((bindings) => {
-      return bindingsAsUrlMap(bindings)
+  public bindingsByPathMap$ = this.bindings$.pipe(
+    map((bindings) =>
+      bindingsAsMap(bindings)
+    )
+  )
+  public currentPathBindings$ = combineLatest([this.bindingsByPathMap$, this.currentSiteSplitted$]).pipe(
+    map(([bindingsByPath, { domain, path }]) => {
+      log.success('currentPathBindings$', bindingsByPath, domain, path)
+      if (!path || !domain) {
+        return []
+      }
+      return bindingsByPath.get(domain.value)?.get(path.value) || []
+    })
+  )
+  public otherDomainBindingsMap$ = combineLatest([this.bindingsByPathMap$, this.currentSiteSplitted$]).pipe(
+    map(([bindingsByPath, { domain, path }]) => {
+      if (!domain) {
+        return new Map<Path['value'], Binding[]>()
+      }
+
+      const domMap = bindingsByPath.get(domain.value)
+
+      if (!domMap) {
+        return new Map<Path['value'], Binding[]>()
+      }
+
+      if (!path) {
+        return domMap
+      }
+
+      return new Map([...domMap].filter(([key]) => path.value !== key))
     })
   )
 
   async softUpdateBindings () {
     log.info('Soft updating bindings')
-    const currentUrl = getCurrentUrl()
+    const currentUrl = getSanitizedCurrentUrl()
 
     if (this.currentUrlSubject.value?.href === currentUrl.href) {
       log.info(`URL is the same (${this.currentUrlSubject.value}, ${currentUrl}), not updating`)
@@ -52,11 +89,11 @@ export class PageController {
     }
 
     log.info('Updating bindings')
-    const currentUrl = getCurrentUrl()
-    const bindings = await this.bindingsChannel.getBindingsForSite(currentUrl)
+    const currentUrl = getSanitizedCurrentUrl()
+    const bindings = await this.bindingsChannel.getBindingsForDomain(currentUrl.host)
 
-    this.bindingsSubject.next(bindings)
     this.currentUrlSubject.next(currentUrl)
+    this.bindingsSubject.next(bindings)
 
     log.info('Bindings updated:', bindings)
   }
@@ -132,5 +169,9 @@ export class PageController {
     if (key) {
       this.triggerBindingsByKey(key)
     }
+  }
+
+  togglePath (path: string) {
+
   }
 }

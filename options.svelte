@@ -20,7 +20,7 @@
     pageController.updateBindings()
   })
 
-  let bindingsMap = pageController.bindingsMap$
+  const bindingsMap = pageController.bindingsByPathMap$
   const bg1 = chroma.random()
   const bg2 = bg1.set('hsl.h', '+25')
 
@@ -45,19 +45,26 @@
             {/if}
           </h3>
 
-          {#each $bindingsMap as [url, bindings]}
+          {#each $bindingsMap as [domain, map]}
             <h5 class="w-full flex mb-3">
-              <b> <DisplayUrl {url} /> </b>
+              <!-- <b> <DisplayUrl {url} /> </b> -->
+              <b> {domain} </b>
             </h5>
-            <div class="flex mb-5">
-              {#each bindings as binding}
-                <span class="mr-3">
-                  <BindingButton
-                    {binding}
-                    on:click={() => deleteBinding(binding)} />
-                </span>
-              {/each}
-            </div>
+            {#each map as [path, bindings]}
+              <h5 class="w-full flex mb-3">
+                <!-- <b> <DisplayUrl {url} /> </b> -->
+                <b> {path} </b>
+              </h5>
+              <div class="flex mb-5">
+                {#each bindings as binding}
+                  <span class="mr-3">
+                    <BindingButton
+                      {binding}
+                      on:click={() => deleteBinding(binding)} />
+                  </span>
+                {/each}
+              </div>
+            {/each}
           {/each}
         </div>
       </div>
