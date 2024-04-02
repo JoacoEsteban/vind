@@ -29,6 +29,7 @@ export function draggable (node: HTMLElement) {
 
   function isTarget (target: HTMLElement) {
     if (target.nodeName === 'BUTTON') return false
+    if (target.nodeName === 'INPUT') return false
     if (target === dragItem) return true
     if (target.parentElement) {
       return isTarget(target.parentElement)
