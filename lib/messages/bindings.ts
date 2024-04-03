@@ -9,9 +9,9 @@ export interface BindingChannel {
   getAllBindings: () => Promise<Binding[]>
   getBindingsForDomain: (domain: string) => Promise<Binding[]>
   getBindingsForSite: (url: URL) => Promise<Binding[]>
-  addBinding: (binding: Binding) => Promise<void>
-  updateBinding: (binding: Binding) => Promise<void>
-  removeBinding: (id: string) => Promise<void>
+  addBinding: (binding: Binding) => void
+  updateBinding: (binding: Binding) => void
+  removeBinding: (id: string) => void
 }
 
 export function toBindingDoc (binding: Binding): BindingDoc {
@@ -49,15 +49,15 @@ export class BindingChannelImpl implements BindingChannel {
       path: url.pathname
     }).then(fromManyBindingDoc)
   }
-  async addBinding (binding: Binding) {
+  addBinding (binding: Binding) {
     const doc = toBindingDoc(binding)
     return storage.addBinding.ask(doc)
   }
-  async updateBinding (binding: Binding) {
+  updateBinding (binding: Binding) {
     const doc = toBindingDoc(binding)
     return storage.updateBinding.ask(doc)
   }
-  async removeBinding (id: string) {
+  removeBinding (id: string) {
     return storage.removeBinding.ask(id)
   }
 }

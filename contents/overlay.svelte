@@ -60,13 +60,13 @@
         return
       }
 
-      console.log('CLICKKK')
+      log.info('CLICKKK')
       event.preventDefault()
       event.stopPropagation()
 
       const selector = getXPath(highlightedElement)
 
-      console.log('clicked', selector, getElementByXPath(selector))
+      log.info('clicked', selector, getElementByXPath(selector))
       confirmElement()
     }
 
@@ -83,23 +83,22 @@
     // })
     listen('keydown', (event) => event.key === 'Escape' && confirmElement())
 
+    log.info('Waiting for element selection')
     await onElementSelected
     clear()
+    log.info('Element selected')
 
     if (!highlightedElement) {
       throw new Error('No element selected')
     }
 
     const key = await recordInputKey()
-    console.log('ke??y', key)
+    log.info('selected key', key)
 
-    try {
-      const binding = Binding.fromElement(highlightedElement, key)
-      console.log('save', binding)
-      await pageControllerInstance.bindingsChannel.addBinding(binding)
-    } catch (error) {
-      console.error('error', error)
-    }
+    const binding = Binding.fromElement(highlightedElement, key)
+    log.info('Saving binding:', binding)
+
+    pageControllerInstance.bindingsChannel.addBinding(binding)
   }
 
   function toggleVisibility() {
@@ -107,7 +106,20 @@
     showingOverlay = !showingOverlay
   }
 
-  askForBindingStream.subscribe(register)
+  askForBindingStream.subscribe(
+    ((registering) => () => {
+      if (registering) {
+        log.info('already registering a binding')
+        return
+      }
+      registering = true
+      log.success('registering binding')
+      register().finally(() => {
+        log.success('registering done')
+        registering = false
+      })
+    })(false),
+  )
   showOverlayStream.subscribe(toggleVisibility)
 </script>
 
