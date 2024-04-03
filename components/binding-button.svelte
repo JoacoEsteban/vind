@@ -1,13 +1,13 @@
 <script lang="ts">
-  import chroma from 'chroma-js'
-  import ColorHash from 'color-hash'
   import { createEventDispatcher } from 'svelte'
   import type { Binding } from '~lib/binding'
+  import { bindingKeySymbolMap } from '~lib/ui'
   import Button from './button.svelte'
 
-  const colorHash = new ColorHash()
-
   export let binding: Binding
+
+  $: bindingKey =
+    bindingKeySymbolMap.get(binding.key) || binding.key.toUpperCase()
 
   const dispatch = createEventDispatcher()
 </script>
@@ -20,6 +20,6 @@
     on:mouseleave={() => dispatch('blur')}
     on:focus={() => dispatch('focus')}
     on:blur={() => dispatch('blur')}>
-    {binding.key.toUpperCase()}
+    {bindingKey}
   </Button>
 </div>
