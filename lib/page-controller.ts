@@ -109,7 +109,7 @@ export class PageController {
   }
 
   getMatchingKey (event: KeyboardEvent): string | null {
-    if (event.target instanceof HTMLInputElement) {
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
       return null
     }
 
