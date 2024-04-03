@@ -3,6 +3,7 @@ import { log } from './log'
 import { BehaviorSubject, combineLatest, map, merge } from 'rxjs'
 import { Domain, Path, getSanitizedCurrentUrl } from './url'
 import { BindingChannelImpl } from './messages/bindings'
+import { isProtectedKeydownEvent } from './element'
 
 export class PageController {
   constructor(
@@ -109,7 +110,7 @@ export class PageController {
   }
 
   getMatchingKey (event: KeyboardEvent): string | null {
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+    if (event.target && event.target instanceof HTMLElement && isProtectedKeydownEvent(event.target)) {
       return null
     }
 

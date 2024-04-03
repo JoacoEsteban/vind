@@ -46,3 +46,12 @@ export async function recordInputKey (): Promise<string> {
 
   return key
 }
+
+export function isProtectedKeydownEvent (element: HTMLElement): boolean {
+  return [
+    (element: HTMLElement) => element instanceof HTMLInputElement,
+    (element: HTMLElement) => element instanceof HTMLTextAreaElement,
+    (element: HTMLElement) => element.contentEditable === 'true',
+  ]
+    .some(fn => fn(element))
+}
