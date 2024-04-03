@@ -35,10 +35,10 @@ export function highlightElementUntilLeave (element: HTMLElement) {
 
 export async function recordInputKey (): Promise<string> {
   console.log('recordInputKey')
-  const { key } = await pEvent<string, KeyboardEvent>(document, 'keypress', {
+  const { key } = await pEvent<string, KeyboardEvent>(document, 'keydown', {
     filter: (e) => {
       return !(
-        (e.target instanceof HTMLInputElement) ||
+        isProtectedKeydownEvent(e.target) ||
         ['TAB', 'ENTER', 'ESCAPE', 'SHIFT', 'CONTROL', 'ALT', 'META'].includes(e.key.toUpperCase())
       )
     }
@@ -47,7 +47,10 @@ export async function recordInputKey (): Promise<string> {
   return key
 }
 
-export function isProtectedKeydownEvent (element: HTMLElement): boolean {
+export function isProtectedKeydownEvent (element: EventTarget | null): boolean {
+  if (!element) return false
+  if (!(element instanceof HTMLElement)) return false
+
   return [
     (element: HTMLElement) => element instanceof HTMLInputElement,
     (element: HTMLElement) => element instanceof HTMLTextAreaElement,

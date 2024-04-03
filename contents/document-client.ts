@@ -24,5 +24,5 @@ export const onPageControllerReady = (async () => {
       log.info('Waking up, updating bindings')
       instance.updateBindings()
     })
-    document.addEventListener('keypress', instance.onKeyPress.bind(instance))
+    document.addEventListener('keydown', instance.onKeyPress.bind(instance))
   })

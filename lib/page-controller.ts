@@ -110,7 +110,7 @@ export class PageController {
   }
 
   getMatchingKey (event: KeyboardEvent): string | null {
-    if (event.target && event.target instanceof HTMLElement && isProtectedKeydownEvent(event.target)) {
+    if (isProtectedKeydownEvent(event.target)) {
       return null
     }
 
