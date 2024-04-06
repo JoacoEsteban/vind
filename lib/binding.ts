@@ -1,6 +1,5 @@
 import { getElementByXPath, getXPath } from './xpath'
 import { Domain, Path, getCurrentUrl } from './url'
-import { log } from './log'
 
 export class Binding {
   private element: HTMLElement | null = null
@@ -13,7 +12,6 @@ export class Binding {
     public readonly selector: string,
     public readonly id: string = Binding.newId()
   ) {
-    log.info(domain)
     this.url = domain.withPath(path)
   }
 

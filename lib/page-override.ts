@@ -45,16 +45,15 @@ export class PageOverrideInput {
   }
 }
 
-export function pageOverridesMap (overrides: PageOverride[]): Map<string, Set<string>> {
-  const map = new Map<string, Set<string>>()
+export function pageOverridesMap (overrides: PageOverride[]): Map<string, Map<number, string>> {
+  const map = new Map<string, Map<number, string>>()
 
   overrides.forEach(override => {
     const domainPath = override.overridesDomain.withPath(override.overridesPath).href
     const bindingsPath = override.bindingsPath.value
+    const paths = map.get(domainPath) || map.set(domainPath, new Map<number, string>()).get(domainPath)!
 
-    const paths = map.get(domainPath) || map.set(domainPath, new Set()).get(domainPath)!
-
-    paths.add(bindingsPath)
+    paths.set(override.id, bindingsPath)
   })
 
   return map

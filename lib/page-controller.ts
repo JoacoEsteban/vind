@@ -5,7 +5,7 @@ import { Domain, Path, getSanitizedCurrentUrl } from './url'
 import { BindingChannelImpl } from './messages/bindings'
 import { isProtectedKeydownEvent } from './element'
 import { PageOverridesChannelImpl } from './messages/overrides'
-import { PageOverrideInput, type PageOverride } from './page-override'
+import { PageOverrideInput, pageOverridesMap, type PageOverride } from './page-override'
 import { expose } from './rxjs'
 
 export class PageController {
@@ -86,6 +86,11 @@ export class PageController {
   public bindingsByPathMap$ = this.bindings$.pipe(
     map((bindings) =>
       bindingsAsMap(bindings)
+    )
+  )
+  public overridesByPathMap$ = this.overrides$.pipe(
+    map((overrides) =>
+      pageOverridesMap(overrides)
     )
   )
   public currentPathBindings$ = combineLatest([this.bindingsByPathMap$, this.currentSiteSplitted$]).pipe( // TODO buffer to prevent multiple updates
