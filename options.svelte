@@ -10,14 +10,11 @@
   import { wakeUp } from '~messages/tabs'
 
   const pageController = new PageController('options')
-  pageController.updateBindings()
-  pageController.onEveryBindingEvent$.subscribe(() => {
-    log.info('Binding event received')
-    pageController.updateBindings()
-  })
+  pageController.refreshResources()
+
   wakeUp.stream.subscribe(() => {
     log.info('Waking up options page')
-    pageController.updateBindings()
+    pageController.refreshResources()
   })
 
   const bindingsMap = pageController.bindingsByPathMap$

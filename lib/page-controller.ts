@@ -1,16 +1,42 @@
 import { Binding, bindingsAsMap } from '~lib/binding'
 import { log } from './log'
-import { BehaviorSubject, combineLatest, map, merge } from 'rxjs'
+import { BehaviorSubject, combineLatest, lastValueFrom, map, merge } from 'rxjs'
 import { Domain, Path, getSanitizedCurrentUrl } from './url'
 import { BindingChannelImpl } from './messages/bindings'
 import { isProtectedKeydownEvent } from './element'
+import { PageOverridesChannelImpl } from './messages/overrides'
+import { PageOverrideInput, type PageOverride } from './page-override'
+import { expose } from './rxjs'
 
 export class PageController {
   constructor(
-    public pageType: 'content-script' | 'options'
-  ) {}
+    public pageType: 'content-script' | 'options',
+    currentUrl: URL | null = null
+  ) {
+
+    if (currentUrl) {
+      this.changeRoute(currentUrl)
+    }
+
+    this.onEveryBindingEvent$
+      .subscribe(() => {
+        log.info('Binding updated, refreshing bindings')
+        this.refreshBindings()
+      })
+    this.onEveryPageOverrideEvent$
+      .subscribe(() => {
+        log.info('PageOverride updated, refreshing overrides')
+        this.refreshOverrides()
+      })
+
+    this.currentUrlSubject
+      .subscribe((url) => {
+        this.updateResources(url)
+      })
+  }
 
   public bindingsChannel = new BindingChannelImpl()
+  public overridesChannel = new PageOverridesChannelImpl()
 
   private currentUrlSubject: BehaviorSubject<URL | null> = new BehaviorSubject<URL | null>(null)
   public currentSite$ = this.currentUrlSubject.pipe(
@@ -26,6 +52,7 @@ export class PageController {
     )
   )
   private bindingsSubject: BehaviorSubject<Binding[]> = new BehaviorSubject<Binding[]>([])
+  private pageOverridesSubject: BehaviorSubject<PageOverride[]> = new BehaviorSubject<PageOverride[]>([])
 
   public onBindingRemoved$ = this.bindingsChannel.onBindingRemoved$
   public onBindingAdded$ = this.bindingsChannel.onBindingAdded$
@@ -37,13 +64,31 @@ export class PageController {
     this.onBindingUpdated$
   )
 
+  public onPageOverrideRemoved$ = this.overridesChannel.onPageOverrideRemoved$
+  public onPageOverrideAdded$ = this.overridesChannel.onPageOverrideAdded$
+  public onPageOverrideUpdated$ = this.overridesChannel.onPageOverrideUpdated$
+
+  public onEveryPageOverrideEvent$ = merge(
+    this.onPageOverrideRemoved$,
+    this.onPageOverrideAdded$,
+    this.onPageOverrideUpdated$
+  )
+
   public bindings$ = this.bindingsSubject.asObservable()
+  public overrides$ = this.pageOverridesSubject.asObservable()
+
+  public overridesSet$ = this.overrides$.pipe(
+    map((overrides) =>
+      new Set(overrides.map(override => override.bindingsPath.value))
+    )
+  )
+
   public bindingsByPathMap$ = this.bindings$.pipe(
     map((bindings) =>
       bindingsAsMap(bindings)
     )
   )
-  public currentPathBindings$ = combineLatest([this.bindingsByPathMap$, this.currentSiteSplitted$]).pipe(
+  public currentPathBindings$ = combineLatest([this.bindingsByPathMap$, this.currentSiteSplitted$]).pipe( // TODO buffer to prevent multiple updates
     map(([bindingsByPath, { domain, path }]) => {
       log.success('currentPathBindings$', bindingsByPath, domain, path)
       if (!path || !domain) {
@@ -52,6 +97,7 @@ export class PageController {
       return bindingsByPath.get(domain.value)?.get(path.value) || []
     })
   )
+
   public otherDomainBindingsMap$ = combineLatest([this.bindingsByPathMap$, this.currentSiteSplitted$]).pipe(
     map(([bindingsByPath, { domain, path }]) => {
       if (!domain) {
@@ -72,42 +118,109 @@ export class PageController {
     })
   )
 
-  async softUpdateBindings () {
-    log.info('Soft updating bindings')
-    const currentUrl = getSanitizedCurrentUrl()
+  public enabledBindingsUpdate$ = combineLatest([this.currentPathBindings$, this.otherDomainBindingsMap$, this.overrides$]).pipe(
+    map(([currentPathBindings, otherDomainBindingsMap, overrides]) => {
+      return currentPathBindings.concat(
+        overrides.reduce<Binding[]>((acum, override) => {
+          const bindings = otherDomainBindingsMap.get(override.bindingsPath.value)
+          log.info('override', override, bindings, otherDomainBindingsMap.keys())
+          if (bindings) {
+            return acum.concat(bindings)
+          }
+          return acum
+        }, [])
+      )
+    })
+  )
 
-    if (this.currentUrlSubject.value?.href === currentUrl.href) {
-      log.info(`URL is the same (${this.currentUrlSubject.value}, ${currentUrl}), not updating`)
+  public enabledBindings = expose(this.enabledBindingsUpdate$)
+  public currentSiteSplitted = expose(this.currentSiteSplitted$)
+
+  // ------------------------------------------
+
+  async changeRoute (url: URL) {
+    log.info('Changing route', url)
+
+    if (this.currentUrlSubject.value?.href === url.href) {
+      log.info(`URL is the same (${this.currentUrlSubject.value}, ${url}), not updating`)
       return
     }
-
-    this.updateBindings()
+    this.currentUrlSubject.next(url)
   }
 
-  async updateBindings () {
+  async refreshResources () {
+    this.updateResources(this.currentUrlSubject.value)
+  }
+
+  async refreshBindings () {
     if (this.pageType === 'options') {
       return this.loadAllBindings()
     }
 
-    log.info('Updating bindings')
-    const currentUrl = getSanitizedCurrentUrl()
-    const bindings = await this.bindingsChannel.getBindingsForDomain(currentUrl.host)
+    if (!this.currentUrlSubject.value) {
+      log.error('currentUrlSubject is null in refreshBindings')
+      throw new Error('currentUrlSubject is null in refreshBindings')
+    }
 
-    this.currentUrlSubject.next(currentUrl)
-    this.bindingsSubject.next(bindings)
-
-    log.info('Bindings updated:', bindings)
+    this.updateBindings(this.currentUrlSubject.value)
   }
 
-  async loadAllBindings () {
+  async refreshOverrides () {
+    if (this.pageType === 'options') {
+      return this.loadAllOverrides()
+    }
+
+    if (!this.currentUrlSubject.value) {
+      log.error('currentUrlSubject is null in refreshOverrides')
+      throw new Error('currentUrlSubject is null in refreshOverrides')
+    }
+
+    this.updateOverrides(this.currentUrlSubject.value)
+  }
+
+
+  private async updateResources (url: URL | null = null) {
+    if (this.pageType === 'options') {
+      return Promise.all([
+        this.loadAllBindings(),
+        this.loadAllOverrides()
+      ])
+    }
+
+    if (!url) {
+      log.error('No url was provided to updateResources')
+      throw new Error('No url was provided')
+    }
+
+    return Promise.all([
+      this.updateBindings(url),
+      this.updateOverrides(url),
+    ])
+  }
+
+  private async updateBindings (url: URL) {
+    const bindings = await this.bindingsChannel.getBindingsForDomain(url.host)
+    this.bindingsSubject.next(bindings)
+  }
+
+  private async updateOverrides (url: URL) {
+    const overrides = await this.overridesChannel.getPageOverridesForSite(new Domain(url.host), new Path(url.pathname))
+    this.pageOverridesSubject.next(overrides)
+  }
+
+  private async loadAllBindings () {
     log.info('Loading all bindings')
-
     const bindings = await this.bindingsChannel.getAllBindings()
-
     this.bindingsSubject.next(bindings)
-
-    log.info('Bindings updated:', bindings)
   }
+
+  private async loadAllOverrides () {
+    log.info('Loading all overrides')
+    const overrides = await this.overridesChannel.getAllPageOverrides()
+    this.pageOverridesSubject.next(overrides)
+  }
+
+  // ------------------------------------------
 
   getMatchingKey (event: KeyboardEvent): string | null {
     if (isProtectedKeydownEvent(event.target)) {
@@ -118,8 +231,8 @@ export class PageController {
     return event.key
   }
 
-  triggerBindingsByKey (key: string) {
-    const matchingBindings = this.bindingsSubject.value.filter(binding => binding.key === key)
+  async triggerBindingsByKey (key: string) {
+    const matchingBindings = this.enabledBindings()?.filter(binding => binding.key === key) || []
     return this.triggerBindings(matchingBindings)
   }
 
@@ -172,7 +285,15 @@ export class PageController {
     }
   }
 
-  togglePath (path: string) {
+  async togglePath (path: string) {
+    log.info('Toggling path', path, this.currentSiteSplitted(), this.currentUrlSubject.value)
+    const site = this.currentSiteSplitted()
+    log.info('Site', site)
+    if (!site?.domain) {
+      log.error('No domain found')
+      throw new Error('No domain found')
+    }
 
+    this.overridesChannel.togglePageOverride(new PageOverrideInput(site.domain, site.path || new Path(''), new Path(path)))
   }
 }

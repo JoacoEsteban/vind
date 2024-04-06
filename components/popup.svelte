@@ -11,6 +11,7 @@
   const currentUrl = pageControllerInstance.currentSite$
   const currentPathBindings = pageControllerInstance.currentPathBindings$
   const bindingsMap = pageControllerInstance.otherDomainBindingsMap$
+  const overridesSet = pageControllerInstance.overridesSet$
 
   function openOptions() {
     askForOptionsPage()
@@ -52,10 +53,13 @@
 
         {#each $bindingsMap as [path, bindings]}
           <h5 class="w-full flex justify-between mb-3">
-            <b> {path} </b>
+            <span>
+              Bindings on <b> {path} </b>
+            </span>
             <input
               type="checkbox"
               class="toggle"
+              checked={$overridesSet.has(path)}
               on:click={() => pageControllerInstance.togglePath(path)} />
           </h5>
           <div class="grid grid-cols-5 gap-4 mb-5">
