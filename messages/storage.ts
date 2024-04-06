@@ -1,8 +1,8 @@
 import { getMessage } from '@extend-chrome/messages'
-import type { BindingDoc } from '~background/storage/db'
+import type { BindingDoc, PageOverrideDoc, PageOverrideInsertType } from '~background/storage/db'
 import { splitMessage } from './lib'
 
-export const storage = {
+export const bindingsMessages = {
   getAllBindings: splitMessage(getMessage<void, BindingDoc[]>(
     'getAllBindings',
     { async: true }
@@ -32,5 +32,41 @@ export const storage = {
   )),
   onBindingUpdated: splitMessage(getMessage<BindingDoc>(
     'onBindingUpdated',
+  )),
+}
+
+export const pageOverridesMessages = {
+  getAllPageOverrides: splitMessage(getMessage<void, PageOverrideDoc[]>(
+    'getAllPageOverrides',
+    { async: true }
+  )),
+  getPageOverridesForDomain: splitMessage(getMessage<string, PageOverrideDoc[]>(
+    'getPageOverridesForDomain',
+    { async: true }
+  )),
+  getPageOverridesForSite: splitMessage(getMessage<{ domain: string, path: string }, PageOverrideDoc[]>(
+    'getPageOverridesForSite',
+    { async: true }
+  )),
+  addPageOverride: splitMessage(getMessage<PageOverrideInsertType>(
+    'addPageOverride',
+  )),
+  togglePageOverride: splitMessage(getMessage<PageOverrideInsertType>(
+    'togglePageOverride',
+  )),
+  updatePageOverride: splitMessage(getMessage<PageOverrideDoc>(
+    'updatePageOverride',
+  )),
+  removePageOverride: splitMessage(getMessage<number>(
+    'removePageOverride',
+  )),
+  onPageOverrideRemoved: splitMessage(getMessage<PageOverrideDoc>(
+    'onPageOverrideRemoved',
+  )),
+  onPageOverrideAdded: splitMessage(getMessage<PageOverrideDoc>(
+    'onPageOverrideAdded',
+  )),
+  onPageOverrideUpdated: splitMessage(getMessage<PageOverrideDoc>(
+    'onPageOverrideUpdated',
   )),
 }
