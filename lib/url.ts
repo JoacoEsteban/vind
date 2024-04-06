@@ -16,6 +16,10 @@ export function sanitizeHref (url: string): string {
 }
 
 function sanitizePathname (pathname: string): string {
+  if (!pathname.startsWith('/')) {
+    pathname = '/' + pathname
+  }
+
   const parts = pathname
     .substring(1)
     .split('/')
