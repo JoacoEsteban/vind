@@ -1,6 +1,6 @@
 import { Binding, bindingsAsMap } from '~lib/binding'
 import { log } from './log'
-import { BehaviorSubject, combineLatest, lastValueFrom, map, merge } from 'rxjs'
+import { BehaviorSubject, combineLatest, filter, lastValueFrom, map, merge } from 'rxjs'
 import { Domain, Path, getSanitizedCurrentUrl } from './url'
 import { BindingChannelImpl } from './messages/bindings'
 import { isProtectedKeydownEvent } from './element'
@@ -44,13 +44,14 @@ export class PageController {
       url?.href || ''
     )
   )
-  public currentSiteSplitted$ = this.currentUrlSubject.pipe( // TODO find a better name
-    map((url) => ({
-      domain: url?.host && new Domain(url.host),
-      path: url?.pathname && new Path(url.pathname),
-    })
+  public currentSiteSplitted$ = this.currentUrlSubject
+    .pipe(filter((url) => url !== null))
+    .pipe( // TODO find a better name
+      map((url) => ({
+        domain: new Domain(url!.host),
+        path: new Path(url!.pathname),
+      }))
     )
-  )
   private bindingsSubject: BehaviorSubject<Binding[]> = new BehaviorSubject<Binding[]>([])
   private pageOverridesSubject: BehaviorSubject<PageOverride[]> = new BehaviorSubject<PageOverride[]>([])
 
@@ -88,57 +89,85 @@ export class PageController {
       bindingsAsMap(bindings)
     )
   )
+  public currentDomainBindings$ = combineLatest([
+    this.bindingsByPathMap$,
+    this.currentSiteSplitted$
+  ]).pipe(
+    map(([bindingsMap, { domain }]) =>
+      bindingsMap.get(domain.value) || new Map<Path['value'], Binding[]>()
+    )
+  )
   public overridesByPathMap$ = this.overrides$.pipe(
     map((overrides) =>
       pageOverridesMap(overrides)
     )
   )
-  public currentPathBindings$ = combineLatest([this.bindingsByPathMap$, this.currentSiteSplitted$]).pipe( // TODO buffer to prevent multiple updates
-    map(([bindingsByPath, { domain, path }]) => {
-      log.success('currentPathBindings$', bindingsByPath, domain, path)
-      if (!path || !domain) {
+  public currentPathBindings$ = combineLatest([this.currentDomainBindings$, this.currentSiteSplitted$]).pipe( // TODO buffer to prevent multiple updates
+    map(([domainBindings, { path }]) => {
+      log.success('currentPathBindings$', domainBindings, path)
+      if (!path) {
         return []
       }
-      return bindingsByPath.get(domain.value)?.get(path.value) || []
+      return domainBindings.get(path.value) || []
     })
   )
 
-  public otherDomainBindingsMap$ = combineLatest([this.bindingsByPathMap$, this.currentSiteSplitted$]).pipe(
-    map(([bindingsByPath, { domain, path }]) => {
-      if (!domain) {
-        return new Map<Path['value'], Binding[]>()
+  public otherDomainBindingsMap$ = combineLatest([this.currentDomainBindings$, this.currentSiteSplitted$]).pipe(
+    map(([domainBindingsMap, { path }]) => {
+      const currentPath = (path as Path).value
+
+      const returns = {
+        enclosing: new Map<Path['value'], Binding[]>(),
+        branching: new Map<Path['value'], Binding[]>(),
       }
 
-      const domMap = bindingsByPath.get(domain.value)
+      for (const [domainPath, domainBindings] of domainBindingsMap) {
+        let map = returns.branching
 
-      if (!domMap) {
-        return new Map<Path['value'], Binding[]>()
-      }
-
-      if (!path) {
-        return domMap
-      }
-
-      return new Map([...domMap].filter(([key]) => path.value !== key))
-    })
-  )
-
-  public enabledBindingsUpdate$ = combineLatest([this.currentPathBindings$, this.otherDomainBindingsMap$, this.overrides$]).pipe(
-    map(([currentPathBindings, otherDomainBindingsMap, overrides]) => {
-      return currentPathBindings.concat(
-        overrides.reduce<Binding[]>((acum, override) => {
-          const bindings = otherDomainBindingsMap.get(override.bindingsPath.value)
-          log.info('override', override, bindings, otherDomainBindingsMap.keys())
-          if (bindings) {
-            return acum.concat(bindings)
+        if (currentPath.startsWith(domainPath)) {
+          if (currentPath === domainPath) {
+            continue
           }
-          return acum
-        }, [])
-      )
+
+          map = returns.enclosing
+        }
+
+        map.set(domainPath, domainBindings)
+      }
+
+      return returns
     })
   )
 
-  public enabledBindings = expose(this.enabledBindingsUpdate$)
+  public includedBindingPaths$ = combineLatest([this.otherDomainBindingsMap$, this.overridesSet$])
+    .pipe(
+      filter(([otherDomainBindingsMap, overrides]) => otherDomainBindingsMap !== null),
+      map(([otherDomainBindingsMap, overrides]) => {
+        const { enclosing, branching } = otherDomainBindingsMap
+
+        const includedPaths = new Set(enclosing.keys())
+
+        for (const override of overrides) {
+          if (enclosing.has(override)) {
+            includedPaths.delete(override)
+          } else if (branching.has(override)) { // TODO check if just `else` suffices
+            includedPaths.add(override)
+          }
+        }
+
+        return includedPaths
+      })
+    )
+
+  public enabledBindings$ = combineLatest([this.currentPathBindings$, this.currentDomainBindings$, this.includedBindingPaths$])
+    .pipe(
+      map(([currentPathBindings, bindingsMap, includedBindingPaths]) => {
+        const includedBindings = [...includedBindingPaths].flatMap(path => bindingsMap.get(path) || [])
+        return currentPathBindings.concat(includedBindings)
+      })
+    )
+
+  public enabledBindings = expose(this.enabledBindings$)
   public currentSiteSplitted = expose(this.currentSiteSplitted$)
 
   // ------------------------------------------

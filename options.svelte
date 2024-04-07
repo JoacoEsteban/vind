@@ -8,6 +8,7 @@
   import { Binding } from '~lib/binding'
   import { log } from '~lib/log'
   import { PageController } from '~lib/page-controller'
+  import { Domain, Path, safeUrl } from '~lib/url'
   import { wakeUp } from '~messages/tabs'
 
   const pageController = new PageController('options')
@@ -40,6 +41,18 @@
   }
   async function removeOverride(id: number) {
     pageController.overridesChannel.removePageOverride(id)
+  }
+
+  function getOverrideBehavior(domain: string, overridePath: string) {
+    const target = new Path(domain)
+    const source = new Path(overridePath)
+
+    return target.includes(source) ? behaviors.disabled : behaviors.enabled
+  }
+
+  const behaviors = {
+    enabled: 'Enabled',
+    disabled: 'Disabled',
   }
 </script>
 
@@ -105,18 +118,26 @@
               {/if}
             </h2>
 
-            {#each $overridesMap as [domain, set]}
+            {#each $overridesMap as [domain, overrides]}
               <h3 class="w-full flex mb-3">
-                <b> <DisplayUrl url={domain} /> </b>
-                <!-- <b> {domain} </b> -->
+                on &nbsp;
+                <a href={safeUrl(domain).href} target="_blank">
+                  <b>
+                    <b> {domain} </b>
+                  </b></a>
               </h3>
-              {#each set as [id, path]}
-                <h4 class="w-full flex mb-3">
-                  <!-- <b> <DisplayUrl url={path} /> </b> -->
-                  <span> {path} </span>
-                </h4>
-                <Button on:click={() => removeOverride(id)}>Remove</Button>
+              {#each overrides as [id, path]}
+                <div class="flex">
+                  <h4 class="w-full flex mb-3">
+                    bindings from &nbsp;<b>/{path}</b>&nbsp; are {getOverrideBehavior(
+                      domain,
+                      path,
+                    )}
+                  </h4>
+                  <Button on:click={() => removeOverride(id)}>Remove</Button>
+                </div>
               {/each}
+              <div class="divider"></div>
             {/each}
           </div>
         </div>

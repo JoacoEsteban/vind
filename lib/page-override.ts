@@ -1,5 +1,5 @@
 import { getElementByXPath, getXPath } from './xpath'
-import { Domain, Path, getCurrentUrl } from './url'
+import { Domain, Path, getCurrentUrl, resource } from './url'
 import { log } from './log'
 import type { PageOverrideInsertType } from '~background/storage/db'
 
@@ -49,7 +49,7 @@ export function pageOverridesMap (overrides: PageOverride[]): Map<string, Map<nu
   const map = new Map<string, Map<number, string>>()
 
   overrides.forEach(override => {
-    const domainPath = override.overridesDomain.withPath(override.overridesPath).href
+    const domainPath = resource(override.overridesDomain.withPath(override.overridesPath))
     const bindingsPath = override.bindingsPath.value
     const paths = map.get(domainPath) || map.set(domainPath, new Map<number, string>()).get(domainPath)!
 

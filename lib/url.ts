@@ -62,17 +62,21 @@ export function urlFromParts (domain: string, path: string): URL {
   return new URL(path, domain)
 }
 
+export function resource (url: URL): string {
+  return url.host + url.pathname
+}
+
 export class Domain {
   constructor(public readonly value: string) {
-    if (/https?:\/\//.test(value)) {
-      this.value = new URL(value).host
+    if (!/https?:\/\//.test(value)) {
+      if (!/^[\w\.\-]+/.test(value)) {
+        throw new Error('Invalid domain')
+      }
+      value = 'https://' + value
     }
 
-    if (!/^[\w\.\-]+/.test(value)) {
-      throw new Error('Invalid domain')
-    }
-
-    this.value = value
+    this.value = new URL(value).host
+    // this.value = value
   }
 
   withPath (path: Path) {
@@ -86,12 +90,13 @@ export class Domain {
 
 export class Path {
   constructor(public readonly value: string) {
-    const validated = (() => {
-      if (/https?:\/\//.test(value))
-        return new URL(value).pathname
+    const validated = ((value: string) => {
+      if (!/^https?:\/\//.test(value) && value.includes('.')) { // is a domain
+        value = 'https://' + value
+      } else return value
 
-      return value
-    })()
+      return new URL(value).pathname
+    })(value)
 
     this.value = sanitizePathname(validated)
   }
@@ -103,4 +108,16 @@ export class Path {
   is (path: Path): boolean {
     return this.value === path.value
   }
+
+  includes (path: Path): boolean {
+    return this.value.includes(path.value)
+  }
+}
+
+export function safeUrl (url: string): URL {
+  if (!url.startsWith('http')) {
+    url = 'https://' + url
+  }
+
+  return new URL(url)
 }
