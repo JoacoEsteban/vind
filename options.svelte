@@ -5,6 +5,7 @@
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
+  import SymbolButton from '~components/symbol-button.svelte'
   import { Binding } from '~lib/binding'
   import { log } from '~lib/log'
   import { PageController } from '~lib/page-controller'
@@ -134,7 +135,10 @@
                       path,
                     )}
                   </h4>
-                  <Button on:click={() => removeOverride(id)}>Remove</Button>
+                  <SymbolButton
+                    name="trashFill"
+                    padding="25%"
+                    on:click={() => removeOverride(id)}></SymbolButton>
                 </div>
               {/each}
               <div class="divider"></div>

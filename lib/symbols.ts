@@ -3,6 +3,7 @@ import { Record, String, Number, type Static } from 'runtypes'
 import gearRaw from '~/assets/symbols/gear.json'
 import arrowDownRaw from '~/assets/symbols/arrow.down.json'
 import xMarkRaw from '~/assets/symbols/xmark.json'
+import trashFillRaw from '~/assets/symbols/trash.fill.json'
 
 export const SymbolSchema = Record({
   path: String,
@@ -21,10 +22,12 @@ const [
   gear,
   arrowDown,
   xMark,
+  trashFill,
 ] = [
   gearRaw,
   arrowDownRaw,
   xMarkRaw,
+  trashFillRaw,
 ]
   .map(checkSymbol)
   .map(symbol => {
@@ -48,4 +51,5 @@ export const symbols = {
   gear,
   arrowDown,
   xMark,
+  trashFill,
 }
