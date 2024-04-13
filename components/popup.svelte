@@ -7,9 +7,11 @@
   import { Binding } from '~lib/binding'
   import { draggable } from '~lib/draggable'
   import type { PageController } from '~lib/page-controller'
+  import SymbolButton from './symbol-button.svelte'
 
   export let visible: boolean = false
   export let pageControllerInstance: PageController
+  export let close: () => void
   const currentUrl = pageControllerInstance.currentSite$
   const currentPathBindings = pageControllerInstance.currentPathBindings$
   const bindingsMap = pageControllerInstance.otherDomainBindingsMap$.pipe(
@@ -42,8 +44,15 @@
   <main class="prose prose-2xs">
     <div class="flex justify-between">
       <h2 class="text-neutral-content font-black m-0 opacity-25">Vind</h2>
-      <button class="btn btn-outline btn-circle" on:click={openOptions}
-        >⚙️</button>
+      <div class="flex">
+        <SymbolButton name="gear" on:click={openOptions} size={'40px'} />
+        <div class="w-2" />
+        <SymbolButton
+          name="xMark"
+          size={'40px'}
+          padding={'30%'}
+          on:click={close} />
+      </div>
     </div>
     <h1 class="text-center prose-headings">
       <DisplayUrl url={$currentUrl} />

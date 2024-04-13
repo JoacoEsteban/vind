@@ -105,6 +105,9 @@
     log.info('on toggle visibility')
     showingOverlay = !showingOverlay
   }
+  function closePopup() {
+    showingOverlay = false
+  }
 
   askForBindingStream.subscribe(
     ((registering) => () => {
@@ -123,5 +126,5 @@
   showOverlayStream.subscribe(toggleVisibility)
 </script>
 
-<Popup visible={showingOverlay} {pageControllerInstance} />
+<Popup visible={showingOverlay} {pageControllerInstance} close={closePopup} />
 <Filters />
