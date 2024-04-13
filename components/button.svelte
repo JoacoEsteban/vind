@@ -6,6 +6,9 @@
   const colorHash = new ColorHash()
 
   export let colorSeed: string = Date.now().toString()
+  export let round: boolean = false
+  export let roundSize: string = ''
+  export let roundPadding: string = ''
 
   const opacity = 0.5
   $: topGradient = chroma(colorHash.hex(colorSeed)).alpha(opacity).hex()
@@ -20,7 +23,10 @@
 <div class="button-container">
   <button
     class="outer f-center btn"
+    class:round
     style="--_gradient-top: {topGradient}; --_gradient-bottom: {bottomGradient};"
+    style:--_button-size_={roundSize}
+    style:--_round-padding_={roundPadding}
     on:click={() => dispatch('click')}
     on:mouseover={() => dispatch('mouseover')}
     on:mouseleave={() => dispatch('mouseleave')}

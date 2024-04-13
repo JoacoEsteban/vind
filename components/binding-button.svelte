@@ -14,6 +14,7 @@
 
 <div class="binding-container">
   <Button
+    round={true}
     colorSeed={binding.key}
     on:click={() => dispatch('click')}
     on:mouseover={() => dispatch('focus')}
