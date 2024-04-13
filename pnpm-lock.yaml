@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@parcel/runtime-js': 2.8.3
+
 dependencies:
   '@extend-chrome/messages':
     specifier: ^1.2.2
@@ -62,6 +65,9 @@ dependencies:
   px-robula-plus:
     specifier: ^1.0.1
     version: 1.0.1
+  runtypes:
+    specifier: ^6.7.0
+    version: 6.7.0
   rxjs:
     specifier: ^7.8.1
     version: 7.8.1
@@ -1071,7 +1077,7 @@ packages:
       '@parcel/reporter-dev-server': 2.9.3(@parcel/core@2.9.3)
       '@parcel/resolver-default': 2.9.3(@parcel/core@2.9.3)
       '@parcel/runtime-browser-hmr': 2.9.3(@parcel/core@2.9.3)
-      '@parcel/runtime-js': 2.9.3(@parcel/core@2.9.3)
+      '@parcel/runtime-js': 2.8.3(@parcel/core@2.9.3)
       '@parcel/runtime-react-refresh': 2.9.3(@parcel/core@2.9.3)
       '@parcel/runtime-service-worker': 2.9.3(@parcel/core@2.9.3)
       '@parcel/transformer-babel': 2.9.3(@parcel/core@2.9.3)
@@ -1526,18 +1532,6 @@ packages:
     dependencies:
       '@parcel/plugin': 2.8.3(@parcel/core@2.9.3)
       '@parcel/utils': 2.8.3
-      nullthrows: 1.1.1
-    transitivePeerDependencies:
-      - '@parcel/core'
-    dev: false
-
-  /@parcel/runtime-js@2.9.3(@parcel/core@2.9.3):
-    resolution: {integrity: sha512-EvIy+qXcKnB5qxHhe96zmJpSAViNVXHfQI5RSdZ2a7CPwORwhTI+zPNT9sb7xb/WwFw/WuTTgzT40b41DceU6Q==}
-    engines: {node: '>= 12.0.0', parcel: ^2.9.3}
-    dependencies:
-      '@parcel/diagnostic': 2.9.3
-      '@parcel/plugin': 2.9.3(@parcel/core@2.9.3)
-      '@parcel/utils': 2.9.3
       nullthrows: 1.1.1
     transitivePeerDependencies:
       - '@parcel/core'
@@ -6162,6 +6156,10 @@ packages:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
     dependencies:
       queue-microtask: 1.2.3
+
+  /runtypes@6.7.0:
+    resolution: {integrity: sha512-3TLdfFX8YHNFOhwHrSJza6uxVBmBrEjnNQlNXvXCdItS0Pdskfg5vVXUTWIN+Y23QR09jWpSl99UHkA83m4uWA==}
+    dev: false
 
   /rxjs@7.8.1:
     resolution: {integrity: sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==}
