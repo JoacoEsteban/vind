@@ -25,7 +25,24 @@ const [
   gearRaw,
   arrowDownRaw,
   xMarkRaw,
-].map(checkSymbol)
+]
+  .map(checkSymbol)
+  .map(symbol => {
+    const sizes = { ...symbol.geometry }
+    const max = Math.max(sizes.width, sizes.height)
+
+    const wRatio = sizes.width / max
+    const hRatio = sizes.height / max
+
+    return {
+      ...symbol,
+      geometry: {
+        ...symbol.geometry,
+        wRatio,
+        hRatio,
+      }
+    }
+  })
 
 export const symbols = {
   gear,
