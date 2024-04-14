@@ -27,6 +27,7 @@
   } from '~lib/element'
   import { log } from '~lib/log'
   import { PromiseWithResolvers } from '~lib/polyfills'
+  import { themeController } from '~lib/theme-controller'
   import { getElementByXPath, getXPath } from '~lib/xpath'
   import { showOverlayStream } from '~messages/tabs'
   import { pageControllerInstance } from './document-client'
@@ -126,5 +127,7 @@
   showOverlayStream.subscribe(toggleVisibility)
 </script>
 
-<Popup visible={showingOverlay} {pageControllerInstance} close={closePopup} />
-<Filters />
+<div use:themeController>
+  <Popup visible={showingOverlay} {pageControllerInstance} close={closePopup} />
+  <Filters />
+</div>

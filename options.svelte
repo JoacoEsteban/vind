@@ -9,6 +9,7 @@
   import { Binding } from '~lib/binding'
   import { log } from '~lib/log'
   import { PageController } from '~lib/page-controller'
+  import { themeController } from '~lib/theme-controller'
   import { Domain, Path, safeUrl } from '~lib/url'
   import { wakeUp } from '~messages/tabs'
 
@@ -57,96 +58,98 @@
   }
 </script>
 
-<div
-  class="options-container p-5 h-screen"
-  style="--_bg-1: {bg1.hex()}; --_bg-2: {bg2.hex()}">
-  <div class="sm:container m-auto bg-blur py-10 p-5">
-    <main class="prose prose-2xs max-w-full">
-      <h1 class="font-black m-0">Vind Options</h1>
-      <div role="tablist" class="tabs tabs-boxed">
-        {#each options as option}
-          <button
-            role="tab"
-            class={'tab ' + (activeKey === option.key ? 'tab-active' : '')}
-            on:click={() => (activeKey = option.key)}>
-            {option.name}
-          </button>
-        {/each}
-      </div>
-      {#if activeKey === 'bindings'}
-        <div class="container">
-          <div>
-            <h2 class="text-neutral-content font-bold">
-              {#if $bindingsMap.size === 0}
-                No bindings found
-              {:else}
-                Bindings
-              {/if}
-            </h2>
+<div use:themeController>
+  <div
+    class="options-container p-5 h-screen"
+    style="--_bg-1: {bg1.hex()}; --_bg-2: {bg2.hex()}">
+    <div class="sm:container m-auto bg-blur py-10 p-5">
+      <main class="prose prose-2xs max-w-full">
+        <h1 class="font-black m-0">Vind Options</h1>
+        <div role="tablist" class="tabs tabs-boxed">
+          {#each options as option}
+            <button
+              role="tab"
+              class={'tab ' + (activeKey === option.key ? 'tab-active' : '')}
+              on:click={() => (activeKey = option.key)}>
+              {option.name}
+            </button>
+          {/each}
+        </div>
+        {#if activeKey === 'bindings'}
+          <div class="container">
+            <div>
+              <h2 class="text-neutral-content font-bold">
+                {#if $bindingsMap.size === 0}
+                  No bindings found
+                {:else}
+                  Bindings
+                {/if}
+              </h2>
 
-            {#each $bindingsMap as [domain, map]}
-              <h5 class="w-full flex mb-3">
-                <!-- <b> <DisplayUrl {url} /> </b> -->
-                <b> {domain} </b>
-              </h5>
-              {#each map as [path, bindings]}
+              {#each $bindingsMap as [domain, map]}
                 <h5 class="w-full flex mb-3">
                   <!-- <b> <DisplayUrl {url} /> </b> -->
-                  <b> {path} </b>
+                  <b> {domain} </b>
                 </h5>
-                <div class="flex mb-5">
-                  {#each bindings as binding}
-                    <span class="mr-3">
-                      <BindingButton
-                        {binding}
-                        on:click={() => deleteBinding(binding)} />
-                    </span>
-                  {/each}
-                </div>
+                {#each map as [path, bindings]}
+                  <h5 class="w-full flex mb-3">
+                    <!-- <b> <DisplayUrl {url} /> </b> -->
+                    <b> {path} </b>
+                  </h5>
+                  <div class="flex mb-5">
+                    {#each bindings as binding}
+                      <span class="mr-3">
+                        <BindingButton
+                          {binding}
+                          on:click={() => deleteBinding(binding)} />
+                      </span>
+                    {/each}
+                  </div>
+                {/each}
               {/each}
-            {/each}
+            </div>
           </div>
-        </div>
-      {/if}
-      {#if activeKey === 'overrides'}
-        <div class="container">
-          <div>
-            <h2 class="text-neutral-content font-bold">
-              {#if $overridesMap.size === 0}
-                No Overrides found
-              {:else}
-                Overrides
-              {/if}
-            </h2>
+        {/if}
+        {#if activeKey === 'overrides'}
+          <div class="container">
+            <div>
+              <h2 class="text-neutral-content font-bold">
+                {#if $overridesMap.size === 0}
+                  No Overrides found
+                {:else}
+                  Overrides
+                {/if}
+              </h2>
 
-            {#each $overridesMap as [domain, overrides]}
-              <h3 class="w-full flex mb-3">
-                on &nbsp;
-                <a href={safeUrl(domain).href} target="_blank">
-                  <b>
-                    <b> {domain} </b>
-                  </b></a>
-              </h3>
-              {#each overrides as [id, path]}
-                <div class="flex">
-                  <h4 class="w-full flex mb-3">
-                    bindings from &nbsp;<b>/{path}</b>&nbsp; are {getOverrideBehavior(
-                      domain,
-                      path,
-                    )}
-                  </h4>
-                  <SymbolButton
-                    name="trashFill"
-                    padding="25%"
-                    on:click={() => removeOverride(id)}></SymbolButton>
-                </div>
+              {#each $overridesMap as [domain, overrides]}
+                <h3 class="w-full flex mb-3">
+                  on &nbsp;
+                  <a href={safeUrl(domain).href} target="_blank">
+                    <b>
+                      <b> {domain} </b>
+                    </b></a>
+                </h3>
+                {#each overrides as [id, path]}
+                  <div class="flex">
+                    <h4 class="w-full flex mb-3">
+                      bindings from &nbsp;<b>/{path}</b>&nbsp; are {getOverrideBehavior(
+                        domain,
+                        path,
+                      )}
+                    </h4>
+                    <SymbolButton
+                      name="trashFill"
+                      padding="25%"
+                      on:click={() => removeOverride(id)}></SymbolButton>
+                  </div>
+                {/each}
+                <div class="divider"></div>
               {/each}
-              <div class="divider"></div>
-            {/each}
+            </div>
           </div>
-        </div>
-      {/if}
-    </main>
+        {/if}
+      </main>
+    </div>
   </div>
 </div>
 
