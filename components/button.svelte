@@ -9,6 +9,8 @@
   export let round: boolean = false
   export let roundSize: string = ''
   export let roundPadding: string = ''
+  export let as: string = 'button'
+  export let tabindex: number = 0
 
   const opacity = 0.5
   $: topGradient = chroma(colorHash.hex(colorSeed)).alpha(opacity).hex()
@@ -21,7 +23,10 @@
 </script>
 
 <div class="button-container">
-  <button
+  <svelte:element
+    this={as}
+    role="button"
+    {tabindex}
     class="outer f-center btn"
     class:round
     style="--_gradient-top: {topGradient}; --_gradient-bottom: {bottomGradient};"
@@ -35,5 +40,5 @@
     <div class="inner f-center">
       <slot />
     </div>
-  </button>
+  </svelte:element>
 </div>
