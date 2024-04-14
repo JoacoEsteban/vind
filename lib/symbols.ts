@@ -4,6 +4,7 @@ import gearRaw from '~/assets/symbols/gear.json'
 import arrowDownRaw from '~/assets/symbols/arrow.down.json'
 import xMarkRaw from '~/assets/symbols/xmark.json'
 import trashFillRaw from '~/assets/symbols/trash.fill.json'
+import sidebarRightRaw from '~/assets/symbols/sidebar.right.json'
 
 export const SymbolSchema = Record({
   path: String,
@@ -23,11 +24,13 @@ const [
   arrowDown,
   xMark,
   trashFill,
+  sidebarRight,
 ] = [
   gearRaw,
   arrowDownRaw,
   xMarkRaw,
   trashFillRaw,
+  sidebarRightRaw,
 ]
   .map(checkSymbol)
   .map(symbol => {
@@ -52,4 +55,5 @@ export const symbols = {
   arrowDown,
   xMark,
   trashFill,
+  sidebarRight,
 }
