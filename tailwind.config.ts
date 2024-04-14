@@ -2,6 +2,7 @@ import type { Config } from 'tailwindcss'
 import typography from "@tailwindcss/typography"
 import daisyui, { type Theme } from 'daisyui'
 import themes from "daisyui/src/theming/themes"
+import { ENV_PROD } from './lib/env'
 
 const config = {
   // 2. Opt for dark mode to be handled via the class method
@@ -18,23 +19,28 @@ const config = {
   ],
   daisyui: {
     themes: [
-      // {
-      //   dark: {
-      //     ...themes["dark"],
-      //     background: "#111",
-      //     'base-content': "white",
-      //   },
-      // },
-      'dark',
-      'light',
+      {
+        dark: {
+          ...themes["dark"],
+          '--_blur-bg': 'rgba(20, 20, 20, 0.5)',
+        },
+      },
+      {
+        light: {
+          ...themes["light"],
+          '--_blur-bg': 'rgba(120, 120, 120, 0.5)',
+        },
+      },
+      // 'dark',
+      // 'light',
     ],
     darkTheme: "dark", // name of one of the included themes for dark mode
     base: true, // applies background color and foreground color for root element by default
     styled: true, // include daisyUI colors and design decisions for all components
-    utils: true, // adds responsive and modifier utility classes
+    utils: !ENV_PROD, // adds responsive and modifier utility classes
     prefix: "", // prefix for daisyUI classnames (components, modifiers and responsive class names. Not colors)
-    logs: true, // Shows info about daisyUI version and used config in the console when building your CSS
-    themeRoot: "#plasmo-shadow-container,#__plasmo", // The element that receives theme color CSS variables
+    logs: !ENV_PROD, // Shows info about daisyUI version and used config in the console when building your CSS
+    themeRoot: "[data-plasmo-styles-target]", // The element that receives theme color CSS variables
   },
 } satisfies Config
 
