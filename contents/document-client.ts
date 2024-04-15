@@ -1,4 +1,5 @@
 import "@virtualstate/navigation/polyfill"
+import { eventCoupler } from '~lib/events'
 import { log } from '~lib/log'
 import { PageController } from '~lib/page-controller'
 import { getSanitizedCurrentUrl } from '~lib/url'
@@ -23,5 +24,8 @@ export const onPageControllerReady = (async () => {
       instance.refreshResources()
     })
 
-    document.addEventListener('keydown', instance.onKeyPress.bind(instance))
+    const coupleKeyPress = eventCoupler(instance.onKeyPress.bind(instance), 100)
+
+    document.addEventListener('keypress', coupleKeyPress)
+    document.addEventListener('keydown', coupleKeyPress)
   })
