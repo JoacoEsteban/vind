@@ -1,4 +1,3 @@
-
 type sanitizationOptions = {
   glob: boolean
 }
@@ -91,13 +90,14 @@ export class Domain {
 export class Path {
   constructor(public readonly value: string) {
     const validated = ((value: string) => {
-      if (!/^https?:\/\//.test(value) && value.includes('.')) { // is a domain
-        value = 'https://' + value
-      } else return value
+      if (value.startsWith('/')) return value
 
-      return new URL(value).pathname
+      if (/^https?:\/\//.test(value)) {
+        return new URL(value).pathname
+      }
+
+      return '/' + value
     })(value)
-
     this.value = sanitizePathname(validated)
   }
 
