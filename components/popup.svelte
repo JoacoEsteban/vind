@@ -98,7 +98,9 @@
                       on:click={() =>
                         pageControllerInstance.togglePath(path)} />
                   </h5>
-                  <div class="grid grid-cols-5 gap-4 mb-5">
+                  <div
+                    class="grid grid-cols-5 gap-4 mb-5 v_toggle-availability"
+                    class:enabled={$includedPaths.has(path)}>
                     {#each bindings as binding}
                       <BindingButton
                         {binding}
