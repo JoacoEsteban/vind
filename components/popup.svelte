@@ -8,6 +8,7 @@
   import { draggable } from '~lib/draggable'
   import type { PageController } from '~lib/page-controller'
   import SymbolButton from './symbol-button.svelte'
+  import Toggle from './toggle.svelte'
 
   export let visible: boolean = false
   export let pageControllerInstance: PageController
@@ -91,9 +92,7 @@
                     <span>
                       Bindings on <b> {path} </b>
                     </span>
-                    <input
-                      type="checkbox"
-                      class="toggle"
+                    <Toggle
                       checked={$includedPaths.has(path)}
                       on:click={() =>
                         pageControllerInstance.togglePath(path)} />
