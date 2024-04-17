@@ -2,14 +2,16 @@
   import chroma from 'chroma-js'
   import ColorHash from 'color-hash'
   import { createEventDispatcher } from 'svelte'
+  import { generateId } from '~lib/id'
 
   const colorHash = new ColorHash()
 
-  export let colorSeed: string = Date.now().toString()
+  export let colorSeed: string = generateId()
   export let round: boolean = false
   export let roundSize: string = ''
   export let roundPadding: string = ''
   export let as: string = 'button'
+  export let role: string = 'button'
   export let tabindex: number = 0
 
   const opacity = 0.5
@@ -25,7 +27,7 @@
 <div class="button-container">
   <svelte:element
     this={as}
-    role="button"
+    {role}
     {tabindex}
     class="outer f-center btn"
     class:round
