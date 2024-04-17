@@ -6,7 +6,7 @@
   export let name: keyof typeof symbols
   export let size: string = '50px'
   export let padding: string = '15%'
-  export let as: string
+  export let as: string = 'button'
 </script>
 
 <Button
