@@ -2,9 +2,22 @@
   display: flex
   justify-content: center
   align-items: center
+@mixin round($size)
+  @include f-center
+  // @include transformable
+  border-radius: 100%
+  width: $size
+  height: $size
+  min-width: $size
+  min-height: $size
+  max-width: $size
+  max-height: $size
+  padding: var(--_round-padding_, 0)
 
-@mixin transformable()
-  transition: transform 0.3s var(--bezier-chill)
+@mixin transformable($transition-properties: "")
+  transition-timing-function: var(--bezier-chill)
+  transition-duration: 0.3s
+  transition-property: transform, opacity, $transition-properties
   &, *
     will-change: transform, opacity
 
@@ -13,27 +26,84 @@
   user-select: none
   .outer
     @include f-center
-    @include transformable
+    @include transformable(outline)
+
+    &.opaque
+      backdrop-filter: blur(6px)
+    &:focus, &:active, &.highlight
+      outline: 3px solid var(--focus-color, var(--_gradient-top, #329ECC))
+    &.highlight
+      filter: brightness(1)
+    &.round
+      @include round(var(--_button-size_, 70px))
+
     border-radius: 100em
     background: linear-gradient(180deg, var(--_gradient-top, #329ECC) -13.04%, var(--_gradient-bottom, #ff00ff) 136.96%)
-    filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25))
+    box-shadow: 0px 4px 5 px rgba(0, 0, 0, 0.25)
+
     cursor: pointer
     &:hover 
         transform: scale(1.04)
     &:active 
       transform: scale(.95)
       opacity: 0.5
+    &:disabled
+      opacity: 0.5
+      cursor: not-allowed
+      filter: saturate(0)
 
   .inner
-    mix-blend-mode: color-burn
+    mix-blend-mode: overlay
     color: white
-    display: inline-block
-
     font-family: made_tommy, sans-serif
     font-weight: 500
     font-size: 1.5em
     font-weight: bold
   .btn
     color: unset
+    // border: 1px solid var(--border-color)
     border: none
+    box-shadow: inset 0px 10px 25px  var(--inset-shadow-color)
     font-size: unset
+
+
+
+.toggle-container
+  $gold: 1.61803398875
+  $goldx3q: 2.32127448025 // gold * 1.75
+  $gold-sqrt: 0.809015 // sqrt(gold)
+  $circle-size: var(--circle-size, 35px)
+  $toggle-size: var(--toggle-size)
+  $offset: var(--offset)
+  --toggle-size: calc(#{$circle-size} * #{$goldx3q})
+  --padding: calc(var(--toggle-size) * #{calc($gold-sqrt / 10)})
+  --offset: calc(#{$gold} * 10 * 1%)
+
+  &:not(.checked) .button-container
+    filter: saturate(0)
+
+  .inner
+    width: 100%
+  .outer
+    padding: var(--padding) 0
+    width: $toggle-size
+    height: fit-content
+    min-height: fit-content
+
+
+  .circle
+    width: $circle-size
+    height: $circle-size
+    min-width: $circle-size
+    max-width: $circle-size
+    min-height: $circle-size
+    max-height: $circle-size
+
+    transition: transform 0.3s var(--bezier-chill)
+
+    border-radius: 50%
+    background-color: white
+    transform: translateX($offset)
+    &.checked
+      transform: translateX(#{calc($toggle-size - 100% - $offset)})
+

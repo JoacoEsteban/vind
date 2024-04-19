@@ -1,7 +1,7 @@
 import type Dexie from 'dexie'
 import type { BindingDoc, VindDB } from './db'
 import { log } from '~lib/log'
-import { BehaviorSubject, Subject } from 'rxjs'
+import { Observable, Subject } from 'rxjs'
 
 export interface BindingsStorage {
   getAllBindings: () => Promise<BindingDoc[]>
@@ -10,6 +10,9 @@ export interface BindingsStorage {
   addBinding: (binding: BindingDoc) => Promise<void>
   updateBinding: (binding: BindingDoc) => Promise<void>
   removeBinding: (id: string) => Promise<void>
+  onDeleted$: Observable<BindingDoc>
+  onAdded$: Observable<BindingDoc>
+  onUpdated$: Observable<BindingDoc>
 }
 
 export class BindingsStorageImpl implements BindingsStorage {

@@ -1,4 +1,4 @@
-#plasmo-shadow-container
+[data-plasmo-styles-target]
   font-size: 16px
   --bezier: cubic-bezier(0, 1, 0, 1)
   --bezier-chill: cubic-bezier(0, 1, .5, 1)
@@ -20,13 +20,43 @@
 @import 'components/button.sass'
 @import 'components/binding-button.sass'
 
+@mixin boolean-behavior($hidden-opacity: 0, $hidden-scale-factor: .85, $out-duration: .15s, $in-duration: .3s, $out-timing: var(--bezier-round-inverted), $in-timing: var(--bezier-chill))
+  &:not(.enabled)
+      pointer-events: none
+      opacity: var(--_hidden-opacity, $hidden-opacity)
+      transform: scale(var(--_hidden-scale-factor, $hidden-scale-factor))
+      transition-timing-function: var(--_out-timing, $out-timing)
+      transition-duration: var(--_out-duration, $out-duration)
+  &.enabled
+      pointer-events: all
+      opacity: 1
+      transform: scale(1)
+
+  transition-property: transform, opacity
+  will-change: transform, opacity
+  transition-duration: var(--_in-duration, $in-duration)
+  transition-timing-function:  var(--_in-timing, $in-timing)
+
+.v_toggle-visibility
+  @include boolean-behavior
+
+.v_toggle-availability
+  @include boolean-behavior($hidden-opacity: .4, $hidden-scale-factor: .98, $out-duration: .3s, $out-timing: var(--bezier-chill))
+  transition-property: transform, opacity, filter
+  &:not(.enabled)
+    filter: blur(3px) saturate(0)
 
 .btn 
   @apply rounded-full
 
 .bg-blur
-  backdrop-filter: blur(15px) url(#aberration)
-  background-color: rgba(20, 20, 20, 0.5)
+  backdrop-filter: blur(15px) url(#aberration) hue-rotate(15deg)
+  // background-color: rgba(20, 20, 20, 0.5)
+  background-color: var(--_blur-bg)
   border: 2px solid #ccc5
   border-radius: 16px
   drop-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25)
+
+.debug *
+  outline: 1px solid red
+  outline-offset: -1px

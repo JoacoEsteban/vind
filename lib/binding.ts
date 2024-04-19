@@ -1,6 +1,6 @@
 import { getElementByXPath, getXPath } from './xpath'
 import { Domain, Path, getCurrentUrl } from './url'
-import { log } from './log'
+import { generateId } from './id'
 
 export class Binding {
   private element: HTMLElement | null = null
@@ -13,12 +13,11 @@ export class Binding {
     public readonly selector: string,
     public readonly id: string = Binding.newId()
   ) {
-    log.info(domain)
     this.url = domain.withPath(path)
   }
 
   static newId () {
-    return Math.random().toString(36).substring(2)
+    return generateId()
   }
   static from (binding: Binding) {
     return new Binding(binding.domain, binding.path, binding.key, binding.selector, binding.id)

@@ -1,4 +1,4 @@
-import { storage } from '~messages/storage'
+import { bindingsMessages } from '~messages/storage'
 import { Binding } from '../binding'
 import type { BindingDoc } from '~background/storage/db'
 import { log } from '../log'
@@ -33,31 +33,31 @@ export function fromManyBindingDoc (docs: BindingDoc[]): Binding[] {
 }
 
 export class BindingChannelImpl implements BindingChannel {
-  public onBindingRemoved$ = storage.onBindingRemoved.stream
-  public onBindingAdded$ = storage.onBindingAdded.stream
-  public onBindingUpdated$ = storage.onBindingUpdated.stream
+  public onBindingRemoved$ = bindingsMessages.onBindingRemoved.stream
+  public onBindingAdded$ = bindingsMessages.onBindingAdded.stream
+  public onBindingUpdated$ = bindingsMessages.onBindingUpdated.stream
 
   async getAllBindings () {
-    return storage.getAllBindings.ask().then(fromManyBindingDoc)
+    return bindingsMessages.getAllBindings.ask().then(fromManyBindingDoc)
   }
   async getBindingsForDomain (domain: string) {
-    return storage.getBindingsForDomain.ask(domain).then(fromManyBindingDoc)
+    return bindingsMessages.getBindingsForDomain.ask(domain).then(fromManyBindingDoc)
   }
   async getBindingsForSite (url: URL) {
-    return storage.getBindingsForSite.ask({
+    return bindingsMessages.getBindingsForSite.ask({
       domain: url.host,
       path: url.pathname
     }).then(fromManyBindingDoc)
   }
   addBinding (binding: Binding) {
     const doc = toBindingDoc(binding)
-    return storage.addBinding.ask(doc)
+    return bindingsMessages.addBinding.ask(doc)
   }
   updateBinding (binding: Binding) {
     const doc = toBindingDoc(binding)
-    return storage.updateBinding.ask(doc)
+    return bindingsMessages.updateBinding.ask(doc)
   }
   removeBinding (id: string) {
-    return storage.removeBinding.ask(id)
+    return bindingsMessages.removeBinding.ask(id)
   }
 }
