@@ -2,13 +2,17 @@
   import '~/style.sass'
   import '~/lib/fonts-importer'
   import chroma from 'chroma-js'
+  import { first } from 'rxjs'
+  import logo from '~/assets/icon.png'
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
-  import DisplayUrl from '~components/display-url.svelte'
+  import Filters from '~components/filters.svelte'
   import SymbolButton from '~components/symbol-button.svelte'
   import { Binding } from '~lib/binding'
+  import { cursorPosition, mouse$ } from '~lib/cursor-position'
   import { log } from '~lib/log'
   import { PageController } from '~lib/page-controller'
+  import type { symbolName } from '~lib/symbols'
   import { themeController } from '~lib/theme-controller'
   import { Domain, Path, safeUrl } from '~lib/url'
   import { wakeUp } from '~messages/tabs'
@@ -21,22 +25,35 @@
     pageController.refreshResources()
   })
 
-  const options = [
+  const options: {
+    name: string
+    key: string
+    icon: symbolName
+  }[] = [
     {
       name: 'Bindings',
       key: 'bindings',
+      icon: 'link',
     },
     {
       name: 'Overrides',
       key: 'overrides',
+      icon: 'arrowTriangleBranch',
     },
   ]
   let activeKey = options[0].key
 
+  const onMouse = mouse$.pipe(first())
   const bindingsMap = pageController.bindingsByPathMap$
   const overridesMap = pageController.overridesByPathMap$
-  const bg1 = chroma.random()
-  const bg2 = bg1.set('hsl.h', '+25')
+  const { bg1, bg2 } = (() => {
+    const base = chroma.random()
+    const darkFactor = -1
+    const bg1 = base.brighten(darkFactor)
+    const bg2 = base.set('hsl.h', '+25').darken(darkFactor)
+
+    return { bg1, bg2 }
+  })()
 
   async function deleteBinding(binding: Binding) {
     pageController.bindingsChannel.removeBinding(binding.id)
@@ -58,25 +75,46 @@
   }
 </script>
 
-<div use:themeController>
+<div use:themeController use:cursorPosition>
   <div
-    class="options-container p-5 h-screen"
-    style="--_bg-1: {bg1.hex()}; --_bg-2: {bg2.hex()}">
-    <div class="sm:container m-auto bg-blur py-10 p-5">
+    class="options-container p-5 h-screen overflow-auto drawer lg:drawer-open">
+    <div class="backdrop" style:--_bg-1={bg1.hex()} style:--_bg-2={bg2.hex()}>
+      <div class="v_toggle-visibility w-full h-full" class:enabled={$onMouse}>
+        <div class="mosaic" style:background-image={`url(${logo})`}></div>
+      </div>
+    </div>
+    <input id="drawer" type="checkbox" class="drawer-toggle" />
+
+    <div class="drawer-content max-w-3xl mx-auto pt-10 px-5">
+      <span
+        class="tooltip tooltip-bottom before:text-xs before:content-[attr(data-tip)]"
+        data-tip="Menu"
+        ><label
+          aria-label="Open menu"
+          for="drawer"
+          class="drawer-button lg:hidden">
+          <SymbolButton
+            as={'div'}
+            name="sidebarRight"
+            padding="25%"
+            opaque={true} />
+        </label></span>
       <main class="prose prose-2xs max-w-full">
-        <h1 class="font-black m-0">Vind Options</h1>
-        <div role="tablist" class="tabs tabs-boxed">
+        <h1 class="font-black">Vind Options</h1>
+        <div role="tablist" class="flex gap-2">
           {#each options as option}
-            <button
+            <Button
+              opaque={true}
               role="tab"
-              class={'tab ' + (activeKey === option.key ? 'tab-active' : '')}
-              on:click={() => (activeKey = option.key)}>
+              highlight={activeKey === option.key}
+              on:click={() => (activeKey = option.key)}
+              icon={option.icon}>
               {option.name}
-            </button>
+            </Button>
           {/each}
         </div>
         {#if activeKey === 'bindings'}
-          <div class="container">
+          <div class="">
             <div>
               <h2 class="text-neutral-content font-bold">
                 {#if $bindingsMap.size === 0}
@@ -96,10 +134,11 @@
                     <!-- <b> <DisplayUrl {url} /> </b> -->
                     <b> {path} </b>
                   </h5>
-                  <div class="flex mb-5">
+                  <div class="flex mb-5 flex-wrap gap-3">
                     {#each bindings as binding}
-                      <span class="mr-3">
+                      <span>
                         <BindingButton
+                          opaque={true}
                           {binding}
                           on:click={() => deleteBinding(binding)} />
                       </span>
@@ -138,6 +177,7 @@
                       )}
                     </h4>
                     <SymbolButton
+                      opaque={true}
                       name="trashFill"
                       padding="25%"
                       on:click={() => removeOverride(id)}></SymbolButton>
@@ -151,9 +191,68 @@
       </main>
     </div>
   </div>
+  <Filters />
 </div>
 
 <style lang="sass">
-.options-container
+.backdrop
+  position: fixed
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  z-index: -1
+
   background: linear-gradient(180deg, var(--_bg-1, #1e3a8a) 0%, var(--_bg-2, #f544f5) 100%)
+  animation: hue-rotate 10s infinite
+  @keyframes hue-rotate
+    0%
+      filter: hue-rotate(0deg)
+    100%
+      filter: hue-rotate(360deg)
+  &::after
+    content: ''
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    background: var(--fallback-b1, oklch(var(--b1) / 1))
+    opacity: 0.4
+    z-index: 1
+
+.drawer-content
+  width: min(80em, 100%)
+
+.mosaic
+  --mosaic-size-from: 200px
+  --mosaic-size-to: 210px
+  // --x: calc(var(--mouse-x) * calc(var(--mouse-x)/50))
+  --x: var(--mouse-x)
+  // --y: calc(var(--mouse-y) * calc(var(--mouse-y)/50))
+  --y: var(--mouse-y)
+  
+  width: 100%
+  height: 100%
+  opacity: 0.3
+
+  transition: background-position .01s
+
+  background-position: var(--x) var(--y)
+  background-repeat: repeat
+
+  animation: 5s infinite size var(--bezier-symmetric)
+
+  animation-fill-mode: backwards
+
+  @keyframes size
+    0%
+      background-size: var(--mosaic-size-from)
+      filter: blur(23px)
+    50%
+      background-size: var(--mosaic-size-to)
+      filter: blur(3px)
+    100%
+      background-size: var(--mosaic-size-from)
+      filter: blur(23px)
 </style>
