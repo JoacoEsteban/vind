@@ -16,7 +16,7 @@ function wrap (fn: (...args: any[]) => void, tag: string, color: string = '') {
   return (...args: any[]) => {
     colorPrint(line)
     fn(...args)
-    trace()
+    // trace()
     colorPrint(lineEnd)
   }
 }
