@@ -5,6 +5,7 @@
   import Button from './button.svelte'
 
   export let binding: Binding
+  export let opaque: boolean = false
 
   $: bindingKey =
     bindingKeySymbolMap.get(binding.key) || binding.key.toUpperCase()
@@ -15,6 +16,7 @@
 <div class="binding-container">
   <Button
     round={true}
+    {opaque}
     colorSeed={binding.key}
     on:click={() => dispatch('click')}
     on:mouseover={() => dispatch('focus')}
