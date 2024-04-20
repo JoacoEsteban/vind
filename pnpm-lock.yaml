@@ -77,6 +77,9 @@ dependencies:
   svelte-preprocess:
     specifier: 5.0.4
     version: 5.0.4(@babel/core@7.24.3)(postcss@8.4.38)(svelte@4.2.0)(typescript@5.2.2)
+  ts-pattern:
+    specifier: ^5.1.1
+    version: 5.1.1
   ts-results:
     specifier: ^3.3.0
     version: 3.3.0
@@ -6737,6 +6740,10 @@ packages:
 
   /ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
+
+  /ts-pattern@5.1.1:
+    resolution: {integrity: sha512-i+owkHr5RYdQxj8olUgRrqpiWH9x27PuWVfXwDmJ/n/CoF/SAa7WW1i2oUpPDMQpJ4U+bGRUcZkVq7i1m3zFCg==}
+    dev: false
 
   /ts-results@3.3.0:
     resolution: {integrity: sha512-FWqxGX2NHp5oCyaMd96o2y2uMQmSu8Dey6kvyuFdRJ2AzfmWo3kWa4UsPlCGlfQ/qu03m09ZZtppMoY8EMHuiA==}
