@@ -63,7 +63,7 @@
     color: unset
     // border: 1px solid var(--border-color)
     border: none
-    box-shadow: inset 0px 10px 25px  var(--inset-shadow-color)
+    box-shadow: inset 0px 10px 25px var(--inset-shadow-color)
     font-size: unset
 
 
@@ -98,6 +98,7 @@
     max-width: $circle-size
     min-height: $circle-size
     max-height: $circle-size
+    box-shadow: inset var(--inner-shadow-x-offset, -1px) -4px 5px var(--_gradient--top, #0005)
 
     transition: transform 0.3s var(--bezier-chill)
 
@@ -105,5 +106,6 @@
     background-color: white
     transform: translateX($offset)
     &.checked
+      --inner-shadow-x-offset: 1px
       transform: translateX(#{calc($toggle-size - 100% - $offset)})
 
