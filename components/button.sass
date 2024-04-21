@@ -21,6 +21,12 @@
   &, *
     will-change: transform, opacity
 
+@mixin desaturate()
+  --_forced-gradient-top: #555
+  --_forced-gradient-bottom: #ccc
+  --_forced-focus-color: #ccc
+  --_forced-inset-shadow-color: #ddd
+
 .button-container
   @include f-center
   user-select: none
@@ -28,17 +34,22 @@
     @include f-center
     @include transformable(outline)
 
+    --_gradient-top: var(--_forced-gradient-top, var(--gradient-top, #329ECC))
+    --_gradient-bottom: var(--_forced-gradient-bottom, var(--gradient-bottom, #ff00ff))
+    --_focus-color: var(--_forced-focus-color, var(--focus-color, #329ECC))
+    --_inset-shadow-color: var(--_forced-inset-shadow-color, var(--inset-shadow-color, #0005))
+
     &.opaque
       backdrop-filter: blur(6px)
     &:focus, &:active, &.highlight
-      outline: 3px solid var(--focus-color, var(--_gradient-top, #329ECC))
+      outline: 3px solid var(--_focus-color, var(--_gradient-top, #329ECC))
     &.highlight
       filter: brightness(1)
     &.round
       @include round(var(--_button-size_, 70px))
 
     border-radius: 100em
-    background: linear-gradient(180deg, var(--_gradient-top, #329ECC) -13.04%, var(--_gradient-bottom, #ff00ff) 136.96%)
+    background: linear-gradient(180deg, var(--_gradient-top) -13.04%, var(--_gradient-bottom) 136.96%)
     box-shadow: 0px 4px 5 px rgba(0, 0, 0, 0.25)
 
     cursor: pointer
@@ -50,7 +61,7 @@
     &:disabled
       opacity: 0.5
       cursor: not-allowed
-      filter: saturate(0)
+      @include desaturate
 
   .inner
     mix-blend-mode: overlay
@@ -63,7 +74,7 @@
     color: unset
     // border: 1px solid var(--border-color)
     border: none
-    box-shadow: inset 0px 10px 25px var(--inset-shadow-color)
+    box-shadow: inset 0px 10px 25px var(--_inset-shadow-color)
     font-size: unset
 
 
@@ -80,7 +91,7 @@
   --offset: calc(#{$gold} * 10 * 1%)
 
   &:not(.checked) .button-container
-    filter: saturate(0)
+    @include desaturate
 
   .inner
     width: 100%

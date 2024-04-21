@@ -12,8 +12,6 @@
       transition-timing-function: var(--bezier-round-inverted)
       transition-duration: .15s
   &.visible
-    &, .popup-container
-      pointer-events: all
     .popup-container
       opacity: 1
       transform: scale(1)
@@ -24,6 +22,7 @@
   transition-timing-function:  var(--bezier-chill)
 
   $width: 470px
+  $max-width: 550px
   min-width: $width
-  // max-width: $width
+  max-width: $max-width
   padding: 1.16em 1em
