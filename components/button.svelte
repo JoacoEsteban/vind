@@ -26,7 +26,7 @@
     .set('hsl.h', '+90')
     .alpha(opacity)
     .hex()
-  $: focusColor = chroma(colorHash.hex(colorSeed)).brighten(1).hex()
+  $: focusColor = chroma(colorHash.hex(colorSeed)).brighten(2).hex()
   $: insetShadowColor = chroma(colorHash.hex(colorSeed))
     .brighten(1)
     .alpha(0.3)
@@ -45,8 +45,8 @@
     class:opaque
     class:highlight
     {disabled}
-    style:--_gradient-top={topGradient}
-    style:--_gradient-bottom={bottomGradient}
+    style:--gradient-top={topGradient}
+    style:--gradient-bottom={bottomGradient}
     style:--focus-color={focusColor}
     style:--inset-shadow-color={insetShadowColor}
     style:--_button-size_={roundSize}

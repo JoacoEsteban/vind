@@ -6,6 +6,7 @@
 
   export let binding: Binding
   export let opaque: boolean = false
+  export let disabled: boolean = false
 
   $: bindingKey =
     bindingKeySymbolMap.get(binding.key) || binding.key.toUpperCase()
@@ -16,6 +17,7 @@
 <div class="binding-container">
   <Button
     round={true}
+    {disabled}
     {opaque}
     colorSeed={binding.key}
     on:click={() => dispatch('click')}
