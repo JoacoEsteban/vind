@@ -112,6 +112,10 @@ export class Path {
   includes (path: Path): boolean {
     return this.value.includes(path.value)
   }
+
+  eitherIncludes (path: Path): boolean {
+    return this.includes(path) || path.includes(this)
+  }
 }
 
 export function safeUrl (url: string): URL {
