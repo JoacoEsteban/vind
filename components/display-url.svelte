@@ -1,19 +1,46 @@
 <script lang="ts">
-  import { makeDisplayUrl } from '~lib/url'
+  import { wrapIterable } from '~lib/svelte'
+  import { Domain, Path } from '~lib/url'
 
-  export let url: string
-  $: displayUrl = makeDisplayUrl(url)
+  export let domain: Domain | null = null
+  export let path: Path | null = null
+  export let size: string = 'text-sm'
+  export let weight: 'normal' | 'bold' = 'bold'
 
-  $: parts = (displayUrl && displayUrl.split('/')) || []
-  $: protocol = (url && new URL(url).protocol) || ''
+  $: {
+    if (!domain && !path) {
+      throw new Error('Either domain or path must be provided')
+    }
+  }
+
+  $: pathParts = (path?.value && path.value.split('/')) || []
+  $: classes = [
+    'flex',
+    'flex-wrap',
+    'items-center',
+    'space-x-1',
+    'made-tommy',
+    `font-${weight}`,
+    size,
+  ].join(' ')
+
   const greySpan = (text: string) =>
     `<span class="text-neutral-content opacity-25">${text}</span>`
 </script>
 
-<div class="flex space-x-2">
-  {@html greySpan(`${protocol}//`)}
-  {#each parts as part, i}
-    <span class="text-white">{part}</span>
+<div class={classes}>
+  {#if domain}
+    <span class="text-white">{domain.value}</span>
+  {/if}
+
+  {#if path}
     {@html greySpan('/')}
+  {/if}
+
+  {#each wrapIterable(pathParts) as { item: part, last }}
+    <span class="text-white">{part}</span>
+    {#if !last}
+      {@html greySpan('/')}
+    {/if}
   {/each}
 </div>

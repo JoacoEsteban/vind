@@ -7,6 +7,7 @@ import { isProtectedKeydownEvent } from './element'
 import { PageOverridesChannelImpl } from './messages/overrides'
 import { PageOverrideInput, pageOverridesMap, type PageOverride } from './page-override'
 import { expose } from './rxjs'
+import { match } from 'ts-pattern'
 
 export class PageController {
   constructor(
@@ -97,22 +98,41 @@ export class PageController {
       bindingsMap.get(domain.value) || new Map<Path['value'], Binding[]>()
     )
   )
+
   public overridesByPathMap$ = this.overrides$.pipe(
     map((overrides) =>
       pageOverridesMap(overrides)
     )
   )
-  public currentPathBindings$ = combineLatest([this.currentDomainBindings$, this.currentSiteSplitted$]).pipe( // TODO buffer to prevent multiple updates
+
+  public displayBindings$ = combineLatest([this.currentDomainBindings$, this.currentSiteSplitted$]).pipe( // TODO buffer to prevent multiple updates
     map(([domainBindings, { path }]) => {
-      log.success('currentPathBindings$', domainBindings, path)
-      if (!path) {
-        return []
+
+      const returns = {
+        overlapping: new Map<Path['value'], Binding[]>(),
+        nonOverlapping: new Map<Path['value'], Binding[]>(),
       }
-      return domainBindings.get(path.value) || []
+
+      if (!path) {
+        return returns
+      }
+
+      for (const [bindingPath, bindings] of domainBindings) {
+        match(path.eitherIncludes(new Path(bindingPath)))
+          .with(true, () =>
+            returns.overlapping.set(bindingPath, bindings)
+          )
+          .with(false, () =>
+            returns.nonOverlapping.set(bindingPath, bindings)
+          )
+          .exhaustive()
+      }
+
+      return returns
     })
   )
 
-  public otherDomainBindingsMap$ = combineLatest([this.currentDomainBindings$, this.currentSiteSplitted$]).pipe(
+  public domainBindingsByNesting$ = combineLatest([this.currentDomainBindings$, this.currentSiteSplitted$]).pipe(
     map(([domainBindingsMap, { path }]) => {
       const currentPath = (path as Path).value
 
@@ -125,10 +145,6 @@ export class PageController {
         let map = returns.branching
 
         if (currentPath.startsWith(domainPath)) {
-          if (currentPath === domainPath) {
-            continue
-          }
-
           map = returns.enclosing
         }
 
@@ -139,11 +155,11 @@ export class PageController {
     })
   )
 
-  public includedBindingPaths$ = combineLatest([this.otherDomainBindingsMap$, this.overridesSet$])
+  public includedBindingPaths$ = combineLatest([this.domainBindingsByNesting$, this.overridesSet$])
     .pipe(
-      filter(([otherDomainBindingsMap, overrides]) => otherDomainBindingsMap !== null),
-      map(([otherDomainBindingsMap, overrides]) => {
-        const { enclosing, branching } = otherDomainBindingsMap
+      filter(([domainBindingsMap]) => domainBindingsMap !== null),
+      map(([domainBindingsMap, overrides]) => {
+        const { enclosing, branching } = domainBindingsMap
 
         const includedPaths = new Set(enclosing.keys())
 
@@ -159,11 +175,10 @@ export class PageController {
       })
     )
 
-  public enabledBindings$ = combineLatest([this.currentPathBindings$, this.currentDomainBindings$, this.includedBindingPaths$])
+  public enabledBindings$ = combineLatest([this.currentDomainBindings$, this.includedBindingPaths$])
     .pipe(
-      map(([currentPathBindings, bindingsMap, includedBindingPaths]) => {
-        const includedBindings = [...includedBindingPaths].flatMap(path => bindingsMap.get(path) || [])
-        return currentPathBindings.concat(includedBindings)
+      map(([bindingsMap, includedBindingPaths]) => {
+        return [...includedBindingPaths].flatMap(path => bindingsMap.get(path) || [])
       })
     )
 
