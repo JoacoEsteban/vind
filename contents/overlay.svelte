@@ -1,10 +1,10 @@
 <script context="module" lang="ts">
+  import '~lib/fonts-importer'
   import styleText from 'data-text:~/style.sass'
   import type { PlasmoCSConfig, PlasmoGetStyle } from 'plasmo'
 
   export const config: PlasmoCSConfig = {
     matches: ['<all_urls>'],
-    css: ['./fonts.css'],
   }
 
   export const getStyle: PlasmoGetStyle = () => {
