@@ -24,13 +24,12 @@
     size,
   ].join(' ')
 
-  const greySpan = (text: string) =>
-    `<span class="text-neutral-content opacity-25">${text}</span>`
+  const greySpan = (text: string) => `<span class="opacity-50">${text}</span>`
 </script>
 
 <div class={classes}>
   {#if domain}
-    <span class="text-white">{domain.value}</span>
+    <span>{domain.value}</span>
   {/if}
 
   {#if path}
@@ -38,7 +37,7 @@
   {/if}
 
   {#each wrapIterable(pathParts) as { item: part, last }}
-    <span class="text-white">{part}</span>
+    <span>{part}</span>
     {#if !last}
       {@html greySpan('/')}
     {/if}
