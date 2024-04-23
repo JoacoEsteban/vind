@@ -69,7 +69,7 @@
       <div class="text-center">
         <div>
           {#if $displayBindings.overlapping.size === 0}
-            <h3 class="font-bold">No bindings on this page</h3>
+            <h3 class="font-bold mb-5">No bindings on this page</h3>
           {/if}
 
           {#each $bindingsMap as bmap, i}
