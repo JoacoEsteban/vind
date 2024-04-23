@@ -60,8 +60,11 @@
       </div>
     </div>
     <main class="py-2 px-1">
-      <div class="mx-auto w-fit mb-5">
+      <div class="mx-auto mb-5 flex flex-col items-center justify-center gap-2">
         <DisplayUrl domain={$currentSite.domain} size={'text-4xl'} />
+        {#if !$currentSite.path.isRoot()}
+          <DisplayUrl path={$currentSite.path} size={'text-l'} />
+        {/if}
       </div>
       <div class="text-center">
         <div>

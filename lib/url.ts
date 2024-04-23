@@ -1,3 +1,5 @@
+import { log } from './log'
+
 type sanitizationOptions = {
   glob: boolean
 }
@@ -115,6 +117,10 @@ export class Path {
 
   eitherIncludes (path: Path): boolean {
     return this.includes(path) || path.includes(this)
+  }
+
+  isRoot (): boolean {
+    return this.value === ''
   }
 }
 
