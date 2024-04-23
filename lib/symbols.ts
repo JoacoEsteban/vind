@@ -66,4 +66,4 @@ export const symbols = {
   link,
 }
 
-export type symbolName = keyof typeof symbols
+export type SymbolName = keyof typeof symbols

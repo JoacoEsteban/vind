@@ -12,7 +12,7 @@
   import { cursorPosition, mouse$ } from '~lib/cursor-position'
   import { log } from '~lib/log'
   import { PageController } from '~lib/page-controller'
-  import type { symbolName } from '~lib/symbols'
+  import type { SymbolName } from '~lib/symbols'
   import { themeController } from '~lib/theme-controller'
   import { Domain, Path, safeUrl } from '~lib/url'
   import { wakeUp } from '~messages/tabs'
@@ -28,7 +28,7 @@
   const options: {
     name: string
     key: string
-    icon: symbolName
+    icon: SymbolName
   }[] = [
     {
       name: 'Bindings',

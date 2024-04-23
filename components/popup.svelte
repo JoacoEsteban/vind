@@ -1,35 +1,34 @@
 <script lang="ts">
-  import { map, Observable } from 'rxjs'
+  import { combineLatest, map, Observable } from 'rxjs'
   import { askForBinding, askForOptionsPage } from '~/messages'
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
-  import { Binding } from '~lib/binding'
   import { draggable } from '~lib/draggable'
   import type { PageController } from '~lib/page-controller'
+  import { Path } from '~lib/url'
   import SymbolButton from './symbol-button.svelte'
   import Toggle from './toggle.svelte'
 
   export let visible: boolean = false
   export let pageControllerInstance: PageController
   export let close: () => void
-  const currentUrl = pageControllerInstance.currentSite$
-  const currentPathBindings = pageControllerInstance.currentPathBindings$
-  const bindingsMap = pageControllerInstance.otherDomainBindingsMap$.pipe(
-    map(({ enclosing, branching }) => [
+  const currentSite = pageControllerInstance.currentSiteSplitted$
+  const displayBindings = pageControllerInstance.displayBindings$
+  const bindingsMap = combineLatest([displayBindings, currentSite]).pipe(
+    map(([{ overlapping, nonOverlapping }, site]) => [
       {
-        title: 'Bindings inherited from parent paths',
-        bindings: enclosing,
+        isCurrentPath: true,
+        bindings: overlapping,
       },
       {
-        title: 'Other bindings on this domain',
-        bindings: branching,
+        isCurrentPath: false,
+        bindings: nonOverlapping,
       },
     ]),
   )
 
   const overridesSet = pageControllerInstance.overridesSet$
-  const currentDomain = pageControllerInstance.currentSiteSplitted$
   const includedPaths = pageControllerInstance.includedBindingPaths$
 
   function openOptions() {
@@ -43,54 +42,55 @@
 
 <div class="popup-wrapper" class:visible use:draggable>
   <div class="popup-container bg-blur">
-    <main class="prose prose-2xs">
-      <div class="flex justify-between">
-        <h2 class="text-neutral-content font-black m-0 opacity-25">Vind</h2>
-        <div class="flex">
-          <SymbolButton name="gear" on:click={openOptions} size={'40px'} />
-          <div class="w-2" />
-          <SymbolButton
-            name="xMark"
-            size={'40px'}
-            padding={'30%'}
-            on:click={close} />
-        </div>
+    <div class="flex justify-between sticky top-0 z-10">
+      <h2 class="font-black m-0 opacity-25">Vind</h2>
+      <div class="flex">
+        <SymbolButton
+          opaque={true}
+          name="gear"
+          on:click={openOptions}
+          size={'40px'} />
+        <div class="w-2" />
+        <SymbolButton
+          opaque={true}
+          name="xMark"
+          size={'40px'}
+          padding={'30%'}
+          on:click={close} />
       </div>
-      <h1 class="text-center prose-headings">
-        <DisplayUrl url={$currentUrl} />
-      </h1>
+    </div>
+    <main class="py-2 px-1">
+      <div class="mx-auto mb-5 flex flex-col items-center justify-center gap-2">
+        <DisplayUrl domain={$currentSite.domain} size={'text-4xl'} />
+        {#if !$currentSite.path.isRoot()}
+          <DisplayUrl path={$currentSite.path} size={'text-l'} />
+        {/if}
+      </div>
       <div class="text-center">
         <div>
-          {#if $currentPathBindings.length === 0}
-            <h3 class="text-neutral-content font-bold">
-              No bindings on this page
-            </h3>
-          {:else}
-            <h3 class="text-neutral-content font-bold">Matching Bindings</h3>
-            <div class="grid grid-cols-5 gap-4 mb-5">
-              {#each $currentPathBindings as binding}
-                <BindingButton
-                  {binding}
-                  on:click={() => pageControllerInstance.clickBinding(binding)}
-                  on:focus={() => pageControllerInstance.focusBinding(binding)}
-                  on:blur={() => pageControllerInstance.blurBinding(binding)} />
-              {/each}
-            </div>
+          {#if $displayBindings.overlapping.size === 0}
+            <h3 class="font-bold mb-5">No bindings on this page</h3>
           {/if}
 
-          {#each $bindingsMap as bmap}
+          {#each $bindingsMap as bmap, i}
             {#if bmap.bindings.size}
-              <hr />
+              {#if i > 0}
+                <div class="divider"></div>
+              {/if}
               <div>
-                <h3 class="text-neutral-content font-bold">
-                  <!-- Bindings for {$currentDomain.domain?.value} -->
-                  {bmap.title}
-                </h3>
+                {#if !bmap.isCurrentPath}
+                  <h3
+                    class="font-bold made-tommy text-xl mb-4 flex gap-2 justify-center">
+                    Others on <DisplayUrl
+                      domain={$currentSite.domain}
+                      size={'text-md'} />
+                  </h3>
+                {/if}
 
                 {#each bmap.bindings as [path, bindings]}
                   <h5 class="w-full flex justify-between mb-3">
-                    <span>
-                      Bindings on <b> {path} </b>
+                    <span class="flex gap-1">
+                      <DisplayUrl path={new Path(path)} size={'text-md'} />
                     </span>
                     <Toggle
                       checked={$includedPaths.has(path)}
@@ -102,6 +102,7 @@
                     class:enabled={$includedPaths.has(path)}>
                     {#each bindings as binding}
                       <BindingButton
+                        disabled={!$includedPaths.has(path)}
                         {binding}
                         on:click={() =>
                           pageControllerInstance.clickBinding(binding)}
@@ -116,10 +117,10 @@
             {/if}
           {/each}
         </div>
-        <div class="flex justify-center">
-          <Button on:click={registerNewBinding}>Bind</Button>
-        </div>
       </div>
     </main>
+    <div class="flex justify-center sticky bottom-0">
+      <Button on:click={registerNewBinding}>Bind</Button>
+    </div>
   </div>
 </div>
