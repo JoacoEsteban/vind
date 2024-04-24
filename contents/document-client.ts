@@ -2,10 +2,13 @@ import "@virtualstate/navigation/polyfill"
 import { eventCoupler } from '~lib/events'
 import { log } from '~lib/log'
 import { PageController } from '~lib/page-controller'
+import { RegistrationController } from '~lib/registration-controller'
 import { getSanitizedCurrentUrl } from '~lib/url'
 import { wakeUp } from '~messages/tabs'
 
 export const pageControllerInstance = new PageController('content-script', getSanitizedCurrentUrl())
+export const registrationControllerInstance = new RegistrationController(pageControllerInstance)
+
 export const onPageControllerReady = (async () => {
   await pageControllerInstance.refreshResources()
   return pageControllerInstance
