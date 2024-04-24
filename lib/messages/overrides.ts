@@ -4,6 +4,7 @@ import { log } from '../log'
 import { Domain, Path, urlFromParts } from '../url'
 import { filter } from 'rxjs'
 import { PageOverride, PageOverrideInput } from '~lib/page-override'
+import { throwOnResponseError } from '.'
 
 export interface PageOverridesChannel {
   getAllPageOverrides: () => Promise<PageOverride[]>
@@ -52,16 +53,16 @@ export class PageOverridesChannelImpl implements PageOverridesChannel {
     }).then(fromManyPageOverridesDoc)
   }
   async addPageOverride (input: PageOverrideInput) {
-    return pageOverridesMessages.addPageOverride.ask(input.getInput())
+    return pageOverridesMessages.addPageOverride.ask(input.getInput()).then(throwOnResponseError)
   }
   async togglePageOverride (input: PageOverrideInput) {
-    return pageOverridesMessages.togglePageOverride.ask(input.getInput())
+    return pageOverridesMessages.togglePageOverride.ask(input.getInput()).then(throwOnResponseError)
   }
   async updatePageOverride (override: PageOverride) {
     const doc = toPageOverridesDoc(override)
-    return pageOverridesMessages.updatePageOverride.ask(doc)
+    return pageOverridesMessages.updatePageOverride.ask(doc).then(throwOnResponseError)
   }
   async removePageOverride (id: number) {
-    return pageOverridesMessages.removePageOverride.ask(id)
+    return pageOverridesMessages.removePageOverride.ask(id).then(throwOnResponseError)
   }
 }

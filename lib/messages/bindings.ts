@@ -4,6 +4,7 @@ import type { BindingDoc } from '~background/storage/db'
 import { log } from '../log'
 import { Domain, Path, urlFromParts } from '../url'
 import { filter } from 'rxjs'
+import { throwOnResponseError } from '.'
 
 export interface BindingChannel {
   getAllBindings: () => Promise<Binding[]>
@@ -51,13 +52,13 @@ export class BindingChannelImpl implements BindingChannel {
   }
   addBinding (binding: Binding) {
     const doc = toBindingDoc(binding)
-    return bindingsMessages.addBinding.ask(doc)
+    return bindingsMessages.addBinding.ask(doc).then(throwOnResponseError)
   }
   updateBinding (binding: Binding) {
     const doc = toBindingDoc(binding)
-    return bindingsMessages.updateBinding.ask(doc)
+    return bindingsMessages.updateBinding.ask(doc).then(throwOnResponseError)
   }
   removeBinding (id: string) {
-    return bindingsMessages.removeBinding.ask(id)
+    return bindingsMessages.removeBinding.ask(id).then(throwOnResponseError)
   }
 }

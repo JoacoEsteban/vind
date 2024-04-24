@@ -1,8 +1,9 @@
 import type { BindingsStorage } from '~background/storage/bindings-storage'
 import type { PageOverridesStorage } from '~background/storage/page-overrides-storage'
 import { getAssertedActiveTabId } from '~background/utils/tab'
+import { serializeError } from '~lib/error'
 import { log } from '~lib/log'
-import { bindingsMessages, pageOverridesMessages } from '~messages/storage'
+import { bindingsMessages, pageOverridesMessages, type ErrResponse } from '~messages/storage'
 
 export class StorageHandlers {
   constructor(
@@ -15,6 +16,12 @@ export class StorageHandlers {
   init () {
     this.setupBindings()
     this.setupPageOverrides()
+  }
+
+  private respondError<T> (promise: Promise<T>, respond: (response: ErrResponse) => void) {
+    promise
+      .then(() => respond({ error: null }))
+      .catch((error) => respond({ error: serializeError(error) }))
   }
 
   setupBindings () {
@@ -34,16 +41,16 @@ export class StorageHandlers {
       respond(bindings)
     })
 
-    bindingsMessages.addBinding.stream.subscribe(async ([binding, sender]) => {
-      await bindingsStorage.addBinding(binding)
+    bindingsMessages.addBinding.stream.subscribe(async ([binding, sender, respond]) => {
+      this.respondError(bindingsStorage.addBinding(binding), respond)
     })
 
-    bindingsMessages.updateBinding.stream.subscribe(async ([binding, sender]) => {
-      await bindingsStorage.updateBinding(binding)
+    bindingsMessages.updateBinding.stream.subscribe(async ([binding, sender, respond]) => {
+      this.respondError(bindingsStorage.updateBinding(binding), respond)
     })
 
-    bindingsMessages.removeBinding.stream.subscribe(async ([id, sender]) => {
-      await bindingsStorage.removeBinding(id)
+    bindingsMessages.removeBinding.stream.subscribe(async ([id, sender, respond]) => {
+      this.respondError(bindingsStorage.removeBinding(id), respond)
     })
 
     bindingsStorage.onAdded$.subscribe(async (binding) => {
@@ -80,20 +87,20 @@ export class StorageHandlers {
       respond(pageOverrides)
     })
 
-    pageOverridesMessages.addPageOverride.stream.subscribe(async ([pageOverride, sender]) => {
-      await pageOverridesStorage.addPageOverride(pageOverride)
+    pageOverridesMessages.addPageOverride.stream.subscribe(async ([pageOverride, sender, respond]) => {
+      this.respondError(pageOverridesStorage.addPageOverride(pageOverride), respond)
     })
 
-    pageOverridesMessages.togglePageOverride.stream.subscribe(async ([pageOverride, sender]) => {
-      await pageOverridesStorage.togglePageOverride(pageOverride)
+    pageOverridesMessages.togglePageOverride.stream.subscribe(async ([pageOverride, sender, respond]) => {
+      this.respondError(pageOverridesStorage.togglePageOverride(pageOverride), respond)
     })
 
-    pageOverridesMessages.updatePageOverride.stream.subscribe(async ([pageOverride, sender]) => {
-      await pageOverridesStorage.updatePageOverride(pageOverride)
+    pageOverridesMessages.updatePageOverride.stream.subscribe(async ([pageOverride, sender, respond]) => {
+      this.respondError(pageOverridesStorage.updatePageOverride(pageOverride), respond)
     })
 
-    pageOverridesMessages.removePageOverride.stream.subscribe(async ([id, sender]) => {
-      await pageOverridesStorage.removePageOverride(id)
+    pageOverridesMessages.removePageOverride.stream.subscribe(async ([id, sender, respond]) => {
+      this.respondError(pageOverridesStorage.removePageOverride(id), respond)
     })
 
     pageOverridesStorage.onAdded$.subscribe(async (pageOverride) => {

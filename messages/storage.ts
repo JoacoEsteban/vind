@@ -2,6 +2,10 @@ import { getMessage } from '@extend-chrome/messages'
 import type { BindingDoc, PageOverrideDoc, PageOverrideInsertType } from '~background/storage/db'
 import { splitMessage } from './lib'
 
+export type ErrResponse = {
+  error: string | null
+}
+
 export const bindingsMessages = {
   getAllBindings: splitMessage(getMessage<void, BindingDoc[]>(
     'getAllBindings',
@@ -15,15 +19,20 @@ export const bindingsMessages = {
     'getBindingsForSite',
     { async: true }
   )),
-  addBinding: splitMessage(getMessage<BindingDoc>(
+  // ---------------------
+  addBinding: splitMessage(getMessage<BindingDoc, ErrResponse>(
     'addBinding',
+    { async: true }
   )),
-  updateBinding: splitMessage(getMessage<BindingDoc>(
+  updateBinding: splitMessage(getMessage<BindingDoc, ErrResponse>(
     'updateBinding',
+    { async: true }
   )),
-  removeBinding: splitMessage(getMessage<string>(
+  removeBinding: splitMessage(getMessage<string, ErrResponse>(
     'removeBinding',
+    { async: true }
   )),
+  // ---------------------
   onBindingRemoved: splitMessage(getMessage<BindingDoc>(
     'onBindingRemoved',
   )),
@@ -48,18 +57,24 @@ export const pageOverridesMessages = {
     'getPageOverridesForSite',
     { async: true }
   )),
-  addPageOverride: splitMessage(getMessage<PageOverrideInsertType>(
+  // ---------------------
+  addPageOverride: splitMessage(getMessage<PageOverrideInsertType, ErrResponse>(
     'addPageOverride',
+    { async: true }
   )),
-  togglePageOverride: splitMessage(getMessage<PageOverrideInsertType>(
+  togglePageOverride: splitMessage(getMessage<PageOverrideInsertType, ErrResponse>(
     'togglePageOverride',
+    { async: true }
   )),
-  updatePageOverride: splitMessage(getMessage<PageOverrideDoc>(
+  updatePageOverride: splitMessage(getMessage<PageOverrideDoc, ErrResponse>(
     'updatePageOverride',
+    { async: true }
   )),
-  removePageOverride: splitMessage(getMessage<number>(
+  removePageOverride: splitMessage(getMessage<number, ErrResponse>(
     'removePageOverride',
+    { async: true }
   )),
+  // ---------------------
   onPageOverrideRemoved: splitMessage(getMessage<PageOverrideDoc>(
     'onPageOverrideRemoved',
   )),
