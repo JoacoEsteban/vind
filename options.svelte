@@ -6,6 +6,7 @@
   import logo from '~/assets/icon.png'
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
+  import DisplayUrl from '~components/display-url.svelte'
   import Filters from '~components/filters.svelte'
   import SymbolButton from '~components/symbol-button.svelte'
   import { Binding } from '~lib/binding'
@@ -116,7 +117,7 @@
         {#if activeKey === 'bindings'}
           <div class="">
             <div>
-              <h2 class="text-neutral-content font-bold">
+              <h2 class="font-bold made-tommy">
                 {#if $bindingsMap.size === 0}
                   No bindings found
                 {:else}
@@ -125,14 +126,13 @@
               </h2>
 
               {#each $bindingsMap as [domain, map]}
-                <h5 class="w-full flex mb-3">
-                  <!-- <b> <DisplayUrl {url} /> </b> -->
-                  <b> {domain} </b>
+                <h5 class="mb-3">
+                  <DisplayUrl domain={new Domain(domain)} size={'text-2xl'} />
                 </h5>
                 {#each map as [path, bindings]}
                   <h5 class="w-full flex mb-3">
                     <!-- <b> <DisplayUrl {url} /> </b> -->
-                    <b> {path} </b>
+                    <DisplayUrl path={new Path(path)} size={'text-l'} />
                   </h5>
                   <div class="flex mb-5 flex-wrap gap-3">
                     {#each bindings as binding}
@@ -152,7 +152,7 @@
         {#if activeKey === 'overrides'}
           <div class="container">
             <div>
-              <h2 class="text-neutral-content font-bold">
+              <h2 class="font-bold made-tommy">
                 {#if $overridesMap.size === 0}
                   No Overrides found
                 {:else}
@@ -163,18 +163,22 @@
               {#each $overridesMap as [domain, overrides]}
                 <h3 class="w-full flex mb-3">
                   on &nbsp;
+
                   <a href={safeUrl(domain).href} target="_blank">
-                    <b>
-                      <b> {domain} </b>
-                    </b></a>
+                    <DisplayUrl
+                      domain={new Domain(domain)}
+                      path={new Path(domain)}
+                      size={'text-l'} />
+                  </a>
                 </h3>
                 {#each overrides as [id, path]}
                   <div class="flex">
-                    <h4 class="w-full flex mb-3">
-                      bindings from &nbsp;<b>/{path}</b>&nbsp; are {getOverrideBehavior(
-                        domain,
-                        path,
-                      )}
+                    <h4
+                      class="w-full flex items-center flex-wrap gap-1 mb-3 mt-0">
+                      bindings from <DisplayUrl
+                        path={new Path(path)}
+                        size={'text-l'} />are
+                      <b>{getOverrideBehavior(domain, path)}</b>
                     </h4>
                     <SymbolButton
                       opaque={true}
