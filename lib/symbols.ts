@@ -7,6 +7,9 @@ import trashFillRaw from '~/assets/symbols/trash.fill.json'
 import sidebarRightRaw from '~/assets/symbols/sidebar.right.json'
 import arrowTriangleBranchRaw from '~/assets/symbols/arrow.triangle.branch.json'
 import linkRaw from '~/assets/symbols/link.json'
+import cursorArrowClickRaw from '~/assets/symbols/cursorarrow.click.2.json'
+import keyboardRaw from '~/assets/symbols/keyboard.json'
+
 import { default as SvelteSymbolComponent } from '~components/symbol.svelte'
 import type { ComponentConstructorOptions } from 'svelte'
 
@@ -31,6 +34,8 @@ const [
   sidebarRight,
   arrowTriangleBranch,
   link,
+  cursorArrowClick,
+  keyboard,
 ] = [
   gearRaw,
   arrowDownRaw,
@@ -39,6 +44,8 @@ const [
   sidebarRightRaw,
   arrowTriangleBranchRaw,
   linkRaw,
+  cursorArrowClickRaw,
+  keyboardRaw,
 ]
   .map(checkSymbol)
   .map(symbol => {
@@ -66,6 +73,8 @@ export const symbols = {
   sidebarRight,
   arrowTriangleBranch,
   link,
+  cursorArrowClick,
+  keyboard,
 }
 export type SymbolName = keyof typeof symbols
 
