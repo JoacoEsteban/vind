@@ -41,19 +41,21 @@
   askForBindingStream.subscribe(() => {
     const registration = registrationControllerInstance.register()
 
-    toast.promise(registration, {
-      loading: 'Registering Binding. Press ESC to cancel.',
-      success: 'Registered',
-      error: 'There was an error registering the binding',
-    })
+    const loadingToast = toast.loading(
+      'Registering Binding. Press ESC to cancel.',
+    )
 
     registration.then(() => {
       log.success('registering done')
+      toast.success('Binding registered')
     })
 
     registration.catch((err) => {
       log.error('registering failed', err)
+      toast.error('Failed to register binding')
     })
+
+    registration.finally(() => toast.dismiss(loadingToast))
   })
   showOverlayStream.subscribe(toggleVisibility)
 </script>
