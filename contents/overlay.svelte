@@ -15,11 +15,12 @@
 </script>
 
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { pairwise, startWith, Subject } from 'rxjs'
   import toast, { Toaster } from 'svelte-french-toast/dist'
   import { askForBindingStream } from '~/messages'
   import Filters from '~components/filters.svelte'
   import Popup from '~components/popup.svelte'
+  import { registrationStateToastOptions } from '~lib/definitions'
   import { log } from '~lib/log'
   import { themeController } from '~lib/theme-controller'
   import { showOverlayStream } from '~messages/tabs'
@@ -43,6 +44,7 @@
 
     const loadingToast = toast.loading(
       'Registering Binding. Press ESC to cancel.',
+      { position: 'top-right' },
     )
 
     registration.then(() => {
@@ -57,6 +59,26 @@
 
     registration.finally(() => toast.dismiss(loadingToast))
   })
+
+  const registrationStateToastSubject = new Subject<string | null>()
+  registrationStateToastSubject
+    .pipe(startWith(''), pairwise())
+    .subscribe(([oldToast]) => {
+      oldToast && toast.dismiss(oldToast)
+    })
+
+  registrationControllerInstance.registrationState$.subscribe((state) => {
+    const message = registrationStateToastOptions[state]
+    const toastId =
+      message &&
+      toast(message.text, {
+        duration: Infinity,
+        icon: message.icon,
+      })
+
+    registrationStateToastSubject.next(toastId)
+  })
+
   showOverlayStream.subscribe(toggleVisibility)
 </script>
 
