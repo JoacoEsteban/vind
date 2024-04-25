@@ -1,6 +1,8 @@
 import { pEvent, type CancelablePromise } from 'p-event'
 import { PromiseWithResolvers } from './polyfills'
 
+export const unBindableKeys = new Set(['TAB', 'ENTER', 'ESCAPE', 'SHIFT', 'CONTROL', 'ALT', 'META'])
+
 export function isBindableElement (element: HTMLElement): boolean {
   // filter if not type button or input or a
   return ['button', 'input', 'a', 'div'].includes(element.tagName.toLowerCase())
@@ -36,12 +38,7 @@ export function highlightElementUntilLeave (element: HTMLElement) {
 export function recordInputKey (signal?: AbortSignal): Promise<string> {
   return pEvent<string, KeyboardEvent>(document, 'keydown', {
     signal,
-    filter: (e) => {
-      return !(
-        isProtectedKeydownEvent(e.target) ||
-        ['TAB', 'ENTER', 'ESCAPE', 'SHIFT', 'CONTROL', 'ALT', 'META'].includes(e.key.toUpperCase())
-      )
-    }
+    filter: (e) => isBindableKeydownEvent(e)
   })
     .then((e) => {
       if (!e.key) {
@@ -50,6 +47,13 @@ export function recordInputKey (signal?: AbortSignal): Promise<string> {
 
       return e.key
     })
+}
+
+export function isBindableKeydownEvent (event: KeyboardEvent): boolean {
+  return !(
+    isProtectedKeydownEvent(event.target) ||
+    isUnBindableKey(event.key)
+  )
 }
 
 export function isProtectedKeydownEvent (element: EventTarget | null): boolean {
@@ -62,6 +66,10 @@ export function isProtectedKeydownEvent (element: EventTarget | null): boolean {
     (element: HTMLElement) => element.contentEditable === 'true',
   ]
     .some(fn => fn(element))
+}
+
+export function isUnBindableKey (key: string): boolean {
+  return unBindableKeys.has(key.toUpperCase())
 }
 
 export function waitForKeyDown (key: string, signal?: AbortSignal): CancelablePromise<KeyboardEvent> {
