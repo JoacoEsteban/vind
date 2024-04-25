@@ -1,4 +1,4 @@
-import { pEvent } from 'p-event'
+import { pEvent, type CancelablePromise } from 'p-event'
 import { PromiseWithResolvers } from './polyfills'
 
 export function isBindableElement (element: HTMLElement): boolean {
@@ -33,9 +33,9 @@ export function highlightElementUntilLeave (element: HTMLElement) {
   }
 }
 
-export async function recordInputKey (): Promise<string> {
-  console.log('recordInputKey')
-  const { key } = await pEvent<string, KeyboardEvent>(document, 'keydown', {
+export function recordInputKey (signal?: AbortSignal): Promise<string> {
+  return pEvent<string, KeyboardEvent>(document, 'keydown', {
+    signal,
     filter: (e) => {
       return !(
         isProtectedKeydownEvent(e.target) ||
@@ -43,8 +43,13 @@ export async function recordInputKey (): Promise<string> {
       )
     }
   })
+    .then((e) => {
+      if (!e.key) {
+        throw new Error('Missing key in event')
+      }
 
-  return key
+      return e.key
+    })
 }
 
 export function isProtectedKeydownEvent (element: EventTarget | null): boolean {
