@@ -24,10 +24,15 @@ export class Binding {
   }
 
   static fromElement (element: HTMLElement, key: string) {
-    const selector = getXPath(element)
+    const selector = getXPath(element).toOption()
+
+    if (selector.none) {
+      throw new Error('Could not generate XPath for element')
+    }
+
     const url = getCurrentUrl()
 
-    const b = new Binding(new Domain(url.host), new Path(url.pathname), key, selector)
+    const b = new Binding(new Domain(url.host), new Path(url.pathname), key, selector.val)
     return b
   }
 

@@ -7,6 +7,7 @@ import { getElementByXPath, getXPath } from './xpath'
 import { makeEventListenerStack } from '@solid-primitives/event-listener'
 import { Binding } from './binding'
 import { exposeSubject } from './rxjs'
+import { match } from 'ts-pattern'
 
 export enum RegistrationState {
   Idle,
@@ -22,7 +23,7 @@ export class RegistrationController {
 
   private registrationState$$ = new BehaviorSubject<RegistrationState>(RegistrationState.Idle)
   public registrationState$ = this.registrationState$$.asObservable()
-  public registrationState = exposeSubject(this.registrationState$$)
+  public getRegistrationState = exposeSubject(this.registrationState$$)
 
   constructor(
     private pageControllerInstance: PageController
@@ -97,7 +98,7 @@ export class RegistrationController {
       highlightedElement = target
 
       const { cancel } = highlightElementUntilLeave(target)
-      onElementSelected.then(cancel)
+      onElementSelected.finally(cancel)
     }
 
     const clickListener = (event: MouseEvent) => {
@@ -109,13 +110,23 @@ export class RegistrationController {
       event.preventDefault()
       event.stopPropagation()
 
-      const selector = getXPath(highlightedElement)
+      const result = getXPath(highlightedElement)
 
-      log.info('clicked', selector, getElementByXPath(selector))
+      match(result.ok)
+        .with(true, () => {
+          console.log('XPATH', result.val)
+          confirmElement()
+        })
+        .with(false, () => {
+          log.error('Error getting xpath', result.err)
+          cancel()
+        })
+
       confirmElement()
     }
 
     const [listen, clear] = makeEventListenerStack(document, {
+      signal: abortSignal,
       passive: true,
       capture: true,
     })
