@@ -1,5 +1,5 @@
 import "@virtualstate/navigation/polyfill"
-import { eventCoupler } from '~lib/events'
+import { filter, fromEvent, merge, throttleTime } from 'rxjs'
 import { log } from '~lib/log'
 import { PageController } from '~lib/page-controller'
 import { RegistrationController } from '~lib/registration-controller'
@@ -27,8 +27,12 @@ export const onPageControllerReady = (async () => {
       instance.refreshResources()
     })
 
-    const coupleKeyPress = eventCoupler(instance.onKeyPress.bind(instance), 100)
-
-    document.addEventListener('keypress', coupleKeyPress)
-    document.addEventListener('keydown', coupleKeyPress)
+    merge(
+      fromEvent<KeyboardEvent>(document, 'keypress'),
+      fromEvent<KeyboardEvent>(document, 'keydown')
+    ).pipe(throttleTime(100))
+      .pipe(filter(() => !registrationControllerInstance.isRegistrationInProgress()))
+      .subscribe((event) => {
+        instance.onKeyPress(event)
+      })
   })
