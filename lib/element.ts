@@ -63,3 +63,10 @@ export function isProtectedKeydownEvent (element: EventTarget | null): boolean {
   ]
     .some(fn => fn(element))
 }
+
+export function waitForKeyDown (key: string, signal?: AbortSignal): CancelablePromise<KeyboardEvent> {
+  return pEvent<string, KeyboardEvent>(document, 'keydown', {
+    signal,
+    filter: (e) => e.key === key
+  })
+}
