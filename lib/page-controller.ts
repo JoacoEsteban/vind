@@ -3,7 +3,7 @@ import { log } from './log'
 import { BehaviorSubject, combineLatest, filter, lastValueFrom, map, merge } from 'rxjs'
 import { Domain, Path, getSanitizedCurrentUrl } from './url'
 import { BindingChannelImpl } from './messages/bindings'
-import { isProtectedKeydownEvent } from './element'
+import { isBindableKeydownEvent } from './element'
 import { PageOverridesChannelImpl } from './messages/overrides'
 import { PageOverrideInput, pageOverridesMap, type PageOverride } from './page-override'
 import { expose } from './rxjs'
@@ -272,7 +272,7 @@ export class PageController {
   // ------------------------------------------
 
   getMatchingKey (event: KeyboardEvent): string | null {
-    if (isProtectedKeydownEvent(event.target)) {
+    if (!isBindableKeydownEvent(event)) {
       return null
     }
 
