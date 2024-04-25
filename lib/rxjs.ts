@@ -5,3 +5,7 @@ export function expose<T> (observable: Observable<T>) {
   observable.subscribe(subject)
   return subject.getValue.bind(subject)
 }
+
+export function exposeSubject<T> (subject: BehaviorSubject<T>) {
+  return subject.getValue.bind(subject)
+}
