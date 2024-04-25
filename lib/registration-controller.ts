@@ -6,31 +6,35 @@ import { highlightElementUntilLeave, isBindableElement, recordInputKey } from '.
 import { getElementByXPath, getXPath } from './xpath'
 import { makeEventListenerStack } from '@solid-primitives/event-listener'
 import { Binding } from './binding'
+import { exposeSubject } from './rxjs'
 
 export class RegistrationController {
-  registrationInProgress$ = new BehaviorSubject<boolean>(false)
+  private registrationInProgress$$ = new BehaviorSubject<boolean>(false)
+  public registrationInProgress$ = this.registrationInProgress$$.asObservable()
+  public isRegistrationInProgress = exposeSubject(this.registrationInProgress$$)
+
   constructor(
     private pageControllerInstance: PageController
   ) {}
 
   async register () {
-    if (this.registrationInProgress$.value) {
+    if (this.registrationInProgress$$.value) {
       throw new Error('Registration already in progress')
     }
-    this.registrationInProgress$.next(true)
+    this.registrationInProgress$$.next(true)
 
     return this.startRegistrationFlow()
       .finally(() => {
         log.info('Registration finished')
-        this.registrationInProgress$.next(false)
+        this.registrationInProgress$$.next(false)
       })
   }
 
   cancelRegistration () {
-    if (!this.registrationInProgress$.value) {
+    if (!this.registrationInProgress$$.value) {
       throw new Error('No registration in progress')
     }
-    this.registrationInProgress$.next(false)
+    this.registrationInProgress$$.next(false)
   }
 
   private async startRegistrationFlow () {
