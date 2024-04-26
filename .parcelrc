@@ -1,8 +1,0 @@
-{
-  "extends": "@plasmohq/parcel-config",
-  "transformers": {
-    "*.svelte": [
-      "parcel-transformer-svelte-injected"
-    ]
-  }
-}
