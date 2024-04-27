@@ -17,10 +17,12 @@
 <script lang="ts">
   import { pairwise, startWith, Subject } from 'rxjs'
   import toast, { Toaster } from 'svelte-french-toast/dist'
+  import { match } from 'ts-pattern'
   import { askForBindingStream } from '~/messages'
   import Filters from '~components/filters.svelte'
   import Popup from '~components/popup.svelte'
   import { registrationStateToastOptions } from '~lib/definitions'
+  import { RegistrationAbortedError, VindError } from '~lib/error'
   import { log } from '~lib/log'
   import { themeController } from '~lib/theme-controller'
   import { showOverlayStream } from '~messages/tabs'
@@ -54,7 +56,19 @@
 
     registration.catch((err) => {
       log.error('registering failed', err)
-      toast.error('Failed to register binding')
+
+      const message = match<Error, string>(err)
+        .when(
+          (err) => err instanceof RegistrationAbortedError,
+          () => 'Registration aborted',
+        )
+        .when(
+          (err) => err instanceof VindError,
+          (err: VindError) => err.message,
+        )
+        .otherwise(() => 'Failed to register binding')
+
+      toast.error(message)
     })
 
     registration.finally(() => toast.dismiss(loadingToast))
