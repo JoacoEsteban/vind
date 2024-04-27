@@ -85,5 +85,7 @@
 <div use:themeController>
   <Popup visible={showingOverlay} {pageControllerInstance} close={closePopup} />
   <Filters />
-  <Toaster />
+  <Toaster
+    containerClassName={'made-tommy font-regular'}
+    toastOptions={{ className: 'bg-blur' }} />
 </div>
