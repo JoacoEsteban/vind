@@ -32,6 +32,7 @@
   } from './document-client'
 
   let showingOverlay = false
+  const registering$ = registrationControllerInstance.registrationInProgress$
 
   function toggleVisibility() {
     log.info('on toggle visibility')
@@ -97,7 +98,11 @@
 </script>
 
 <div use:themeController>
-  <Popup visible={showingOverlay} {pageControllerInstance} close={closePopup} />
+  <Popup
+    visible={showingOverlay}
+    disabled={$registering$}
+    {pageControllerInstance}
+    close={closePopup} />
   <Filters />
   <Toaster
     containerClassName={'made-tommy font-regular'}

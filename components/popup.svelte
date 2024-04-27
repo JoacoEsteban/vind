@@ -11,6 +11,7 @@
   import Toggle from './toggle.svelte'
 
   export let visible: boolean = false
+  export let disabled: boolean = false
   export let pageControllerInstance: PageController
   export let close: () => void
   const currentSite = pageControllerInstance.currentSiteSplitted$
@@ -40,7 +41,7 @@
   }
 </script>
 
-<div class="popup-wrapper" class:visible use:draggable>
+<div class="popup-wrapper" class:visible class:disabled use:draggable>
   <div class="popup-container bg-blur">
     <div class="flex justify-between sticky top-0 z-10">
       <h2 class="font-black m-0 opacity-25">Vind</h2>
