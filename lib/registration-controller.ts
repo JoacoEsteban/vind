@@ -8,6 +8,7 @@ import { makeEventListenerStack } from '@solid-primitives/event-listener'
 import { Binding } from './binding'
 import { exposeSubject } from './rxjs'
 import { match } from 'ts-pattern'
+import { RegistrationAbortedError } from './error'
 
 export enum RegistrationState {
   Idle,
@@ -58,7 +59,7 @@ export class RegistrationController {
     const aborter = new AbortController()
 
     waitForKeyDown('Escape', aborter.signal)
-      .then(() => aborter.abort("Registration aborted by user"))
+      .then(() => aborter.abort(new RegistrationAbortedError()))
 
     this.setRegistrationState(RegistrationState.SelectingElement)
     const highlightedElement = await this.selectElement(aborter.signal)
@@ -76,7 +77,7 @@ export class RegistrationController {
 
   private async selectElement (abortSignal: AbortSignal): Promise<HTMLElement> {
     if (abortSignal.aborted) {
-      throw new Error(abortSignal.reason)
+      throw abortSignal.reason
     }
 
     const onAborted = new Promise((resolve, reject) => {
@@ -151,7 +152,7 @@ export class RegistrationController {
 
   private async selectKey (abortSignal: AbortSignal): Promise<string> {
     if (abortSignal.aborted) {
-      throw new Error(abortSignal.reason)
+      throw abortSignal.reason
     }
 
     const onKey = recordInputKey(abortSignal)

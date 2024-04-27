@@ -9,3 +9,15 @@ export function deserializeError (errorString: string): Error {
   Object.assign(error, data)
   return error
 }
+
+export class VindError extends Error {
+  constructor(public message: string, public code: string) {
+    super(message)
+  }
+}
+
+export class RegistrationAbortedError extends VindError {
+  constructor() {
+    super("Registration aborted by user", 'REGISTRATION_ABORTED')
+  }
+}
