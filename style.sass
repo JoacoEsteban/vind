@@ -52,13 +52,13 @@
   @apply rounded-full
 
 .bg-blur
-  backdrop-filter: blur(15px) url(#aberration) hue-rotate(15deg)
+  backdrop-filter: blur(15px) url(#aberration) hue-rotate(15deg) !important
   // background-color: rgba(20, 20, 20, 0.5)
-  background-color: var(--_blur-bg)
-  border: 2px solid #ccc5
-  border-radius: 16px
-  drop-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25)
-  color: var(--_blur-text-color)
+  background-color: var(--_blur-bg) !important
+  border: 2px solid #ccc5 !important
+  border-radius: 16px !important
+  filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25)) !important
+  color: var(--_blur-text-color) !important
 
 .debug *
   outline: 1px solid red
