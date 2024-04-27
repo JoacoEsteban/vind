@@ -8,7 +8,7 @@ import { makeEventListenerStack } from '@solid-primitives/event-listener'
 import { Binding } from './binding'
 import { exposeSubject } from './rxjs'
 import { match } from 'ts-pattern'
-import { RegistrationAbortedError } from './error'
+import { RegistrationAbortedError, UnbindableElementError } from './error'
 
 export enum RegistrationState {
   Idle,
@@ -119,11 +119,8 @@ export class RegistrationController {
           confirmElement()
         })
         .with(false, () => {
-          log.error('Error getting xpath', result.err)
-          cancel()
+          cancel(new UnbindableElementError())
         })
-
-      confirmElement()
     }
 
     const [listen, clear] = makeEventListenerStack(document, {
