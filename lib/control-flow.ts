@@ -7,3 +7,7 @@ export function wrapResult<T> (expression: () => T): Result<T, Error> {
     return new Err(error instanceof Error ? error : new Error(String(error)))
   }
 }
+
+export function sleep (ms?: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}

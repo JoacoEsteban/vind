@@ -8,6 +8,7 @@ import { PageOverridesChannelImpl } from './messages/overrides'
 import { PageOverrideInput, pageOverridesMap, type PageOverride } from './page-override'
 import { expose } from './rxjs'
 import { match } from 'ts-pattern'
+import { sleep } from './control-flow'
 
 export class PageController {
   constructor(
@@ -309,6 +310,8 @@ export class PageController {
   async clickBinding (binding: Binding) {
     const element = binding.getElement()
     if (element) {
+      await sleep()
+      element.focus()
       await this.click(element)
     } else {
       console.log('no element found for binding', binding)
