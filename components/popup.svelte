@@ -41,7 +41,7 @@
   }
 </script>
 
-<div class="popup-wrapper" class:visible class:disabled use:draggable>
+<div class="popup-wrapper" class:visible class:ghost={disabled} use:draggable>
   <div class="popup-container bg-blur">
     <div class="flex justify-between sticky top-0 z-10">
       <h2 class="font-black m-0 opacity-25">Vind</h2>
