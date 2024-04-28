@@ -1,17 +1,36 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { delay, filter, tap, type Observable } from 'rxjs'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import type { Binding } from '~lib/binding'
+  import { Stack } from '~lib/rxjs'
   import { bindingKeySymbolMap } from '~lib/ui'
   import Button from './button.svelte'
 
   export let binding: Binding
   export let opaque: boolean = false
   export let disabled: boolean = false
+  export let triggeredBinding$: Observable<string>
+
+  const stack = Stack()
+  const pressed$ = stack.full$
 
   $: bindingKey =
     bindingKeySymbolMap.get(binding.key) || binding.key.toUpperCase()
 
+  $: triggeredBinding$
+    ?.pipe(
+      filter((triggeredBinding) => triggeredBinding === binding.key),
+      tap(stack.push),
+      delay(400),
+      tap(stack.pop),
+    )
+    .subscribe()
+
   const dispatch = createEventDispatcher()
+
+  onDestroy(() => {
+    stack.complete()
+  })
 </script>
 
 <div class="binding-container">
@@ -19,6 +38,7 @@
     round={true}
     {disabled}
     {opaque}
+    pressed={$pressed$}
     colorSeed={binding.key}
     on:click={() => dispatch('click')}
     on:mouseover={() => dispatch('focus')}

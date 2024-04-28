@@ -106,6 +106,7 @@
                     class:enabled={$includedPaths.has(path)}>
                     {#each bindings as binding}
                       <BindingButton
+                        triggeredBinding$={pageControllerInstance.triggeredBinding$}
                         disabled={disabled || !$includedPaths.has(path)}
                         {binding}
                         on:click={() =>
