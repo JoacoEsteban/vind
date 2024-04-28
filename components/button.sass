@@ -41,7 +41,7 @@
 
     &.opaque
       backdrop-filter: blur(6px)
-    &:focus, &:active, &.highlight
+    &:focus, &:active, &.pressed, &.highlight
       outline: 3px solid var(--_focus-color, var(--_gradient-top, #329ECC))
     &.highlight
       filter: brightness(1)
@@ -55,7 +55,7 @@
     cursor: pointer
     &:hover 
         transform: scale(1.04)
-    &:active 
+    &:active, &.pressed 
       transform: scale(.95)
       opacity: 0.5
     &:disabled

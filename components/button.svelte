@@ -11,6 +11,7 @@
   export let colorSeed: string = generateId()
   export let round: boolean = false
   export let opaque: boolean = false
+  export let pressed: boolean = false
   export let highlight: boolean = false
   export let disabled: boolean = false
   export let icon: SymbolName | null = null
@@ -43,6 +44,7 @@
     class="outer f-center btn"
     class:round
     class:opaque
+    class:pressed
     class:highlight
     {disabled}
     style:--gradient-top={topGradient}
