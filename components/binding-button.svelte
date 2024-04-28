@@ -9,7 +9,7 @@
   export let binding: Binding
   export let opaque: boolean = false
   export let disabled: boolean = false
-  export let triggeredBinding$: Observable<string>
+  export let triggeredBinding$: Observable<string> | null = null
 
   const stack = Stack()
   const pressed$ = stack.full$
