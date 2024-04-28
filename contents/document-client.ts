@@ -35,6 +35,9 @@ export const onPageControllerReady = (async () => {
       fromEvent<KeyboardEvent>(document, 'keydown')
     ).pipe(throttleTime(100))
       .pipe(filter(() => !registrationControllerInstance.isRegistrationInProgress()))
+      .pipe(filter((e) =>
+        !(e.metaKey || e.ctrlKey)
+      ))
       .subscribe(async (event) => {
         instance.onKeyPress(event)
           .then((presses) => {
