@@ -2,7 +2,7 @@ import { BehaviorSubject, Subject, combineLatest, filter, fromEvent, last, map, 
 import type { PageController } from './page-controller'
 import { log } from './log'
 import { PromiseWithResolvers } from './polyfills'
-import { getClosestBindableElement, highlightElement, isHighlightableElement, recordInputKey, waitForKeyDown } from './element'
+import { getClosestBindableElement, highlightElement, isConfirmableElement, isHighlightableElement, recordInputKey, waitForKeyDown } from './element'
 import { Binding } from './binding'
 import { exposeSubject, PromiseStopper } from './rxjs'
 import { RegistrationAbortedError, UnbindableElementError } from './error'
@@ -114,7 +114,7 @@ export class RegistrationController {
     const sub = combineLatest([
       this.targetedElement$,
       fromEvent<MouseEvent>(document, 'click')
-        .pipe(filter(({ target }) => target instanceof HTMLElement && target.classList.contains('vind-overlay')))
+        .pipe(filter(isConfirmableElement))
     ])
       .subscribe((val) => {
         const [element] = val

@@ -80,3 +80,9 @@ export function waitForKeyDown (key: string, signal?: AbortSignal): CancelablePr
 export function isHighlightableElement (el: HTMLElement) {
   return el.nodeName !== 'PLASMO-CSUI' && !el.classList.contains('vind-ignore')
 }
+
+export function isConfirmableElement (e: MouseEvent) {
+  return document
+    .elementsFromPoint(e.clientX, e.clientY)
+    .some(el => el.classList.contains('vind-overlay'))
+}
