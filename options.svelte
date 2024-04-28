@@ -95,19 +95,6 @@
     <input id="drawer" type="checkbox" class="drawer-toggle" />
 
     <div class="drawer-content max-w-3xl mx-auto pt-10 px-5">
-      <span
-        class="tooltip tooltip-bottom before:text-xs before:content-[attr(data-tip)]"
-        data-tip="Menu"
-        ><label
-          aria-label="Open menu"
-          for="drawer"
-          class="drawer-button lg:hidden">
-          <SymbolButton
-            as={'div'}
-            name="sidebarRight"
-            padding="25%"
-            opaque={true} />
-        </label></span>
       <main class="prose prose-2xs max-w-full">
         <h1 class="font-black">Vind Options</h1>
         <div role="tablist" class="flex gap-2">
