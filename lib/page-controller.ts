@@ -1,7 +1,7 @@
 import { Binding, bindingsAsMap } from '~lib/binding'
 import { log } from './log'
-import { BehaviorSubject, combineLatest, filter, lastValueFrom, map, merge } from 'rxjs'
-import { Domain, Path, getSanitizedCurrentUrl } from './url'
+import { BehaviorSubject, Subject, combineLatest, filter, map, merge } from 'rxjs'
+import { Domain, Path } from './url'
 import { BindingChannelImpl } from './messages/bindings'
 import { isBindableKeydownEvent } from './element'
 import { PageOverridesChannelImpl } from './messages/overrides'
@@ -37,6 +37,9 @@ export class PageController {
         this.updateResources(url)
       })
   }
+
+  private triggeredBinding = new Subject<string>()
+  public triggeredBinding$ = this.triggeredBinding.asObservable()
 
   public bindingsChannel = new BindingChannelImpl()
   public overridesChannel = new PageOverridesChannelImpl()
@@ -284,6 +287,9 @@ export class PageController {
 
   async triggerBindingsByKey (key: string) {
     const matchingBindings = this.enabledBindings()?.filter(binding => binding.key === key) || []
+    if (matchingBindings.length) {
+      this.triggeredBinding.next(key)
+    }
     return this.triggerBindings(matchingBindings)
   }
 
