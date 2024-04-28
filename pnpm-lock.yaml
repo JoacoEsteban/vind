@@ -63,8 +63,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.1
       plasmo:
-        specifier: 0.86.0
-        version: 0.86.0(@swc/core@1.4.17(@swc/helpers@0.5.10))(@swc/helpers@0.5.10)(lodash@4.17.21)(postcss@8.4.38)(srcset@4.0.0)
+        specifier: 0.86.1
+        version: 0.86.1(@swc/core@1.4.17(@swc/helpers@0.5.10))(@swc/helpers@0.5.10)(lodash@4.17.21)(postcss@8.4.38)(srcset@4.0.0)
       px-robula-plus:
         specifier: ^1.0.1
         version: 1.0.1
@@ -3158,8 +3158,8 @@ packages:
     resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}
     engines: {node: '>= 6'}
 
-  plasmo@0.86.0:
-    resolution: {integrity: sha512-yGBG3zmi33cDl43aSfqcPaBqS8IvacEOTgIXoO/0mOzyiNIrJIYAXx9/gXZmueWANXJcpIyUA3jB5yBajhS19w==}
+  plasmo@0.86.1:
+    resolution: {integrity: sha512-6qDWnQ8TVGLmGIWWOoXR0upCuNW6LnlrLEQ0b0EMRoApomps9q77908hNKJWbDlz5rqXOhcpecaVTQ0mx8lzCw==}
     hasBin: true
 
   possible-typed-array-names@1.0.0:
@@ -7171,7 +7171,7 @@ snapshots:
 
   pirates@4.0.6: {}
 
-  plasmo@0.86.0(@swc/core@1.4.17(@swc/helpers@0.5.10))(@swc/helpers@0.5.10)(lodash@4.17.21)(postcss@8.4.38)(srcset@4.0.0):
+  plasmo@0.86.1(@swc/core@1.4.17(@swc/helpers@0.5.10))(@swc/helpers@0.5.10)(lodash@4.17.21)(postcss@8.4.38)(srcset@4.0.0):
     dependencies:
       '@expo/spawn-async': 1.7.2
       '@parcel/core': 2.9.3
