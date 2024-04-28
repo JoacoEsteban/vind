@@ -106,5 +106,5 @@
   <Filters />
   <Toaster
     containerClassName={'made-tommy font-regular'}
-    toastOptions={{ className: 'bg-blur' }} />
+    toastOptions={{ className: 'bg-blur ghost vind-ignore' }} />
 </div>

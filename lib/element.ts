@@ -27,9 +27,9 @@ export function highlightElement (element: HTMLElement) {
   overlay.style.borderRadius = '4px'
 
   overlay.classList.add('vind-overlay')
+  overlay.classList.add('vind-ignore')
 
   document.body.appendChild(overlay)
-  // element.style.outline = '2px solid #ff0000'
   return overlay
 }
 
@@ -75,4 +75,8 @@ export function waitForKeyDown (key: string, signal?: AbortSignal): CancelablePr
     signal,
     filter: (e) => e.key === key
   })
+}
+
+export function isHighlightableElement (el: HTMLElement) {
+  return el.nodeName !== 'PLASMO-CSUI' && !el.classList.contains('vind-ignore')
 }

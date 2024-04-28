@@ -2,7 +2,7 @@ import { BehaviorSubject, Subject, combineLatest, filter, fromEvent, last, map, 
 import type { PageController } from './page-controller'
 import { log } from './log'
 import { PromiseWithResolvers } from './polyfills'
-import { getClosestBindableElement, highlightElement, recordInputKey, waitForKeyDown } from './element'
+import { getClosestBindableElement, highlightElement, isHighlightableElement, recordInputKey, waitForKeyDown } from './element'
 import { Binding } from './binding'
 import { exposeSubject, PromiseStopper } from './rxjs'
 import { RegistrationAbortedError, UnbindableElementError } from './error'
@@ -36,9 +36,9 @@ export class RegistrationController {
 
   private targetedElement$ = this.mouseOverElements$
     .pipe(
-      map<HTMLElement[], HTMLElement | null>((els) => {
-        return els.find(el => !el.classList.contains('vind-overlay')) || null
-      }),
+      map<HTMLElement[], HTMLElement | null>((els) =>
+        els.find(isHighlightableElement) || null
+      ),
       filter(Boolean),
       pairwise(),
       filter(([prev, next]) => prev !== next), // only emit when element changes

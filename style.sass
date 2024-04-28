@@ -63,3 +63,10 @@
 .debug *
   outline: 1px solid red
   outline-offset: -1px
+
+.ghost
+  transition: opacity 0.3s var(--bezier-chill) !important
+  *
+    pointer-events: none !important
+  &:hover
+    opacity: 0.5 !important
