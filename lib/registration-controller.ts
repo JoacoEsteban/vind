@@ -1,14 +1,13 @@
-import { BehaviorSubject } from 'rxjs'
+import { BehaviorSubject, Subject, combineLatest, filter, fromEvent, last, map, pairwise, share, takeUntil, tap, throttleTime } from 'rxjs'
 import type { PageController } from './page-controller'
 import { log } from './log'
 import { PromiseWithResolvers } from './polyfills'
-import { highlightElementUntilLeave, isBindableElement, recordInputKey, waitForKeyDown } from './element'
-import { getElementByXPath, getXPath } from './xpath'
-import { makeEventListenerStack } from '@solid-primitives/event-listener'
+import { getClosestBindableElement, highlightElement, recordInputKey, waitForKeyDown } from './element'
 import { Binding } from './binding'
-import { exposeSubject } from './rxjs'
-import { match } from 'ts-pattern'
+import { exposeSubject, PromiseStopper } from './rxjs'
 import { RegistrationAbortedError, UnbindableElementError } from './error'
+import { getXPath } from './xpath'
+import { match } from 'ts-pattern'
 
 export enum RegistrationState {
   Idle,
@@ -26,6 +25,31 @@ export class RegistrationController {
   public registrationState$ = this.registrationState$$.asObservable()
   public getRegistrationState = exposeSubject(this.registrationState$$)
 
+  private mouseOverElements$ = fromEvent<MouseEvent>(document, 'mousemove')
+    .pipe(
+      throttleTime(20),
+      map((e) =>
+        document.elementsFromPoint(e.clientX, e.clientY) as HTMLElement[]
+      ),
+      share()
+    )
+
+  private targetedElement$ = this.mouseOverElements$
+    .pipe(
+      map<HTMLElement[], HTMLElement | null>((els) => {
+        return els.find(el => !el.classList.contains('vind-overlay')) || null
+      }),
+      filter(Boolean),
+      pairwise(),
+      filter(([prev, next]) => prev !== next), // only emit when element changes
+      map(([_, next]) => {
+        return next
+      }),
+      map(getClosestBindableElement),
+      filter(Boolean),
+      share()
+    )
+
   constructor(
     private pageControllerInstance: PageController
   ) {}
@@ -36,9 +60,17 @@ export class RegistrationController {
     }
     this.registrationInProgress$$.next(true)
 
-    return this.startRegistrationFlow()
+    const aborter = new AbortController()
+    waitForKeyDown('Escape', aborter.signal)
+      .then(() => {
+        log.warn('Registration aborted')
+        aborter.abort(new RegistrationAbortedError())
+      })
+
+    return this.startRegistrationFlow(aborter.signal)
       .finally(() => {
         log.info('Registration finished')
+        aborter.abort() // cleanup
         this.registrationInProgress$$.next(false)
         this.setRegistrationState(RegistrationState.Idle)
       })
@@ -55,23 +87,19 @@ export class RegistrationController {
     this.registrationState$$.next(state)
   }
 
-  private async startRegistrationFlow () {
-    const aborter = new AbortController()
-
-    waitForKeyDown('Escape', aborter.signal)
-      .then(() => aborter.abort(new RegistrationAbortedError()))
-
+  private async startRegistrationFlow (abortSignal: AbortSignal) {
     this.setRegistrationState(RegistrationState.SelectingElement)
-    const highlightedElement = await this.selectElement(aborter.signal)
-
+    const onElement = this.selectElement(abortSignal)
+    this.highlightCurrentElement(PromiseStopper(onElement).stopper)
+    const selectedElement = await onElement
+    // ----------------------------------------------
     this.setRegistrationState(RegistrationState.SelectingKey)
-    const key = await this.selectKey(aborter.signal)
-
+    const key = await this.selectKey(abortSignal)
+    // ----------------------------------------------
     this.setRegistrationState(RegistrationState.SavingBinding)
-    const binding = Binding.fromElement(highlightedElement, key)
-
+    const binding = Binding.fromElement(selectedElement, key)
     log.info('Saving binding:', binding)
-
+    // ----------------------------------------------
     return this.pageControllerInstance.bindingsChannel.addBinding(binding)
   }
 
@@ -80,71 +108,36 @@ export class RegistrationController {
       throw abortSignal.reason
     }
 
-    const onAborted = new Promise((resolve, reject) => {
-      abortSignal.addEventListener('abort', () => reject(abortSignal.reason))
-    })
+    const { promise: selectedElement, resolve: confirmElement, reject: cancel } = PromiseWithResolvers<HTMLElement>()
+    abortSignal.addEventListener('abort', () => cancel(abortSignal.reason))
 
-    let highlightedElement: HTMLElement | null = null
+    const sub = combineLatest([
+      this.targetedElement$,
+      fromEvent<MouseEvent>(document, 'click')
+        .pipe(filter(({ target }) => target instanceof HTMLElement && target.classList.contains('vind-overlay')))
+    ])
+      .subscribe((val) => {
+        const [element] = val
+        const result = getXPath(element)
 
-    const { resolve: confirmElement, reject: cancel, promise: onElementSelected } = PromiseWithResolvers<void>()
-    onAborted.catch(cancel)
-
-    const mouseoverListener = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-
-      if (!isBindableElement(target)) {
-        return
-      }
-
-      highlightedElement = target
-
-      const { cancel } = highlightElementUntilLeave(target)
-      onElementSelected.finally(cancel)
-    }
-
-    const clickListener = (event: MouseEvent) => {
-      if (!highlightedElement) {
-        return
-      }
-
-      log.info('CLICKKK')
-      event.preventDefault()
-      event.stopPropagation()
-
-      const result = getXPath(highlightedElement)
-
-      match(result.ok)
-        .with(true, () => {
-          console.log('XPATH', result.val)
-          confirmElement()
-        })
-        .with(false, () => {
-          cancel(new UnbindableElementError())
-        })
-    }
-
-    const [listen, clear] = makeEventListenerStack(document, {
-      signal: abortSignal,
-      passive: true,
-      capture: true,
-    })
-
-    listen('mouseover', mouseoverListener)
-    listen('mousedown', clickListener)
-
-    log.info('Waiting for element selection')
-    await onElementSelected
-      .finally(() => {
-        clear()
+        match(result.ok)
+          .with(true, () => {
+            console.log('XPATH', result.val)
+            confirmElement(element)
+          })
+          .with(false, () => {
+            cancel(new UnbindableElementError())
+          })
       })
 
-    if (!highlightedElement) {
-      throw new Error('No element selected')
-    }
+    await selectedElement
+      .catch((err) => {
+        log.info('on error @ selectElement', err)
+        throw err
+      })
+      .finally(() => sub.unsubscribe())
 
-    log.info('Element selected')
-
-    return highlightedElement
+    return selectedElement
   }
 
   private async selectKey (abortSignal: AbortSignal): Promise<string> {
@@ -165,5 +158,25 @@ export class RegistrationController {
 
     log.info('selected key', key)
     return key
+  }
+
+  // ----------------------------------------------
+  private highlightCurrentElement (stopper: Subject<any>) {
+    const element$ = this.targetedElement$
+      .pipe(
+        takeUntil(stopper),
+        map((el) => highlightElement(el)),
+        share()
+      )
+
+    element$.pipe(
+      pairwise(),
+      tap(([prev, _]) => {
+        document.body.removeChild(prev)
+      })
+    ).subscribe()
+
+    element$.pipe(last())
+      .forEach((last) => document.body.removeChild(last))
   }
 }

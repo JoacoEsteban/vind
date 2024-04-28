@@ -1,38 +1,36 @@
 import { pEvent, type CancelablePromise } from 'p-event'
-import { PromiseWithResolvers } from './polyfills'
 
 export const unBindableKeys = new Set(['TAB', 'ENTER', 'ESCAPE', 'SHIFT', 'CONTROL', 'ALT', 'META'])
 
 export function isBindableElement (element: HTMLElement): boolean {
   // filter if not type button or input or a
-  return ['button', 'input', 'a', 'div'].includes(element.tagName.toLowerCase())
+  return element.role === 'button' || ['button', 'input', 'a'].includes(element.tagName.toLowerCase())
+}
+
+export function getClosestBindableElement (element: HTMLElement): HTMLElement | null {
+  return element.closest('button, input, a, div, [role="button"]')
 }
 
 export function highlightElement (element: HTMLElement) {
-  element.style.outline = '2px solid #ff0000'
-}
+  const overlay = document.createElement('div')
+  const boundingRect = element.getBoundingClientRect()
 
-export function unhighlightElement (element: HTMLElement) {
-  element.style.outline = ''
-}
+  overlay.style.position = 'fixed'
+  overlay.style.top = `${boundingRect.top}px`
+  overlay.style.left = `${boundingRect.left}px`
+  overlay.style.width = `${boundingRect.width}px`
+  overlay.style.height = `${boundingRect.height}px`
 
-export function waitForElementLeave (element: HTMLElement) {
-  return pEvent(element, 'mouseleave')
-}
+  overlay.style.border = '2px solid #00ff00'
+  overlay.style.background = '#00ff0010'
+  overlay.style.zIndex = '999999999'
+  overlay.style.borderRadius = '4px'
 
-export function highlightElementUntilLeave (element: HTMLElement) {
-  highlightElement(element)
-  const { resolve, promise: cancelPromise } = PromiseWithResolvers<void>()
+  overlay.classList.add('vind-overlay')
 
-  const promise = Promise.race([
-    waitForElementLeave(element),
-    cancelPromise
-  ]).then(() => unhighlightElement(element))
-
-  return {
-    promise,
-    cancel: resolve
-  }
+  document.body.appendChild(overlay)
+  // element.style.outline = '2px solid #ff0000'
+  return overlay
 }
 
 export function recordInputKey (signal?: AbortSignal): Promise<string> {
