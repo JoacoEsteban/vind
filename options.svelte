@@ -9,6 +9,7 @@
   import DisplayUrl from '~components/display-url.svelte'
   import Filters from '~components/filters.svelte'
   import SymbolButton from '~components/symbol-button.svelte'
+  import { handleAnimationState } from '~lib/animation-state'
   import { Binding } from '~lib/binding'
   import { cursorPosition, mouse$ } from '~lib/cursor-position'
   import { log } from '~lib/log'
@@ -77,11 +78,18 @@
 </script>
 
 <div use:themeController use:cursorPosition>
-  <div
-    class="options-container p-5 h-screen overflow-auto drawer lg:drawer-open">
-    <div class="backdrop" style:--_bg-1={bg1.hex()} style:--_bg-2={bg2.hex()}>
+  <div class="options-container p-5 h-screen drawer lg:drawer-open">
+    <div
+      use:handleAnimationState
+      class="backdrop"
+      style:--_bg-1={bg1.hex()}
+      style:--_bg-2={bg2.hex()}>
       <div class="v_toggle-visibility w-full h-full" class:enabled={$onMouse}>
-        <div class="mosaic" style:background-image={`url(${logo})`}></div>
+        <div
+          use:handleAnimationState
+          class="mosaic"
+          style:background-image={`url(${logo})`}>
+        </div>
       </div>
     </div>
     <input id="drawer" type="checkbox" class="drawer-toggle" />
