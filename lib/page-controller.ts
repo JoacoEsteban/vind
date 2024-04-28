@@ -9,6 +9,7 @@ import { PageOverrideInput, pageOverridesMap, type PageOverride } from './page-o
 import { expose } from './rxjs'
 import { match } from 'ts-pattern'
 import { sleep } from './control-flow'
+import { InexistentElementError } from './error'
 
 export class PageController {
   constructor(
@@ -286,7 +287,7 @@ export class PageController {
     return this.triggerBindings(matchingBindings)
   }
 
-  async triggerBindings (bindings: Binding[]): Promise<void[]> {
+  async triggerBindings (bindings: Binding[]) {
     return Promise.all(bindings.map(async binding => {
       log.info('triggering binding', binding)
       return this.clickBinding(binding)
@@ -315,6 +316,7 @@ export class PageController {
       await this.click(element)
     } else {
       console.log('no element found for binding', binding)
+      throw new InexistentElementError()
     }
   }
 
@@ -330,11 +332,9 @@ export class PageController {
     }
   }
 
-  onKeyPress (e: KeyboardEvent) {
+  async onKeyPress (e: KeyboardEvent) {
     const key = this.getMatchingKey(e)
-    if (key) {
-      this.triggerBindingsByKey(key)
-    }
+    return key ? this.triggerBindingsByKey(key) : []
   }
 
   async togglePath (path: string) {

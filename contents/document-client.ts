@@ -1,5 +1,8 @@
 import "@virtualstate/navigation/polyfill"
 import { filter, fromEvent, merge, throttleTime } from 'rxjs'
+import toast from 'svelte-french-toast/dist'
+import { match } from 'ts-pattern'
+import { InexistentElementError, VindError } from '~lib/error'
 import { log } from '~lib/log'
 import { PageController } from '~lib/page-controller'
 import { RegistrationController } from '~lib/registration-controller'
@@ -32,7 +35,19 @@ export const onPageControllerReady = (async () => {
       fromEvent<KeyboardEvent>(document, 'keydown')
     ).pipe(throttleTime(100))
       .pipe(filter(() => !registrationControllerInstance.isRegistrationInProgress()))
-      .subscribe((event) => {
+      .subscribe(async (event) => {
         instance.onKeyPress(event)
+          .then((presses) => {
+            if (presses.length) {
+              toast.success('Binding activated', { duration: 500 })
+            }
+          })
+          .catch(err => {
+            const message = match<Error, string>(err)
+              .when(() => err instanceof InexistentElementError, () => 'The element that the binding is trying to target does not exist on this page. You can try binding it again')
+              .when(() => err instanceof VindError, () => err.message)
+              .otherwise(() => 'An unknown error occurred')
+            toast.error(message, { duration: 5000 })
+          })
       })
   })

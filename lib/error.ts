@@ -27,3 +27,9 @@ export class UnbindableElementError extends VindError {
     super("That element/button cannot be bound 🥴", 'UNBINDABLE_ELEMENT')
   }
 }
+
+export class InexistentElementError extends VindError {
+  constructor() {
+    super("That element does not exist", 'INEXISTENT_ELEMENT')
+  }
+}
