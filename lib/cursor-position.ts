@@ -1,8 +1,10 @@
-import { Observable, ReplaySubject, fromEvent } from 'rxjs'
+import { fromEvent, share, throttleTime } from 'rxjs'
 
-const _mouse$ = fromEvent(document, 'mousemove') as Observable<MouseEvent>
-export const mouse$ = new ReplaySubject<MouseEvent>(1)
-_mouse$.subscribe(mouse$)
+export const mouse$ = fromEvent<MouseEvent>(document, 'mousemove')
+  .pipe(
+    throttleTime(20),
+    share()
+  )
 
 export function cursorPosition (node: HTMLElement, percentage = true) {
   // get cursor position and set it to the node
