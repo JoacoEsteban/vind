@@ -1,7 +1,7 @@
 import { RegistrationState } from './registration-controller'
 import { SymbolComponent, type SymbolName } from './symbols'
 
-const iconSize = '1em'
+const iconSize = '2em'
 
 export const registrationStateToastOptions: {
   [key in RegistrationState]: { text: string; icon: ReturnType<typeof SymbolComponent> } | null
