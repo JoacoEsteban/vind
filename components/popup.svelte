@@ -41,18 +41,20 @@
   }
 </script>
 
-<div class="popup-wrapper" class:visible class:ghost={disabled} use:draggable>
-  <div class="popup-container bg-blur">
+<div class="popup-wrapper" class:visible class:shrink={disabled} use:draggable>
+  <div class="popup-container bg-blur" class:ghost={disabled}>
     <div class="flex justify-between sticky top-0 z-10">
       <h2 class="font-black m-0 opacity-25">Vind</h2>
       <div class="flex">
         <SymbolButton
+          {disabled}
           opaque={true}
           name="gear"
           on:click={openOptions}
           size={'40px'} />
         <div class="w-2" />
         <SymbolButton
+          {disabled}
           opaque={true}
           name="xMark"
           size={'40px'}
@@ -94,6 +96,7 @@
                       <DisplayUrl path={new Path(path)} size={'text-md'} />
                     </span>
                     <Toggle
+                      {disabled}
                       checked={$includedPaths.has(path)}
                       on:click={() =>
                         pageControllerInstance.togglePath(path)} />
@@ -103,7 +106,7 @@
                     class:enabled={$includedPaths.has(path)}>
                     {#each bindings as binding}
                       <BindingButton
-                        disabled={!$includedPaths.has(path)}
+                        disabled={disabled || !$includedPaths.has(path)}
                         {binding}
                         on:click={() =>
                           pageControllerInstance.clickBinding(binding)}
@@ -121,7 +124,7 @@
       </div>
     </main>
     <div class="flex justify-center sticky bottom-0">
-      <Button on:click={registerNewBinding}>Bind</Button>
+      <Button {disabled} on:click={registerNewBinding}>Bind</Button>
     </div>
   </div>
 </div>

@@ -8,11 +8,13 @@
   export let padding: string = '15%'
   export let as: string = 'button'
   export let opaque: boolean = false
+  export let disabled: boolean = false
 </script>
 
 <Button
   {as}
   {opaque}
+  {disabled}
   round={true}
   roundSize={size}
   roundPadding={padding}

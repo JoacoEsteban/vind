@@ -8,7 +8,7 @@
   --visible-opacity: 1
   --visible-scale-factor: 1
 
-  &:not(.visible), &.visible.disabled
+  &:not(.visible)
     &, .popup-container
       pointer-events: none
 
@@ -22,9 +22,8 @@
     .popup-container
       opacity: var(--visible-opacity)
       transform: scale(var(--visible-scale-factor))
-    &.disabled
+    &.shrink
       --visible-scale-factor: .98
-      --visible-opacity: .4
       // filter: blur(2px) saturate(0)
 
 .popup-container
