@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@extend-chrome/messages": "^1.2.2",
+    "@floating-ui/core": "^1.6.1",
     "@parcel/runtime-js": "2.8.3",
     "@plasmohq/messaging": "^0.5.0",
     "@plasmohq/storage": "^1.8.1",
@@ -33,6 +34,7 @@
     "runtypes": "^6.7.0",
     "rxjs": "^7.8.1",
     "svelte": "4.2.0",
+    "svelte-floating-ui": "^1.5.8",
     "svelte-french-toast": "^1.2.0",
     "svelte-preprocess": "5.0.4",
     "ts-pattern": "^5.1.1",
