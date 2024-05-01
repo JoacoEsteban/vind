@@ -4,9 +4,11 @@
   import { circIn, circOut } from 'svelte/easing'
   import { fade, scale, type TransitionConfig } from 'svelte/transition'
 
+  export let placement: 'top' | 'bottom' | 'left' | 'right' = 'top'
+
   const [floatingRef, floatingContent] = createFloatingActions({
     strategy: 'absolute',
-    placement: 'top',
+    placement,
     middleware: [flip(), shift()],
   })
 
@@ -61,6 +63,7 @@
     role="tooltip"
     style:position="absolute"
     style:padding="8px"
+    style:z-index="1000"
     in:trIn
     out:trOut>
     <slot name="tooltip" />

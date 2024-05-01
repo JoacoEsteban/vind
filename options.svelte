@@ -144,7 +144,7 @@
                   <div class="flex mb-5 flex-wrap gap-3">
                     {#each bindings as binding (binding.id)}
                       <span>
-                        <WithTooltip>
+                        <WithTooltip placement="bottom">
                           <BindingButton opaque={true} {binding} />
                           <div slot="tooltip">
                             <Button
