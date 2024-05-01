@@ -29,14 +29,15 @@
 
   function tooltipTransition(easing = circOut, duration = 200) {
     return function (node: Element, { delay = 0 } = {}): TransitionConfig {
-      const f = fade(node, { duration, easing }).css!
-      const s = scale(node, { start: 0.8, duration, easing }).css!
+      const anims: ((t: number, u: number) => string)[] = []
+      anims.push(fade(node, { duration, easing }).css!)
+      anims.push(scale(node, { start: 0.8, duration, easing }).css!)
 
       return {
         delay,
         duration,
         easing,
-        css: (t, u) => [f(t, u), s(t, u)].join(';'),
+        css: (t, u) => anims.map((a) => a(t, u)).join('; '),
       }
     }
   }
