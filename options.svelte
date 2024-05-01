@@ -228,6 +228,9 @@
 </div>
 
 <style lang="sass">
+h1
+  mix-blend-mode: color-dodge
+
 .backdrop
   position: fixed
   top: 0
