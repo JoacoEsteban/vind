@@ -5,6 +5,7 @@
   import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
   import { draggable } from '~lib/draggable'
+  import { MapToOrderedTuple } from '~lib/map'
   import type { PageController } from '~lib/page-controller'
   import { Path } from '~lib/url'
   import SymbolButton from './symbol-button.svelte'
@@ -20,11 +21,17 @@
     map(([{ overlapping, nonOverlapping }, site]) => [
       {
         isCurrentPath: true,
-        bindings: overlapping,
+        bindings: MapToOrderedTuple(overlapping, (a, b) => {
+          if (a === site.path.value) return -1
+          if (b === site.path.value) return 1
+          return a.localeCompare(b)
+        }),
       },
       {
         isCurrentPath: false,
-        bindings: nonOverlapping,
+        bindings: MapToOrderedTuple(nonOverlapping, (a, b) =>
+          a.localeCompare(b),
+        ),
       },
     ]),
   )
@@ -76,7 +83,7 @@
           {/if}
 
           {#each $bindingsMap as bmap, i}
-            {#if bmap.bindings.size}
+            {#if bmap.bindings.length}
               {#if i > 0}
                 <div class="divider"></div>
               {/if}
