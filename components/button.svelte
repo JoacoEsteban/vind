@@ -20,6 +20,7 @@
   export let as: string = 'button'
   export let role: string = 'button'
   export let tabindex: number = 0
+  export let type: string = 'button'
 
   const opacity = 0.5
   $: topGradient = chroma(colorHash.hex(colorSeed)).alpha(opacity).hex()
@@ -41,6 +42,7 @@
     this={as}
     {role}
     {tabindex}
+    {type}
     class="outer f-center btn"
     class:round
     class:opaque
