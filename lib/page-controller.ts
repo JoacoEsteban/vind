@@ -1,6 +1,6 @@
 import { Binding, bindingsAsMap } from '~lib/binding'
 import { log } from './log'
-import { BehaviorSubject, Subject, combineLatest, filter, map, merge } from 'rxjs'
+import { BehaviorSubject, Subject, combineLatest, filter, map, merge, share } from 'rxjs'
 import { Domain, Path } from './url'
 import { BindingChannelImpl } from './messages/bindings'
 import { isBindableKeydownEvent } from './element'
@@ -134,7 +134,8 @@ export class PageController {
       }
 
       return returns
-    })
+    }),
+    share()
   )
 
   public domainBindingsByNesting$ = combineLatest([this.currentDomainBindings$, this.currentSiteSplitted$]).pipe(
