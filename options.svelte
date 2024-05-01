@@ -2,7 +2,7 @@
   import '~/style.sass'
   import '~/lib/fonts-importer'
   import chroma from 'chroma-js'
-  import { first } from 'rxjs'
+  import { first, map, share } from 'rxjs'
   import logo from '~/assets/icon.png'
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
@@ -13,6 +13,7 @@
   import { Binding } from '~lib/binding'
   import { cursorPosition, mouse$ } from '~lib/cursor-position'
   import { log } from '~lib/log'
+  import { MapToOrderedTuple } from '~lib/map'
   import { PageController } from '~lib/page-controller'
   import type { SymbolName } from '~lib/symbols'
   import { themeController } from '~lib/theme-controller'
@@ -46,7 +47,17 @@
   let activeKey = options[0].key
 
   const onMouse = mouse$.pipe(first())
-  const bindingsMap = pageController.bindingsByPathMap$
+  const bindingsMap = pageController.bindingsByPathMap$.pipe(
+    map((map) => {
+      return MapToOrderedTuple(map, (a, b) => a.localeCompare(b)).map(
+        ([key, map]) => [
+          key,
+          MapToOrderedTuple(map, (a, b) => a.localeCompare(b)),
+        ],
+      )
+    }),
+    share(),
+  )
   const overridesMap = pageController.overridesByPathMap$
   const { bg1, bg2 } = (() => {
     const base = chroma.random()
@@ -113,7 +124,7 @@
           <div class="">
             <div>
               <h2 class="font-bold made-tommy">
-                {#if $bindingsMap.size === 0}
+                {#if $bindingsMap.length === 0}
                   No bindings found
                 {:else}
                   Bindings
@@ -135,7 +146,7 @@
                         <BindingButton
                           opaque={true}
                           {binding}
-                          on:click={() => deleteBinding(binding)} />
+                          on:click={() => {}} />
                       </span>
                     {/each}
                   </div>
