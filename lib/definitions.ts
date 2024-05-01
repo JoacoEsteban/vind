@@ -17,3 +17,8 @@ export const registrationStateToastOptions: {
     icon: SymbolComponent('keyboard', iconSize),
   },
 }
+
+export const colorSeeds = {
+  redCancel: '10a',
+  greenAccept: '67',
+}
