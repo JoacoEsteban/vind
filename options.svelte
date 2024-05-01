@@ -2,6 +2,7 @@
   import '~/style.sass'
   import '~/lib/fonts-importer'
   import chroma from 'chroma-js'
+  import githubMark from 'data-text:~assets/svg/github-mark.svg'
   import { first, map, share } from 'rxjs'
   import logo from '~/assets/icon.png'
   import BindingButton from '~components/binding-button.svelte'
@@ -15,6 +16,7 @@
   import { cursorPosition, mouse$ } from '~lib/cursor-position'
   import { log } from '~lib/log'
   import { MapToOrderedTuple } from '~lib/map'
+  import { openGithub } from '~lib/misc'
   import { PageController } from '~lib/page-controller'
   import type { SymbolName } from '~lib/symbols'
   import { themeController } from '~lib/theme-controller'
@@ -108,7 +110,19 @@
 
     <div class="drawer-content max-w-3xl mx-auto pt-10 px-5">
       <main class="prose prose-2xs max-w-full">
-        <h1 class="font-black">Vind Options</h1>
+        <div class="sm:flex align-center justify-between mb-4">
+          <h1 class="font-black">Vind Options</h1>
+          <div class="flex align-center gap-3">
+            <Button
+              opaque={true}
+              round={true}
+              roundSize="50px"
+              on:click={openGithub}
+              roundPadding="10%">
+              {@html githubMark}
+            </Button>
+          </div>
+        </div>
         <div role="tablist" class="flex gap-2">
           {#each options as option}
             <Button
