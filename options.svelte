@@ -9,6 +9,7 @@
   import DisplayUrl from '~components/display-url.svelte'
   import Filters from '~components/filters.svelte'
   import SymbolButton from '~components/symbol-button.svelte'
+  import WithTooltip from '~components/with-tooltip.svelte'
   import { handleAnimationState } from '~lib/animation-state'
   import { Binding } from '~lib/binding'
   import { cursorPosition, mouse$ } from '~lib/cursor-position'
@@ -141,12 +142,20 @@
                     <DisplayUrl path={new Path(path)} size={'text-l'} />
                   </h5>
                   <div class="flex mb-5 flex-wrap gap-3">
-                    {#each bindings as binding}
+                    {#each bindings as binding (binding.id)}
                       <span>
-                        <BindingButton
-                          opaque={true}
-                          {binding}
-                          on:click={() => {}} />
+                        <WithTooltip>
+                          <BindingButton opaque={true} {binding} />
+                          <div slot="tooltip">
+                            <Button
+                              colorSeed={binding.key}
+                              opaque={true}
+                              icon={'trashFill'}
+                              on:click={() => deleteBinding(binding)}>
+                              Remove
+                            </Button>
+                          </div>
+                        </WithTooltip>
                       </span>
                     {/each}
                   </div>
