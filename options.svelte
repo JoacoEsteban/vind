@@ -49,12 +49,12 @@
   const onMouse = mouse$.pipe(first())
   const bindingsMap = pageController.bindingsByPathMap$.pipe(
     map((map) => {
-      return MapToOrderedTuple(map, (a, b) => a.localeCompare(b)).map(
-        ([key, map]) => [
-          key,
-          MapToOrderedTuple(map, (a, b) => a.localeCompare(b)),
-        ],
-      )
+      return MapToOrderedTuple(map, (a, b) => a.localeCompare(b)).map<
+        [string, [string, Binding[]][]]
+      >(([key, map]) => [
+        key,
+        MapToOrderedTuple(map, (a, b) => a.localeCompare(b)),
+      ])
     }),
     share(),
   )
