@@ -118,7 +118,7 @@
               round={true}
               roundSize="50px"
               on:click={openGithub}
-              roundPadding="10%">
+              roundPadding="15%">
               {@html githubMark}
             </Button>
           </div>
