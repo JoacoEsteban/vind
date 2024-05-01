@@ -24,7 +24,7 @@ export class RegistrationAbortedError extends VindError {
 
 export class UnbindableElementError extends VindError {
   constructor() {
-    super("That element/button cannot be bound 🥴", 'UNBINDABLE_ELEMENT')
+    super("That element/button cannot be bound", 'UNBINDABLE_ELEMENT')
   }
 }
 
