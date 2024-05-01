@@ -20,7 +20,7 @@ export class Binding {
     return generateId()
   }
   static from (binding: Binding) {
-    return new Binding(binding.domain, binding.path, binding.key, binding.selector, binding.id)
+    return new Binding(new Domain(binding.domain.value), new Path(binding.path.value), binding.key, binding.selector, binding.id)
   }
 
   static fromElement (element: HTMLElement, key: string) {
