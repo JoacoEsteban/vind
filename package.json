@@ -58,6 +58,9 @@
     "typescript": "5.3.3"
   },
   "manifest": {
+    "permissions": [
+      "unlimitedStorage"
+    ],
     "commands": {
       "toggle-overlay": {
         "suggested_key": {
