@@ -1,5 +1,13 @@
 # Vind
 
+[![Vind Logo](./assets/store/splash-768.png)]()
+
+<!-- [![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
+[![Chrome Web Store Stars](https://img.shields.io/chrome-web-store/stars/ocohbenbjomofbknmcmaedadcmonedee)](https://img.shields.io/chrome-web-store/stars/ocohbenbjomofbknmcmaedadcmonedee)
+[![Chrome Web Store Rating Count](https://img.shields.io/chrome-web-store/rating-count/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee) -->
+
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 Unleash the power of the elements to navigate your digital world. Map keys to on-screen elements and trigger clicks with a press, as effortless as the wind sweeping through the leaves.
 
 ## Features
