@@ -1,7 +1,7 @@
 {
   "name": "vind",
   "displayName": "Vind",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Map keys to on-screen elements and trigger clicks effortlessly.",
   "author": "dev@joacoesteban.com",
   "scripts": {
