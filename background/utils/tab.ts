@@ -1,10 +1,14 @@
+import { interopTabs } from './runtime'
+
+const tabs = interopTabs()
+
 export async function getActiveTab () {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+  const [tab] = await tabs.query({ active: true, currentWindow: true })
   return tab
 }
 
 export async function getAllTabs () {
-  return await chrome.tabs.query({})
+  return await tabs.query({})
 }
 
 export async function getActiveTabId () {

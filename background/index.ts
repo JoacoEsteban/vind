@@ -8,12 +8,17 @@ import { bindingsMessages } from '~messages/storage'
 import { log } from '~lib/log'
 import { StorageHandlers } from './handlers'
 import { match } from 'ts-pattern'
+import { interopAction, interopRuntime, interopTabs } from './utils/runtime'
 
 const db = new VindDB()
 export const bindingsStorage = new BindingsStorageImpl(db)
 export const pageOverridesStorage = new PageOverridesStorageImpl(db)
 
 new StorageHandlers(bindingsStorage, pageOverridesStorage).init()
+
+const tabs = interopTabs()
+const runtime = interopRuntime()
+const action = interopAction()
 
 async function sendShowOverlay () {
   const tabId = await getActiveTabId()
@@ -22,8 +27,7 @@ async function sendShowOverlay () {
     tabId: tabId
   })
 }
-
-chrome.tabs.onActivated.addListener(activeInfo => {
+tabs.onActivated.addListener(activeInfo => {
   wakeUp.ask.toTab({
     tabId: activeInfo.tabId
   })
@@ -38,7 +42,7 @@ askForBindingStream.subscribe(async ([, sender]) => {
 })
 
 askForOptionsPageStream.subscribe(async ([, sender]) => {
-  chrome.runtime.openOptionsPage()
+  runtime.openOptionsPage()
 })
 
 chrome.commands.onCommand.addListener(async (command) => {
@@ -50,7 +54,7 @@ chrome.commands.onCommand.addListener(async (command) => {
     })
 })
 
-chrome.action.onClicked.addListener(async (tab) => {
+action.onClicked.addListener(async function onAction () {
   log.info('Action clicked')
   sendShowOverlay()
 })
