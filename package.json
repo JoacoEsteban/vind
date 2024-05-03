@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
+    "build:firefox": "plasmo build --target=firefox-mv2",
     "package": "plasmo package",
+    "package:firefox": "plasmo package --target=firefox-mv2",
     "rebuild-sharp": "npm rebuild --verbose sharp"
   },
   "dependencies": {
@@ -67,6 +69,11 @@
           "default": "Alt+V"
         },
         "description": "Toggle the Vind overlay on the current page."
+      }
+    },
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "vind@joacoesteban.com"
       }
     }
   },
