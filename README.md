@@ -1,14 +1,18 @@
 # Vind
 
-[![Vind Logo](./assets/store/splash-768.png)]()
-
-<!-- [![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
-[![Chrome Web Store Stars](https://img.shields.io/chrome-web-store/stars/ocohbenbjomofbknmcmaedadcmonedee)](https://img.shields.io/chrome-web-store/stars/ocohbenbjomofbknmcmaedadcmonedee)
-[![Chrome Web Store Rating Count](https://img.shields.io/chrome-web-store/rating-count/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee) -->
+[![Vind Logo](./assets/store/splash-768.png)](https://chrome.google.com/webstore/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
+[![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
+[![Chrome Web Store Rating Count](https://img.shields.io/chrome-web-store/rating-count/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
 
 Unleash the power of the elements to navigate your digital world. Map keys to on-screen elements and trigger clicks with a press, as effortless as the wind sweeping through the leaves.
+
+## Store Links
+
+- [Chrome Web Store](https://chrome.google.com/webstore/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
+- [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/vind/)
 
 ## Features
 
