@@ -9,6 +9,10 @@
 
 Unleash the power of the elements to navigate your digital world. Map keys to on-screen elements and trigger clicks with a press, as effortless as the wind sweeping through the leaves.
 
+## Homepage
+
+https://vind-works.io
+
 ## Store Links
 
 - [Chrome Web Store](https://chrome.google.com/webstore/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
