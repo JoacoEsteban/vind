@@ -1,7 +1,7 @@
 {
   "name": "vind",
   "displayName": "Vind - The last shortcuts extension you'll ever need",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Map keys to on-screen elements and trigger clicks effortlessly.",
   "author": "dev@joacoesteban.com",
   "scripts": {
