@@ -5,12 +5,10 @@
   import githubMark from 'data-text:~assets/svg/github-mark.svg'
   import { first, map, share } from 'rxjs'
   import logo from '~/assets/icon.png'
-  import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
-  import DisplayUrl from '~components/display-url.svelte'
   import Filters from '~components/filters.svelte'
-  import SymbolButton from '~components/symbol-button.svelte'
-  import WithTooltip from '~components/with-tooltip.svelte'
+  import BindingsList from '~components/options/bindings-list.svelte'
+  import OverridesList from '~components/options/overrides-list.svelte'
   import { handleAnimationState } from '~lib/animation-state'
   import { Binding } from '~lib/binding'
   import { cursorPosition, mouse$ } from '~lib/cursor-position'
@@ -20,7 +18,6 @@
   import { PageController } from '~lib/page-controller'
   import type { SymbolName } from '~lib/symbols'
   import { themeController } from '~lib/theme-controller'
-  import { Domain, Path, safeUrl } from '~lib/url'
   import { wakeUp } from '~messages/tabs'
 
   const pageController = new PageController('options')
@@ -71,23 +68,11 @@
     return { bg1, bg2 }
   })()
 
-  async function deleteBinding(binding: Binding) {
-    pageController.bindingsChannel.removeBinding(binding.id)
+  async function deleteBinding(id: string) {
+    pageController.bindingsChannel.removeBinding(id)
   }
   async function removeOverride(id: number) {
     pageController.overridesChannel.removePageOverride(id)
-  }
-
-  function getOverrideBehavior(domain: string, overridePath: string) {
-    const target = new Path(domain)
-    const source = new Path(overridePath)
-
-    return target.includes(source) ? behaviors.disabled : behaviors.enabled
-  }
-
-  const behaviors = {
-    enabled: 'Enabled',
-    disabled: 'Disabled',
   }
 </script>
 
@@ -136,90 +121,14 @@
           {/each}
         </div>
         {#if activeKey === 'bindings'}
-          <div class="">
-            <div>
-              <h2 class="font-bold made-tommy">
-                {#if $bindingsMap.length === 0}
-                  No bindings found
-                {:else}
-                  Bindings
-                {/if}
-              </h2>
-
-              {#each $bindingsMap as [domain, map]}
-                <h5 class="mb-3">
-                  <DisplayUrl domain={new Domain(domain)} size={'text-2xl'} />
-                </h5>
-                {#each map as [path, bindings]}
-                  <h5 class="w-full flex mb-3">
-                    <!-- <b> <DisplayUrl {url} /> </b> -->
-                    <DisplayUrl path={new Path(path)} size={'text-l'} />
-                  </h5>
-                  <div class="flex mb-5 flex-wrap gap-3">
-                    {#each bindings as binding (binding.id)}
-                      <span>
-                        <WithTooltip placement="bottom">
-                          <BindingButton opaque={true} {binding} />
-                          <div slot="tooltip">
-                            <Button
-                              colorSeed={binding.key}
-                              opaque={true}
-                              icon={'trashFill'}
-                              on:click={() => deleteBinding(binding)}>
-                              Remove
-                            </Button>
-                          </div>
-                        </WithTooltip>
-                      </span>
-                    {/each}
-                  </div>
-                {/each}
-              {/each}
-            </div>
-          </div>
+          <BindingsList
+            {bindingsMap}
+            on:remove={(e) => deleteBinding(e.detail.id)} />
         {/if}
         {#if activeKey === 'overrides'}
-          <div class="container">
-            <div>
-              <h2 class="font-bold made-tommy">
-                {#if $overridesMap.size === 0}
-                  No Overrides found
-                {:else}
-                  Overrides
-                {/if}
-              </h2>
-
-              {#each $overridesMap as [domain, overrides]}
-                <h3 class="w-full flex mb-3">
-                  on &nbsp;
-
-                  <a href={safeUrl(domain).href} target="_blank">
-                    <DisplayUrl
-                      domain={new Domain(domain)}
-                      path={new Path(domain)}
-                      size={'text-l'} />
-                  </a>
-                </h3>
-                {#each overrides as [id, path]}
-                  <div class="flex">
-                    <h4
-                      class="w-full flex items-center flex-wrap gap-1 mb-3 mt-0">
-                      bindings from <DisplayUrl
-                        path={new Path(path)}
-                        size={'text-l'} />are
-                      <b>{getOverrideBehavior(domain, path)}</b>
-                    </h4>
-                    <SymbolButton
-                      opaque={true}
-                      name="trashFill"
-                      padding="25%"
-                      on:click={() => removeOverride(id)}></SymbolButton>
-                  </div>
-                {/each}
-                <div class="divider"></div>
-              {/each}
-            </div>
-          </div>
+          <OverridesList
+            {overridesMap}
+            on:remove={(e) => removeOverride(e.detail.id)} />
         {/if}
       </main>
     </div>

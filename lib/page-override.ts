@@ -61,3 +61,15 @@ export function pageOverridesMap (overrides: PageOverride[]): Map<string, Map<nu
 export function pageOverridesSet (overrides: PageOverride[]): Set<string> {
   return new Set(overrides.map(override => override.bindingsPath.value))
 }
+
+export function getOverrideBehavior (domain: string, overridePath: string) {
+  const target = new Path(domain)
+  const source = new Path(overridePath)
+
+  return target.includes(source) ? OverrideBehaviors.disabled : OverrideBehaviors.enabled
+}
+
+export const OverrideBehaviors = {
+  enabled: 'Enabled',
+  disabled: 'Disabled',
+}
