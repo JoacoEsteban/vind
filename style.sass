@@ -55,6 +55,13 @@
 .btn 
   @apply rounded-full
 
+.browser-safari
+  .bg-blur
+    -webkit-backdrop-filter: blur(15px) hue-rotate(15deg) !important
+.browser-firefox
+  .bg-blur
+    backdrop-filter: blur(15px) hue-rotate(15deg) !important
+
 .bg-blur
   backdrop-filter: blur(15px) url(#aberration) hue-rotate(15deg) !important
   // background-color: rgba(20, 20, 20, 0.5)

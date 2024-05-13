@@ -10,4 +10,5 @@ export function themeController (node: HTMLElement): void {
   })
 
   node.setAttribute('data-theme', matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+  node.classList.add(`browser-${process.env.PLASMO_BROWSER}`)
 }
