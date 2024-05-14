@@ -108,7 +108,7 @@
             </Button>
           </div>
         </div>
-        <div role="tablist" class="flex gap-2">
+        <div role="tablist" class="flex gap-3 flex-wrap items-center">
           {#each options as option}
             <Button
               opaque={true}
