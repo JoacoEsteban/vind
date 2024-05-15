@@ -1,4 +1,5 @@
 <script lang="ts">
+  import toast from 'svelte-french-toast/dist'
   import '~/style.sass'
   import '~/lib/fonts-importer'
   import chroma from 'chroma-js'
@@ -17,11 +18,17 @@
   import { MapToOrderedTuple } from '~lib/map'
   import { openGithub } from '~lib/misc'
   import { PageController } from '~lib/page-controller'
+  import { ResourceMigrator } from '~lib/resource-migrator'
   import type { SymbolName } from '~lib/symbols'
   import { themeController } from '~lib/theme-controller'
   import { wakeUp } from '~messages/tabs'
+  import Migrator from '~options/migrator.svelte'
 
   const pageController = new PageController('options')
+  const resourceMigrator = new ResourceMigrator(
+    pageController.bindingsChannel,
+    pageController.overridesChannel,
+  )
   pageController.refreshResources()
 
   wakeUp.stream.subscribe(() => {
@@ -43,6 +50,11 @@
       name: 'Overrides',
       key: 'overrides',
       icon: 'arrowTriangleBranch',
+    },
+    {
+      name: 'Import/Export',
+      key: 'migrator',
+      icon: 'arrowDownRightAndArrowUpLeft',
     },
   ]
   let activeKey = options[0].key
@@ -130,6 +142,13 @@
           <OverridesList
             {overridesMap}
             on:remove={(e) => removeOverride(e.detail.id)} />
+        {/if}
+        {#if activeKey === 'migrator'}
+          <Migrator
+            migrator={resourceMigrator}
+            on:error={(e) => toast.error(e.detail.message)}
+            on:importSuccess={(e) => toast.success('Imported successfully')}
+            on:exportSuccess={(e) => toast.success('Exported successfully')} />
         {/if}
       </main>
     </div>
