@@ -49,6 +49,10 @@ export class StorageHandlers {
       this.respondError(bindingsStorage.updateBinding(binding), respond)
     })
 
+    bindingsMessages.upsertBinding.stream.subscribe(async ([binding, sender, respond]) => {
+      this.respondError(bindingsStorage.upsertBinding(binding), respond)
+    })
+
     bindingsMessages.removeBinding.stream.subscribe(async ([id, sender, respond]) => {
       this.respondError(bindingsStorage.removeBinding(id), respond)
     })

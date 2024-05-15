@@ -28,6 +28,10 @@ export const bindingsMessages = {
     'updateBinding',
     { async: true }
   )),
+  upsertBinding: splitMessage(getMessage<BindingDoc, ErrResponse>(
+    'upsertBinding',
+    { async: true }
+  )),
   removeBinding: splitMessage(getMessage<string, ErrResponse>(
     'removeBinding',
     { async: true }

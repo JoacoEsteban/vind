@@ -12,6 +12,7 @@ export interface BindingChannel {
   getBindingsForSite: (url: URL) => Promise<Binding[]>
   addBinding: (binding: Binding) => void
   updateBinding: (binding: Binding) => void
+  upsertBinding: (binding: Binding) => void
   removeBinding: (id: string) => void
 }
 
@@ -57,6 +58,10 @@ export class BindingChannelImpl implements BindingChannel {
   updateBinding (binding: Binding) {
     const doc = toBindingDoc(binding)
     return bindingsMessages.updateBinding.ask(doc).then(throwOnResponseError)
+  }
+  upsertBinding (binding: Binding) {
+    const doc = toBindingDoc(binding)
+    return bindingsMessages.upsertBinding.ask(doc).then(throwOnResponseError)
   }
   removeBinding (id: string) {
     return bindingsMessages.removeBinding.ask(id).then(throwOnResponseError)

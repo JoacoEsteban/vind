@@ -9,6 +9,7 @@ export interface BindingsStorage {
   getBindingsForSite: (domain: string, site: string) => Promise<BindingDoc[]>
   addBinding: (binding: BindingDoc) => Promise<void>
   updateBinding: (binding: BindingDoc) => Promise<void>
+  upsertBinding: (binding: BindingDoc) => Promise<void>
   removeBinding: (id: string) => Promise<void>
   onDeleted$: Observable<BindingDoc>
   onAdded$: Observable<BindingDoc>
@@ -63,6 +64,10 @@ export class BindingsStorageImpl implements BindingsStorage {
 
   async updateBinding (binding: BindingDoc): Promise<void> {
     await this.collection.update(binding.id, binding)
+  }
+
+  async upsertBinding (binding: BindingDoc): Promise<void> {
+    await this.collection.put(binding)
   }
 
   async removeBinding (id: string): Promise<void> {
