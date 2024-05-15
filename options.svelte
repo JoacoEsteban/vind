@@ -9,6 +9,7 @@
   import Filters from '~components/filters.svelte'
   import BindingsList from '~components/options/bindings-list.svelte'
   import OverridesList from '~components/options/overrides-list.svelte'
+  import Toaster from '~components/toaster.svelte'
   import { handleAnimationState } from '~lib/animation-state'
   import { Binding } from '~lib/binding'
   import { cursorPosition, mouse$ } from '~lib/cursor-position'
@@ -134,6 +135,7 @@
     </div>
   </div>
   <Filters />
+  <Toaster />
 </div>
 
 <style lang="sass">

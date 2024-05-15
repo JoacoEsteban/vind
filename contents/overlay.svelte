@@ -16,11 +16,12 @@
 
 <script lang="ts">
   import { pairwise, startWith, Subject } from 'rxjs'
-  import toast, { Toaster } from 'svelte-french-toast/dist'
+  import toast from 'svelte-french-toast/dist'
   import { match } from 'ts-pattern'
   import { askForBindingStream } from '~/messages'
   import Filters from '~components/filters.svelte'
   import Popup from '~components/popup.svelte'
+  import Toaster from '~components/toaster.svelte'
   import { registrationStateToastOptions } from '~lib/definitions'
   import { RegistrationAbortedError, VindError } from '~lib/error'
   import { log } from '~lib/log'
@@ -104,7 +105,5 @@
     {pageControllerInstance}
     close={closePopup} />
   <Filters />
-  <Toaster
-    containerClassName={'made-tommy font-regular'}
-    toastOptions={{ className: 'bg-blur ghost vind-ignore' }} />
+  <Toaster />
 </div>
