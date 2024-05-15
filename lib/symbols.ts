@@ -9,6 +9,10 @@ import arrowTriangleBranchRaw from '~/assets/symbols/arrow.triangle.branch.json'
 import linkRaw from '~/assets/symbols/link.json'
 import cursorArrowClickRaw from '~/assets/symbols/cursorarrow.click.2.json'
 import keyboardRaw from '~/assets/symbols/keyboard.json'
+import squareAndArrowUpRaw from '~/assets/symbols/square.and.arrow.up.json'
+import squareAndArrowDownRaw from '~/assets/symbols/square.and.arrow.down.json'
+import listClipboardFillRaw from '~/assets/symbols/list.clipboard.fill.json'
+import arrowDownRightAndArrowUpLeftRaw from '~/assets/symbols/arrow.down.right.and.arrow.up.left.json'
 
 import { default as SvelteSymbolComponent } from '~components/symbol.svelte'
 import type { ComponentConstructorOptions } from 'svelte'
@@ -36,6 +40,10 @@ const [
   link,
   cursorArrowClick,
   keyboard,
+  squareAndArrowUp,
+  squareAndArrowDown,
+  listClipboardFill,
+  arrowDownRightAndArrowUpLeft,
 ] = [
   gearRaw,
   arrowDownRaw,
@@ -46,6 +54,10 @@ const [
   linkRaw,
   cursorArrowClickRaw,
   keyboardRaw,
+  squareAndArrowUpRaw,
+  squareAndArrowDownRaw,
+  listClipboardFillRaw,
+  arrowDownRightAndArrowUpLeftRaw,
 ]
   .map(checkSymbol)
   .map(symbol => {
@@ -75,6 +87,10 @@ export const symbols = {
   link,
   cursorArrowClick,
   keyboard,
+  squareAndArrowUp,
+  squareAndArrowDown,
+  listClipboardFill,
+  arrowDownRightAndArrowUpLeft,
 }
 export type SymbolName = keyof typeof symbols
 
