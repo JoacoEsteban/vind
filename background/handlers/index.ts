@@ -103,6 +103,10 @@ export class StorageHandlers {
       this.respondError(pageOverridesStorage.updatePageOverride(pageOverride), respond)
     })
 
+    pageOverridesMessages.upsertPageOverride.stream.subscribe(async ([pageOverride, sender, respond]) => {
+      this.respondError(pageOverridesStorage.upsertPageOverride(pageOverride), respond)
+    })
+
     pageOverridesMessages.removePageOverride.stream.subscribe(async ([id, sender, respond]) => {
       this.respondError(pageOverridesStorage.removePageOverride(id), respond)
     })

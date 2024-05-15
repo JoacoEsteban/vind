@@ -74,6 +74,10 @@ export const pageOverridesMessages = {
     'updatePageOverride',
     { async: true }
   )),
+  upsertPageOverride: splitMessage(getMessage<PageOverrideDoc, ErrResponse>(
+    'upsertPageOverride',
+    { async: true }
+  )),
   removePageOverride: splitMessage(getMessage<number, ErrResponse>(
     'removePageOverride',
     { async: true }

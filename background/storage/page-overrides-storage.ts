@@ -8,6 +8,7 @@ export interface PageOverridesStorage {
   addPageOverride: (pageOverride: PageOverrideInsertType) => Promise<void>
   togglePageOverride: (pageOverride: PageOverrideInsertType) => Promise<void>
   updatePageOverride: (pageOverride: PageOverrideDoc) => Promise<void>
+  upsertPageOverride: (pageOverride: PageOverrideDoc) => Promise<void>
   removePageOverride: (id: number) => Promise<void>
   onDeleted$: Observable<PageOverrideDoc>
   onAdded$: Observable<PageOverrideDoc>
@@ -90,6 +91,15 @@ export class PageOverridesStorageImpl implements PageOverridesStorage {
     }
 
     await this.collection.update(pageOverride.id, insert)
+  }
+
+  async upsertPageOverride (pageOverride: PageOverrideDoc): Promise<void> {
+    // const insert: PageOverrideInsertType = {
+    //   overrides_domain_path: pageOverride.overrides_domain_path,
+    //   bindings_path: pageOverride.bindings_path
+    // }
+
+    await this.collection.put(pageOverride)
   }
 
   async removePageOverride (id: number): Promise<void> {

@@ -12,6 +12,7 @@ export interface PageOverridesChannel {
   addPageOverride: (pageOverride: PageOverrideInput) => Promise<void>
   togglePageOverride: (pageOverride: PageOverrideInput) => Promise<void>
   updatePageOverride: (pageOverride: PageOverride) => Promise<void>
+  upsertPageOverride: (pageOverride: PageOverride) => Promise<void>
   removePageOverride: (id: number) => Promise<void>
 }
 
@@ -61,6 +62,10 @@ export class PageOverridesChannelImpl implements PageOverridesChannel {
   async updatePageOverride (override: PageOverride) {
     const doc = toPageOverridesDoc(override)
     return pageOverridesMessages.updatePageOverride.ask(doc).then(throwOnResponseError)
+  }
+  async upsertPageOverride (override: PageOverride) {
+    const doc = toPageOverridesDoc(override)
+    return pageOverridesMessages.upsertPageOverride.ask(doc).then(throwOnResponseError)
   }
   async removePageOverride (id: number) {
     return pageOverridesMessages.removePageOverride.ask(id).then(throwOnResponseError)
