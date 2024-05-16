@@ -71,7 +71,9 @@ export class ResourceMigrator {
     const { bindings, pageOverrides, vindVersion: resourceVersion } = val
     const extensionVersion = getExtensionVersion()
 
-    if (!areSameMajor(resourceVersion, extensionVersion)) { // TODO implement version handling migration
+    const [majorResourceVersion, majorExtensionVersion] = [resourceVersion, extensionVersion].map((v) => semver.major(v))
+
+    if (majorResourceVersion > majorExtensionVersion) { // TODO implement version handling migration
       return Err(new ImportedResourceVersionError(resourceVersion, extensionVersion))
     }
 
