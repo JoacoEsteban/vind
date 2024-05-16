@@ -15,7 +15,7 @@
   import { cursorPosition, mouse$ } from '~lib/cursor-position'
   import { log } from '~lib/log'
   import { MapToOrderedTuple } from '~lib/map'
-  import { openGithub } from '~lib/misc'
+  import { getExtensionVersion, openGithub } from '~lib/misc'
   import { PageController } from '~lib/page-controller'
   import { ResourceMigrator } from '~lib/resource-migrator'
   import type { SymbolName } from '~lib/symbols'
@@ -108,7 +108,15 @@
     <div class="drawer-content max-w-3xl mx-auto pt-10 px-5">
       <main class="prose prose-2xs max-w-full made-tommy">
         <div class="sm:flex align-center justify-between mb-4">
-          <h1 class="font-black">Vind Options</h1>
+          <div class="mb-4">
+            <h1 class="font-black mb-1">Vind Options</h1>
+            <code class="py-1 px-3"
+              >version
+              <b>
+                {getExtensionVersion()}
+              </b>
+            </code>
+          </div>
           <div class="flex align-center gap-3">
             <Button
               opaque={true}
