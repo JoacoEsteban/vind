@@ -12,3 +12,13 @@ export function areSameMajor (a: string, b: string) {
 export function openGithub () {
   window.open('https://github.com/joacoesteban/vind')
 }
+
+export function exportedResourceFilename () {
+  const date = new Date()
+  const dateFormatted = date.toDateString()
+    .replace(' ', '-')
+    .replace(' ', '-')
+    .replace(' ', '-')
+
+  return `vind-export-${dateFormatted}`
+}
