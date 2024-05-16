@@ -4,7 +4,9 @@ import { toPageOverridesDoc, type PageOverridesChannel, fromManyPageOverridesDoc
 import type { BindingDoc, PageOverrideDoc } from '~background/storage/db'
 import { Err } from 'ts-results'
 import { wrapResult, wrapResultAsync } from './control-flow'
-import { InvalidImportedJSONError } from './error'
+import { ImportedResourceVersionError, InvalidImportedJSONError } from './error'
+import semver from 'semver'
+import { areSameMajor, getExtensionVersion } from './misc'
 
 const BindingPayload = Record({
   id: String,
@@ -24,7 +26,8 @@ type PageOverridePayload = Static<typeof PageOverridePayload>
 
 const ResourcePayload = Record({
   bindings: Array(BindingPayload),
-  pageOverrides: Array(PageOverridePayload)
+  pageOverrides: Array(PageOverridePayload),
+  vindVersion: String.withConstraint(version => semver.valid(version) !== null)
 })
 type ResourcePayload = Static<typeof ResourcePayload>
 
@@ -51,8 +54,9 @@ export class ResourceMigrator {
   exportResources (bindings: BindingDoc[], pageOverrides: PageOverrideDoc[]) {
     return JSON.stringify(ResourcePayload.check({
       bindings,
-      pageOverrides
-    }), null, 2)
+      pageOverrides,
+      vindVersion: getExtensionVersion()
+    } as ResourcePayload), null, 2)
   }
 
   parsePayload (json: string): ResourcePayload {
@@ -64,7 +68,12 @@ export class ResourceMigrator {
 
     if (err) return Err(new InvalidImportedJSONError())
 
-    const { bindings, pageOverrides } = val
+    const { bindings, pageOverrides, vindVersion: resourceVersion } = val
+    const extensionVersion = getExtensionVersion()
+
+    if (!areSameMajor(resourceVersion, extensionVersion)) { // TODO implement version handling migration
+      return Err(new ImportedResourceVersionError(resourceVersion, extensionVersion))
+    }
 
     return wrapResultAsync(() => Promise.all([
       ...fromManyBindingDoc(bindings).map(this.bindingChannel.upsertBinding),
