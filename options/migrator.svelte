@@ -113,19 +113,30 @@
 </script>
 
 <template>
-  <Heading title="Import" symbol="squareAndArrowDown" />
-  <div class="flex gap-3">
-    <Button icon="listClipboardFill" opaque on:click={fromClipboard}
-      >Import from clipboard</Button>
-    <Button icon="arrowUpDocFill" opaque on:click={fromFile}
-      >Import from File</Button>
-  </div>
-
-  <Heading title="Export" symbol="squareAndArrowUp" />
-  <div class="flex gap-3">
+  <main>
+    <h2>Migrator</h2>
+    <p>
+      If you want to share/backup your your Bindings and Overrides you can use
+      the buttons below to import and export.
+    </p>
+    <p>
+      You can import from the clipboard or a file, and export to the clipboard
+      or a file.
+    </p>
+  </main>
+  <Heading title="From Clipboard" symbol="listClipboardFill" />
+  <div class="flex gap-3 flex-wrap">
     <Button icon="listClipboardFill" opaque on:click={toClipboard}
       >Copy to clipboard</Button>
+    <Button icon="listClipboardFill" opaque on:click={fromClipboard}
+      >Read from clipboard</Button>
+  </div>
+
+  <Heading title="From File" symbol="arrowUpDocFill" />
+  <div class="flex gap-3 flex-wrap">
     <Button icon="arrowDownDocFill" opaque on:click={toFile}
-      >Export to File</Button>
+      >Save to File</Button>
+    <Button icon="arrowUpDocFill" opaque on:click={fromFile}
+      >Load from File</Button>
   </div>
 </template>
