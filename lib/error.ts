@@ -39,3 +39,9 @@ export class InvalidImportedJSONError extends VindError {
     super("The imported JSON is invalid", 'INVALID_IMPORTED_JSON')
   }
 }
+
+export class ImportedResourceVersionError extends VindError {
+  constructor(targetVersion: string, extensionVersion: string) {
+    super(`The imported resource comes from a newer version of Vind: ${targetVersion}\nand you have: ${extensionVersion}.\n\nPlease update Vind and try again.`, 'IMPORTED_RESOURCE_VERSION')
+  }
+}
