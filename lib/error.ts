@@ -33,3 +33,9 @@ export class InexistentElementError extends VindError {
     super("That element does not exist", 'INEXISTENT_ELEMENT')
   }
 }
+
+export class InvalidImportedJSONError extends VindError {
+  constructor() {
+    super("The imported JSON is invalid", 'INVALID_IMPORTED_JSON')
+  }
+}

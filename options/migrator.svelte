@@ -1,41 +1,56 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import toast from 'svelte-french-toast/dist'
+  import { match } from 'ts-pattern'
   import Button from '~components/button.svelte'
-  import Symbol from '~components/symbol.svelte'
+  import { wrapResultAsync } from '~lib/control-flow'
+  import { VindError } from '~lib/error'
   import type { ResourceMigrator } from '~lib/resource-migrator'
   import Heading from './heading.svelte'
 
   export let migrator: ResourceMigrator
-  const dispatch = createEventDispatcher<{
-    error: Error
-    importSuccess: void
-    exportSuccess: void
-  }>()
 
-  async function dump() {
-    return migrator.exportAllResources().catch((error) => {
-      dispatch('error', error)
-      return ''
-    })
+  async function fromClipboard() {
+    let { err, val: text } = await wrapResultAsync(() =>
+      navigator.clipboard.readText(),
+    )
+
+    if (err) {
+      toast.error('Uh oh, there was an error reading from clipboard')
+      return
+    }
+
+    const result = await migrator.importResources(text as string)
+    if (result.err) {
+      toast.error(
+        match(result.val)
+          .when(
+            (e) => e instanceof VindError,
+            (e) => e.message,
+          )
+          .otherwise(() => 'Uh oh, there was an error importing'),
+      )
+      return
+    }
+
+    toast.success('Imported successfully')
   }
 
-  const fromClipboard = wrapTransaction(async function () {
-    const text = await navigator.clipboard.readText()
-    await migrator.importResources(text)
-    dispatch('importSuccess')
-  })
+  async function toClipboard() {
+    const result = await migrator.exportAllResources()
 
-  const toClipboard = wrapTransaction(async function () {
-    await navigator.clipboard.writeText(await dump())
-    dispatch('exportSuccess')
-  })
-
-  function wrapTransaction(fn: () => Promise<void>) {
-    return async () => {
-      fn().catch((error) => {
-        dispatch('error', error)
-      })
+    if (result.err) {
+      toast.error('Uh oh, there was an error exporting')
+      return
     }
+
+    const text = result.val
+
+    navigator.clipboard
+      .writeText(text)
+      .then(() => toast.success('Copied to clipboard'))
+      .catch(() =>
+        toast.error('Uh oh, there was an error copying to clipboard'),
+      )
   }
 </script>
 

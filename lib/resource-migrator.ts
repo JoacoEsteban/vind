@@ -2,6 +2,9 @@ import { Array, Record, String, type Static, Number } from 'runtypes'
 import { toBindingDoc, type BindingChannel, fromManyBindingDoc } from './messages/bindings'
 import { toPageOverridesDoc, type PageOverridesChannel, fromManyPageOverridesDoc } from './messages/overrides'
 import type { BindingDoc, PageOverrideDoc } from '~background/storage/db'
+import { Err } from 'ts-results'
+import { wrapResult, wrapResultAsync } from './control-flow'
+import { InvalidImportedJSONError } from './error'
 
 const BindingPayload = Record({
   id: String,
@@ -32,15 +35,17 @@ export class ResourceMigrator {
   ) {}
 
   async exportAllResources () {
-    const [
-      bindings,
-      pageOverrides,
-    ] = await Promise.all([
-      this.bindingChannel.getAllBindings().then(bindings => bindings.map(toBindingDoc)),
-      this.pageOverridesChannel.getAllPageOverrides().then(pageOverrides => pageOverrides.map(toPageOverridesDoc))
-    ])
+    return wrapResultAsync(async () => {
+      const [
+        bindings,
+        pageOverrides,
+      ] = await Promise.all([
+        this.bindingChannel.getAllBindings().then(bindings => bindings.map(toBindingDoc)),
+        this.pageOverridesChannel.getAllPageOverrides().then(pageOverrides => pageOverrides.map(toPageOverridesDoc))
+      ])
 
-    return this.exportResources(bindings, pageOverrides)
+      return this.exportResources(bindings, pageOverrides)
+    })
   }
 
   exportResources (bindings: BindingDoc[], pageOverrides: PageOverrideDoc[]) {
@@ -55,11 +60,15 @@ export class ResourceMigrator {
   }
 
   async importResources (json: string) {
-    const { bindings, pageOverrides } = this.parsePayload(json)
+    const { err, val } = wrapResult(() => this.parsePayload(json))
 
-    return Promise.all([
+    if (err) return Err(new InvalidImportedJSONError())
+
+    const { bindings, pageOverrides } = val
+
+    return wrapResultAsync(() => Promise.all([
       ...fromManyBindingDoc(bindings).map(this.bindingChannel.upsertBinding),
       ...fromManyPageOverridesDoc(pageOverrides).map(this.pageOverridesChannel.upsertPageOverride),
-    ])
+    ]))
   }
 }
