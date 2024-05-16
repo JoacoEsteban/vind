@@ -24,13 +24,15 @@ const config = {
           ...themes["dark"],
           '--_blur-bg': 'rgba(20, 20, 20, 0.5)',
           '--_blur-text-color': 'rgb(255, 255, 255)',
+          '--options-blended-text-color': '#aaa',
         },
       },
       {
         light: {
           ...themes["light"],
-          '--_blur-bg': 'rgba(238, 238, 238, 0.6)',
+          '--_blur-bg': 'rgba(238, 238, 238, 0.5)',
           '--_blur-text-color': 'rgb(50, 50, 50)',
+          '--options-blended-text-color': '#666',
         },
       },
       // 'dark',

@@ -106,7 +106,7 @@
     <input id="drawer" type="checkbox" class="drawer-toggle" />
 
     <div class="drawer-content max-w-3xl mx-auto pt-10 px-5">
-      <main class="prose prose-2xs max-w-full">
+      <main class="prose prose-2xs max-w-full made-tommy">
         <div class="sm:flex align-center justify-between mb-4">
           <h1 class="font-black">Vind Options</h1>
           <div class="flex align-center gap-3">
@@ -153,8 +153,16 @@
 </div>
 
 <style lang="sass">
-h1, h2, h3, h4, h5, h6
-  mix-blend-mode: color-dodge
+main :global
+  h1, h2, h3, h4, h5, h6
+    font-weight: 700
+  h1, h2, h3, h4, h5, h6, p, a, ul, ol, li, blockquote, pre, code, hr
+    mix-blend-mode: color-dodge
+    color: var(--options-blended-text-color)
+  p
+    font-size: 1.25em
+    font-weight: 500
+
 
 .backdrop
   position: fixed
