@@ -88,6 +88,12 @@ export class RegistrationController {
   }
 
   private async startRegistrationFlow (abortSignal: AbortSignal) {
+    const site = this.pageControllerInstance.currentSiteSplitted()
+
+    if (!site) {
+      throw new Error('No site selected')
+    }
+
     this.setRegistrationState(RegistrationState.SelectingElement)
     const onElement = this.selectElement(abortSignal)
     this.highlightCurrentElement(PromiseStopper(onElement).stopper)
@@ -97,7 +103,8 @@ export class RegistrationController {
     const key = await this.selectKey(abortSignal)
     // ----------------------------------------------
     this.setRegistrationState(RegistrationState.SavingBinding)
-    const binding = Binding.fromElement(selectedElement, key)
+
+    const binding = Binding.fromElement(selectedElement, key, site.domain, site.path)
     log.info('Saving binding:', binding)
     // ----------------------------------------------
     return this.pageControllerInstance.bindingsChannel.addBinding(binding)
