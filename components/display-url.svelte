@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { identity } from '~lib/misc'
   import { wrapIterable } from '~lib/svelte'
   import { Domain, Path } from '~lib/url'
 
@@ -6,6 +7,7 @@
   export let path: Path | null = null
   export let size: string = 'text-sm'
   export let weight: 'normal' | 'bold' = 'bold'
+  export let maxPathCharLength: number = Infinity
 
   $: {
     if (!domain && !path) {
@@ -17,6 +19,7 @@
   $: classes = [
     'flex',
     'flex-wrap',
+    'max-w-full',
     'items-center',
     'space-x-1',
     'made-tommy',
@@ -25,6 +28,14 @@
   ].join(' ')
 
   const greySpan = (text: string) => `<span class="opacity-50">${text}</span>`
+
+  const doTrim = (part: string) => {
+    return part.length > maxPathCharLength
+      ? part.slice(0, maxPathCharLength) + '…'
+      : part
+  }
+
+  $: trim = maxPathCharLength === Infinity ? identity : doTrim
 </script>
 
 <div class={classes}>
@@ -37,7 +48,7 @@
   {/if}
 
   {#each wrapIterable(pathParts) as { item: part, last }}
-    <span>{part}</span>
+    <span>{trim(part)}</span>
     {#if !last}
       {@html greySpan('/')}
     {/if}
