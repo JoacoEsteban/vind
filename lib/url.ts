@@ -150,6 +150,11 @@ export class Path {
     return new Path(path.value.split('/').slice(0, -1).join('/'))
   }
 
+  static removeHead (path: Path | string): Path {
+    path = path instanceof Path ? path : new Path(path)
+    return new Path(path.value.split('/').slice(1).join('/'))
+  }
+
   static toggleGlob (path: Path, targetIndex: number): Path {
     const parts = path.value.split('/')
     parts[targetIndex] = '*'

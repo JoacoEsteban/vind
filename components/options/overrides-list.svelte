@@ -34,7 +34,7 @@
         <a href={safeUrl(domain).href} target="_blank">
           <DisplayUrl
             domain={new Domain(domain)}
-            path={new Path(domain)}
+            path={Path.removeHead(domain)}
             size={'text-l'} />
         </a>
       </h3>
