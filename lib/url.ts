@@ -21,13 +21,9 @@ function sanitizePathname (pathname: string): string {
     pathname = '/' + pathname
   }
 
-  const parts = pathname
+  return pathname
+    .toLowerCase()
     .substring(1)
-    .split('/')
-    .filter(part => /^[a-z0-9-_]+$/.test(part))
-
-  return parts
-    .join('/')
 }
 
 export function makeDisplayUrl (url: string): string {
@@ -90,6 +86,7 @@ export class Domain {
 }
 
 export class Path {
+  public readonly regexp: RegExp
   constructor(public readonly value: string) {
     const validated = ((value: string) => {
       if (value.startsWith('/')) return value
@@ -101,6 +98,7 @@ export class Path {
       return '/' + value
     })(value)
     this.value = sanitizePathname(validated)
+    this.regexp = wildcardToRegex(this.value)
   }
 
   withDomain (domain: Domain) {
@@ -112,7 +110,7 @@ export class Path {
   }
 
   includes (path: Path): boolean {
-    return this.value.includes(path.value)
+    return this.value.startsWith(path.value)
   }
 
   eitherIncludes (path: Path): boolean {
@@ -122,6 +120,41 @@ export class Path {
   isRoot (): boolean {
     return this.value === ''
   }
+
+  match (path: Path): boolean {
+    return this.regexp.test(path.value)
+  }
+
+  eitherMatch (path: Path): boolean { // TODO remove?
+    return this.match(path) || path.match(this)
+  }
+
+  matchStart (path: Path): boolean {
+    return path.includes(this) || this.match(path)
+  }
+
+  eitherMatchStart (path: Path): boolean {
+    return this.matchStart(path) || path.matchStart(this)
+  }
+
+  inferPattern (): Path {
+    const replaced = this.value.split('/').map(part => {
+      return !/^[a-z-_\*]+$/.test(part) ? '*' : part
+    })
+      .join('/')
+
+    return new Path(replaced)
+  }
+
+  static removeTail (path: Path): Path {
+    return new Path(path.value.split('/').slice(0, -1).join('/'))
+  }
+
+  static toggleGlob (path: Path, targetIndex: number): Path {
+    const parts = path.value.split('/')
+    parts[targetIndex] = '*'
+    return new Path(parts.join('/'))
+  }
 }
 
 export function safeUrl (url: string): URL {
@@ -130,4 +163,13 @@ export function safeUrl (url: string): URL {
   }
 
   return new URL(url)
+}
+
+function wildcardToRegex (wildcard: string): RegExp {
+  // Escape special regex characters
+  let escapedString = wildcard.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+  // Replace the wildcard '*' with a regex pattern to match any sequence of characters except '/'
+  let regexString = escapedString.replace(/\*/g, '.*')
+
+  return new RegExp(`^${regexString}$`)
 }
