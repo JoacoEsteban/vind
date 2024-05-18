@@ -1,4 +1,6 @@
 import { log } from './log'
+import { match } from 'ts-pattern'
+import { identity } from './misc'
 
 type sanitizationOptions = {
   glob: boolean
@@ -23,27 +25,10 @@ function sanitizePathname (pathname: string): string {
 
   return pathname
     .toLowerCase()
-    .substring(1)
-}
-
-export function makeDisplayUrl (url: string): string {
-  if (!url) return ''
-  const sanitized = sanitizeHref(url)
-  // remove protocol and www if present
-  const display = sanitized.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '')
-  return display
-}
-
-export function match (pattern: string, url: string): boolean {
-  return url.includes(pattern)
 }
 
 export function getCurrentUrl (): URL {
   return new URL(window.location.href)
-}
-
-export function getSanitizedCurrentSite (): string {
-  return sanitizeHref(window.location.href)
 }
 
 export function getSanitizedCurrentUrl (): URL {
@@ -88,16 +73,21 @@ export class Domain {
 export class Path {
   public readonly regexp: RegExp
   constructor(public readonly value: string) {
-    const validated = ((value: string) => {
-      if (value.startsWith('/')) return value
+    let sanitized = match(value)
+      .when(p => p.startsWith('/'), p => p)
+      .when(p => /^https?:\/\//.test(p), p => new URL(p).pathname)
+      .when(p => /^[\w\-]+\.[\w\-]+/.test(p), p => p.split('/').slice(1).join('/') || '/')
+      .otherwise(identity)
 
-      if (/^https?:\/\//.test(value)) {
-        return new URL(value).pathname
-      }
+    sanitized = match(sanitized)
+      .when(p => p.startsWith('/'), p => p.slice(1))
+      .otherwise(identity)
+    sanitized = match(sanitized)
+      .when(p => p.endsWith('/'), p => p.slice(0, -1))
+      .otherwise(identity)
+    sanitized = sanitized.toLowerCase()
 
-      return '/' + value
-    })(value)
-    this.value = sanitizePathname(validated)
+    this.value = sanitized
     this.regexp = wildcardToRegex(this.value)
   }
 
