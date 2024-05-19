@@ -8,6 +8,7 @@ import { exposeSubject, PromiseStopper } from './rxjs'
 import { RegistrationAbortedError, UnbindableElementError } from './error'
 import { getXPath } from './xpath'
 import { match } from 'ts-pattern'
+import type { Domain, Path } from './url'
 
 export enum RegistrationState {
   Idle,
@@ -54,7 +55,7 @@ export class RegistrationController {
     private pageControllerInstance: PageController
   ) {}
 
-  async register () {
+  async register (domain: Domain, path: Path) {
     if (this.registrationInProgress$$.value) {
       throw new Error('Registration already in progress')
     }
@@ -67,7 +68,7 @@ export class RegistrationController {
         aborter.abort(new RegistrationAbortedError())
       })
 
-    return this.startRegistrationFlow(aborter.signal)
+    return this.startRegistrationFlow(aborter.signal, domain, path)
       .finally(() => {
         log.info('Registration finished')
         aborter.abort() // cleanup
@@ -87,13 +88,7 @@ export class RegistrationController {
     this.registrationState$$.next(state)
   }
 
-  private async startRegistrationFlow (abortSignal: AbortSignal) {
-    const site = this.pageControllerInstance.currentSiteSplitted()
-
-    if (!site) {
-      throw new Error('No site selected')
-    }
-
+  private async startRegistrationFlow (abortSignal: AbortSignal, domain: Domain, path: Path) {
     this.setRegistrationState(RegistrationState.SelectingElement)
     const onElement = this.selectElement(abortSignal)
     this.highlightCurrentElement(PromiseStopper(onElement).stopper)
@@ -104,7 +99,7 @@ export class RegistrationController {
     // ----------------------------------------------
     this.setRegistrationState(RegistrationState.SavingBinding)
 
-    const binding = Binding.fromElement(selectedElement, key, site.domain, site.path.inferPattern())
+    const binding = Binding.fromElement(selectedElement, key, domain, path)
     log.info('Saving binding:', binding)
     // ----------------------------------------------
     return this.pageControllerInstance.bindingsChannel.addBinding(binding)

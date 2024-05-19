@@ -1,5 +1,6 @@
 <script lang="ts">
   import { combineLatest, filter, interval, map, Observable, pipe } from 'rxjs'
+  import { createEventDispatcher } from 'svelte'
   import { askForBinding, askForOptionsPage } from '~/messages'
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
@@ -17,6 +18,11 @@
   export let disabled: boolean = false
   export let pageControllerInstance: PageController
   export let close: () => void
+
+  const dispatch = createEventDispatcher<{
+    registerNewBinding: { path?: Path }
+  }>()
+
   const currentSite = pageControllerInstance.currentSiteSplitted$
   const displayBindings = pageControllerInstance.domainBindingsByNesting$
   const bindingsMap = combineLatest([displayBindings, currentSite]).pipe(
@@ -47,8 +53,7 @@
   }
 
   async function registerNewBinding(path?: string) {
-    // TODO use path
-    askForBinding() // TODO emit instead
+    dispatch('registerNewBinding', { path: path ? new Path(path) : undefined })
   }
 </script>
 

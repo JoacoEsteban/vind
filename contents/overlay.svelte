@@ -23,9 +23,14 @@
   import Popup from '~components/popup.svelte'
   import Toaster from '~components/toaster.svelte'
   import { registrationStateToastOptions } from '~lib/definitions'
-  import { RegistrationAbortedError, VindError } from '~lib/error'
+  import {
+    RegistrationAbortedError,
+    UnexpectedError,
+    VindError,
+  } from '~lib/error'
   import { log } from '~lib/log'
   import { themeController } from '~lib/theme-controller'
+  import type { Path } from '~lib/url'
   import { showOverlayStream } from '~messages/tabs'
   import {
     pageControllerInstance,
@@ -43,8 +48,18 @@
     showingOverlay = false
   }
 
-  askForBindingStream.subscribe(() => {
-    const registration = registrationControllerInstance.register()
+  function registerNewBinding(path?: Path) {
+    const site = pageControllerInstance.currentSiteSplitted()
+
+    if (!site) {
+      toast.error(new UnexpectedError().message)
+      return
+    }
+
+    const { domain } = site
+    path = path || site.path.inferPattern()
+
+    const registration = registrationControllerInstance.register(domain, path)
 
     const loadingToast = toast.loading(
       'Registering Binding. Press ESC to cancel.',
@@ -74,7 +89,9 @@
     })
 
     registration.finally(() => toast.dismiss(loadingToast))
-  })
+  }
+
+  askForBindingStream.subscribe(() => registerNewBinding())
 
   const registrationStateToastSubject = new Subject<string | null>()
   registrationStateToastSubject
@@ -103,7 +120,8 @@
     visible={showingOverlay}
     disabled={$registering$}
     {pageControllerInstance}
-    close={closePopup} />
+    close={closePopup}
+    on:registerNewBinding={(e) => registerNewBinding(e.detail.path)} />
   <Filters />
   <Toaster />
 </div>

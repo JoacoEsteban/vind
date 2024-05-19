@@ -45,3 +45,9 @@ export class ImportedResourceVersionError extends VindError {
     super(`The imported resource comes from a newer version of Vind: ${targetVersion}\nand you have: ${extensionVersion}.\n\nPlease update Vind and try again.`, 'IMPORTED_RESOURCE_VERSION')
   }
 }
+
+export class UnexpectedError extends VindError {
+  constructor() {
+    super("Oops, something went wrong.", 'UNEXPECTED_ERROR')
+  }
+}
