@@ -18,6 +18,7 @@
   const dispatch = createEventDispatcher<{
     remove: { id: string }
     togglePath: { domain: Domain; path: Path }
+    updatePath: { domain: Domain; fromPath: Path; toPath: Path }
   }>()
 
   function deleteBinding(binding: Binding) {
@@ -26,6 +27,9 @@
 
   function togglePath(domain: Domain, path: Path) {
     dispatch('togglePath', { domain, path })
+  }
+  function updatePath(domain: Domain, fromPath: Path, toPath: Path) {
+    dispatch('updatePath', { domain, fromPath, toPath })
   }
 </script>
 
@@ -48,7 +52,11 @@
         {@const path = new Path(_path)}
         <div class="flex">
           <h5 class="w-full flex mb-3">
-            <DisplayUrl {path} size={'text-l'} />
+            <DisplayUrl
+              editable
+              {path}
+              size={'text-l'}
+              on:updatePath={(e) => updatePath(domain, path, e.detail.path)} />
           </h5>
           <Toggle checked={enabled} on:click={() => togglePath(domain, path)} />
         </div>

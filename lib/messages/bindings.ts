@@ -66,4 +66,11 @@ export class BindingChannelImpl implements BindingChannel {
   removeBinding (id: string) {
     return bindingsMessages.removeBinding.ask(id).then(throwOnResponseError)
   }
+  moveBindings (domain: Domain, from: Path, to: Path) {
+    return bindingsMessages.moveBindings.ask({
+      domain: domain.value,
+      from: from.value,
+      to: to.value
+    }).then(throwOnResponseError)
+  }
 }

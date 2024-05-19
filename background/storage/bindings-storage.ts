@@ -2,6 +2,7 @@ import type Dexie from 'dexie'
 import type { BindingDoc, VindDB } from './db'
 import { log } from '~lib/log'
 import { Observable, Subject } from 'rxjs'
+import type { Domain, Path } from '~lib/url'
 
 export interface BindingsStorage {
   getAllBindings: () => Promise<BindingDoc[]>
@@ -11,6 +12,7 @@ export interface BindingsStorage {
   updateBinding: (binding: BindingDoc) => Promise<void>
   upsertBinding: (binding: BindingDoc) => Promise<void>
   removeBinding: (id: string) => Promise<void>
+  moveBindings: (domain: Domain, from: Path, to: Path) => Promise<void>
   onDeleted$: Observable<BindingDoc>
   onAdded$: Observable<BindingDoc>
   onUpdated$: Observable<BindingDoc>
@@ -72,5 +74,15 @@ export class BindingsStorageImpl implements BindingsStorage {
 
   async removeBinding (id: string): Promise<void> {
     return this.collection.delete(id)
+  }
+
+  async moveBindings (domain: Domain, from: Path, to: Path): Promise<void> {
+    const bindings = await this.collection.where('domain').equals(domain.value).and((binding) => binding.path === from.value).toArray()
+    log.debug('Moving bindings', { domain: domain.value, from: from.value, to: to.value }, bindings)
+
+    await Promise.all(bindings.map((binding) => {
+      binding.path = to.value
+      return this.collection.update(binding.id, binding)
+    }))
   }
 }

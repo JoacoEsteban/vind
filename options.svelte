@@ -127,6 +127,17 @@
   async function togglePath(domain: Domain, path: Path) {
     pageController.disabledPathsChannel.togglePath(domain, path)
   }
+  async function updatePath(params: {
+    domain: Domain
+    fromPath: Path
+    toPath: Path
+  }) {
+    pageController.bindingsChannel.moveBindings(
+      params.domain,
+      params.fromPath,
+      params.toPath,
+    )
+  }
 </script>
 
 <div use:themeController use:cursorPosition>
@@ -184,7 +195,8 @@
           <BindingsList
             {bindingsMap}
             on:remove={(e) => deleteBinding(e.detail.id)}
-            on:togglePath={(e) => togglePath(e.detail.domain, e.detail.path)} />
+            on:togglePath={(e) => togglePath(e.detail.domain, e.detail.path)}
+            on:updatePath={(e) => updatePath(e.detail)} />
         {/if}
         {#if activeKey === 'migrator'}
           <Migrator migrator={resourceMigrator} />

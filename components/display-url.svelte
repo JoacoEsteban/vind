@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { identity } from '~lib/misc'
   import { wrapIterable } from '~lib/svelte'
   import { Domain, Path } from '~lib/url'
@@ -8,6 +9,13 @@
   export let size: string = 'text-sm'
   export let weight: 'normal' | 'bold' = 'bold'
   export let maxPathCharLength: number = Infinity
+  export let editable = false
+
+  $: role = editable ? 'button' : undefined
+
+  const dispatch = createEventDispatcher<{
+    updatePath: { path: Path }
+  }>()
 
   $: {
     if (!domain && !path) {
@@ -36,6 +44,20 @@
   }
 
   $: trim = maxPathCharLength === Infinity ? identity : doTrim
+
+  function togglePart(index: number) {
+    if (!editable) {
+      return
+    }
+
+    if (!path) {
+      throw new Error('Path must be provided')
+    }
+
+    dispatch('updatePath', {
+      path: path.makeGlob(index),
+    })
+  }
 </script>
 
 <div class={classes}>
@@ -47,8 +69,8 @@
     {@html greySpan('/')}
   {/if}
 
-  {#each wrapIterable(pathParts) as { item: part, last }}
-    <span>{trim(part)}</span>
+  {#each wrapIterable(pathParts) as { item: part, last, index }}
+    <div {role} on:click={() => togglePart(index)}>{trim(part)}</div>
     {#if !last}
       {@html greySpan('/')}
     {/if}
