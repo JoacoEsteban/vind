@@ -108,12 +108,12 @@ export class Path {
     return this.value === path.value
   }
 
-  includes (path: Path): boolean {
+  startsWith (path: Path): boolean {
     return this.value.startsWith(path.value)
   }
 
-  eitherIncludes (path: Path): boolean {
-    return this.includes(path) || path.includes(this)
+  eitherStartsWith (path: Path): boolean {
+    return this.startsWith(path) || path.startsWith(this)
   }
 
   isRoot (): boolean {
@@ -129,7 +129,7 @@ export class Path {
   }
 
   matchStart (path: Path): boolean {
-    return path.includes(this) || this.match(path)
+    return path.startsWith(this) || this.match(path)
   }
 
   eitherMatchStart (path: Path): boolean {
