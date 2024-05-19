@@ -13,6 +13,7 @@
   export let opaque: boolean = false
   export let pressed: boolean = false
   export let highlight: boolean = false
+  export let glassy: boolean = false
   export let disabled: boolean = false
   export let icon: SymbolName | null = null
   export let roundSize: string = ''
@@ -48,6 +49,7 @@
     class:opaque
     class:pressed
     class:highlight
+    class:glassy
     {disabled}
     style:--gradient-top={topGradient}
     style:--gradient-bottom={bottomGradient}

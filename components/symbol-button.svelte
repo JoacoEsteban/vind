@@ -9,12 +9,16 @@
   export let as: string = 'button'
   export let opaque: boolean = false
   export let disabled: boolean = false
+  export let glassy: boolean = false
+  export let colorSeed: string | undefined = undefined
 </script>
 
 <Button
   {as}
   {opaque}
   {disabled}
+  {glassy}
+  {colorSeed}
   round={true}
   roundSize={size}
   roundPadding={padding}
