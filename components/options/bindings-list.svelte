@@ -5,9 +5,11 @@
   import { Domain, Path } from '~/lib/url'
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
+  import Divider from '~components/divider.svelte'
   import Toggle from '~components/toggle.svelte'
   import WithTooltip from '~components/with-tooltip.svelte'
   import type { Binding } from '~lib/binding'
+  import { wrapIterable } from '~lib/svelte'
 
   export let bindingsMap: Observable<
     [string, [string, { bindings: Binding[]; enabled: boolean }][]][]
@@ -37,7 +39,7 @@
       {/if}
     </h2>
 
-    {#each $bindingsMap as [_domain, map]}
+    {#each wrapIterable($bindingsMap) as { item: [_domain, map], last }}
       {@const domain = new Domain(_domain)}
       <h5 class="mb-3">
         <DisplayUrl {domain} size={'text-2xl'} />
@@ -69,6 +71,9 @@
           {/each}
         </div>
       {/each}
+      {#if !last}
+        <Divider />
+      {/if}
     {/each}
   </div>
 </div>

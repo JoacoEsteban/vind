@@ -8,6 +8,7 @@
   import Button from '~components/button.svelte'
   import Filters from '~components/filters.svelte'
   import BindingsList from '~components/options/bindings-list.svelte'
+  import Footer from '~components/options/footer.svelte'
   import Toaster from '~components/toaster.svelte'
   import { handleAnimationState } from '~lib/animation-state'
   import { Binding } from '~lib/binding'
@@ -129,7 +130,7 @@
 </script>
 
 <div use:themeController use:cursorPosition>
-  <div class="options-container p-5 h-screen drawer lg:drawer-open">
+  <div class="options-container p-5 min-h-screen flex flex-col justify-between">
     <div
       use:handleAnimationState
       class="backdrop"
@@ -143,10 +144,9 @@
         </div>
       </div>
     </div>
-    <input id="drawer" type="checkbox" class="drawer-toggle" />
 
-    <div class="drawer-content max-w-3xl mx-auto pt-10 px-5">
-      <main class="prose prose-2xs max-w-full made-tommy">
+    <div class="pt-10 px-5">
+      <main class="mx-auto prose prose-2xs w-full made-tommy">
         <div class="sm:flex align-center justify-between mb-4">
           <div class="mb-4">
             <h1 class="font-black mb-1">Vind Options</h1>
@@ -191,13 +191,16 @@
         {/if}
       </main>
     </div>
+    <footer>
+      <Footer />
+    </footer>
   </div>
   <Filters />
   <Toaster />
 </div>
 
 <style lang="sass">
-main :global
+main :global, footer :global
   h1, h2, h3, h4, h5, h6
     font-weight: 700
   h1, h2, h3, h4, h5, h6, p, a, ul, ol, li, blockquote, pre, code, hr
@@ -234,7 +237,7 @@ main :global
     opacity: 0.4
     z-index: 1
 
-.drawer-content
+._container
   width: min(80em, 100%)
 
 .mosaic
