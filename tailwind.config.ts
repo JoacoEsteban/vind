@@ -25,9 +25,9 @@ const config = {
           '--_blur-bg': 'rgba(20, 20, 20, 0.5)',
           '--_blur-text-color': 'rgb(255, 255, 255)',
           '--options-blended-text-color': '#aaa',
-          '--_glassy-gradient-top': '#fff1',
-          '--_glassy-gradient-bottom': '#fff1',
-          '--_glassy-inset-shadow-color': '#fff6',
+          '--_glassy-gradient-top': '#7771',
+          '--_glassy-gradient-bottom': '#7771',
+          '--_glassy-inset-shadow-color': '#7776',
         },
       },
       {

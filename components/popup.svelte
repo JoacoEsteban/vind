@@ -147,8 +147,8 @@
                       {/each}
                       {#if $includedPaths.has(path)}
                         <SymbolButton
-                          size="55px"
-                          padding="1em"
+                          size="50px"
+                          padding=".9em"
                           name={'plus'}
                           glassy
                           on:click={() => registerNewBinding(path)} />
@@ -166,10 +166,7 @@
 
         <!-- {#if !$bindsToPattern.is($currentSite.path)} -->
         <div class="flex justify-center items-center gap-2 mt-2">
-          → <DisplayUrl
-            path={$bindsToPattern}
-            size={'text-md'}
-            maxPathCharLength={5} />
+          → <DisplayUrl path={$bindsToPattern} size={'text-sm'} />
         </div>
         <!-- {/if} -->
       </div>
