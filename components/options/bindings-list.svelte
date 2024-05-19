@@ -37,20 +37,18 @@
       {/if}
     </h2>
 
-    {#each $bindingsMap as [domain, map]}
-      {@const _domain = new Domain(domain)}
+    {#each $bindingsMap as [_domain, map]}
+      {@const domain = new Domain(_domain)}
       <h5 class="mb-3">
-        <DisplayUrl domain={new Domain(domain)} size={'text-2xl'} />
+        <DisplayUrl {domain} size={'text-2xl'} />
       </h5>
-      {#each map as [path, { bindings, enabled }]}
-        {@const _path = new Path(path)}
+      {#each map as [_path, { bindings, enabled }]}
+        {@const path = new Path(_path)}
         <div class="flex">
           <h5 class="w-full flex mb-3">
-            <DisplayUrl path={new Path(path)} size={'text-l'} />
+            <DisplayUrl {path} size={'text-l'} />
           </h5>
-          <Toggle
-            checked={enabled}
-            on:click={() => togglePath(_domain, _path)} />
+          <Toggle checked={enabled} on:click={() => togglePath(domain, path)} />
         </div>
         <div class="flex mb-5 flex-wrap gap-3">
           {#each bindings as binding (binding.id)}
