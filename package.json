@@ -74,6 +74,12 @@
           "default": "Alt+V"
         },
         "description": "Toggle the Vind overlay on the current page."
+      },
+      "open-options": {
+        "suggested_key": {
+          "default": "Alt+Shift+V"
+        },
+        "description": "Open the Vind options page."
       }
     },
     "browser_specific_settings": {

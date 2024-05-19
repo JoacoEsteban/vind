@@ -27,6 +27,11 @@ async function sendShowOverlay () {
     tabId: tabId
   })
 }
+
+function openOptionsPage () {
+  runtime.openOptionsPage()
+}
+
 tabs.onActivated.addListener(activeInfo => {
   wakeUp.ask.toTab({
     tabId: activeInfo.tabId
@@ -41,14 +46,13 @@ askForBindingStream.subscribe(async ([, sender]) => {
   })
 })
 
-askForOptionsPageStream.subscribe(async ([, sender]) => {
-  runtime.openOptionsPage()
-})
+askForOptionsPageStream.subscribe(openOptionsPage)
 
 chrome.commands.onCommand.addListener(async (command) => {
   log.info('Command received', command)
   match(command)
     .with('toggle-overlay', sendShowOverlay)
+    .with('open-options', openOptionsPage)
     .otherwise(() => {
       log.warn('No matching command found for', `"${command}"`)
     })
