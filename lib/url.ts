@@ -68,6 +68,15 @@ export class Domain {
   is (path: Domain): boolean {
     return this.value === path.value
   }
+
+  join (path: Path): string {
+    return match(path.value)
+      .with('', () => this.value)
+      .otherwise(() => [
+        this.value,
+        path.value
+      ].join('/'))
+  }
 }
 
 export class Path {
@@ -150,6 +159,10 @@ export class Path {
     parts[targetIndex] = '*'
     return new Path(parts.join('/'))
   }
+
+  static empty (): Path {
+    return new Path('')
+  }
 }
 
 export function safeUrl (url: string): URL {
@@ -161,6 +174,9 @@ export function safeUrl (url: string): URL {
 }
 
 function wildcardToRegex (wildcard: string): RegExp {
+  if (!wildcard.endsWith('/*')) {
+    wildcard = wildcard + '*' // TODO TEST
+  }
   // Escape special regex characters
   let escapedString = wildcard.replace(/[.+^${}()|[\]\\]/g, '\\$&')
   // Replace the wildcard '*' with a regex pattern to match any sequence of characters except '/'
