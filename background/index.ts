@@ -3,7 +3,7 @@ import { getActiveTabId, getAssertedActiveTabId } from './utils/tab'
 import { showOverlay, wakeUp } from '~messages/tabs'
 import { VindDB } from './storage/db'
 import { BindingsStorageImpl } from './storage/bindings-storage'
-import { PageOverridesStorageImpl } from './storage/page-overrides-storage'
+import { DisabledBindingPathsStorageImpl } from './storage/disabled-paths-storage'
 import { bindingsMessages } from '~messages/storage'
 import { log } from '~lib/log'
 import { StorageHandlers } from './handlers'
@@ -12,9 +12,9 @@ import { interopAction, interopRuntime, interopTabs } from './utils/runtime'
 
 const db = new VindDB()
 export const bindingsStorage = new BindingsStorageImpl(db)
-export const pageOverridesStorage = new PageOverridesStorageImpl(db)
+export const disabledBindingPathsStorage = new DisabledBindingPathsStorageImpl(db)
 
-new StorageHandlers(bindingsStorage, pageOverridesStorage).init()
+new StorageHandlers(bindingsStorage, disabledBindingPathsStorage).init()
 
 const tabs = interopTabs()
 const runtime = interopRuntime()

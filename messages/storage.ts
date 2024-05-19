@@ -1,9 +1,14 @@
 import { getMessage } from '@extend-chrome/messages'
-import type { BindingDoc, PageOverrideDoc, PageOverrideInsertType } from '~background/storage/db'
+import type { BindingDoc, DisabledBindingPathDoc } from '~background/storage/db'
 import { splitMessage } from './lib'
 
 export type ErrResponse = {
   error: string | null
+}
+
+export type DisabledPathPayload = {
+  domain: string
+  path: string
 }
 
 export const bindingsMessages = {
@@ -48,48 +53,33 @@ export const bindingsMessages = {
   )),
 }
 
-export const pageOverridesMessages = {
-  getAllPageOverrides: splitMessage(getMessage<void, PageOverrideDoc[]>(
-    'getAllPageOverrides',
+export const disabledPathsMessages = {
+  getAllDisabledPaths: splitMessage(getMessage<void, DisabledBindingPathDoc[]>(
+    'getAllDisabledPaths',
     { async: true }
   )),
-  getPageOverridesForDomain: splitMessage(getMessage<string, PageOverrideDoc[]>(
-    'getPageOverridesForDomain',
-    { async: true }
-  )),
-  getPageOverridesForSite: splitMessage(getMessage<{ domain: string, path: string }, PageOverrideDoc[]>(
-    'getPageOverridesForSite',
+  queryDisabledPaths: splitMessage(getMessage<DisabledPathPayload, DisabledBindingPathDoc[]>(
+    'queryDisabledPaths',
     { async: true }
   )),
   // ---------------------
-  addPageOverride: splitMessage(getMessage<PageOverrideInsertType, ErrResponse>(
-    'addPageOverride',
+  disablePath: splitMessage(getMessage<DisabledPathPayload, ErrResponse>(
+    'disablePath',
     { async: true }
   )),
-  togglePageOverride: splitMessage(getMessage<PageOverrideInsertType, ErrResponse>(
-    'togglePageOverride',
+  enablePath: splitMessage(getMessage<DisabledPathPayload, ErrResponse>(
+    'enablePath',
     { async: true }
   )),
-  updatePageOverride: splitMessage(getMessage<PageOverrideDoc, ErrResponse>(
-    'updatePageOverride',
-    { async: true }
-  )),
-  upsertPageOverride: splitMessage(getMessage<PageOverrideDoc, ErrResponse>(
-    'upsertPageOverride',
-    { async: true }
-  )),
-  removePageOverride: splitMessage(getMessage<number, ErrResponse>(
-    'removePageOverride',
+  togglePath: splitMessage(getMessage<DisabledPathPayload, ErrResponse>(
+    'togglePath',
     { async: true }
   )),
   // ---------------------
-  onPageOverrideRemoved: splitMessage(getMessage<PageOverrideDoc>(
-    'onPageOverrideRemoved',
+  onDisabledBindingPathRemoved: splitMessage(getMessage<DisabledBindingPathDoc>(
+    'onDisabledBindingPathRemoved',
   )),
-  onPageOverrideAdded: splitMessage(getMessage<PageOverrideDoc>(
-    'onPageOverrideAdded',
-  )),
-  onPageOverrideUpdated: splitMessage(getMessage<PageOverrideDoc>(
-    'onPageOverrideUpdated',
+  onDisabledBindingPathAdded: splitMessage(getMessage<DisabledBindingPathDoc>(
+    'onDisabledBindingPathAdded',
   )),
 }

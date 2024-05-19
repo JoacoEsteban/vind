@@ -3,12 +3,11 @@
   import '~/lib/fonts-importer'
   import chroma from 'chroma-js'
   import githubMark from 'data-text:~assets/svg/github-mark.svg'
-  import { first, map, share } from 'rxjs'
+  import { combineLatest, first, map, share } from 'rxjs'
   import logo from '~/assets/icon.png'
   import Button from '~components/button.svelte'
   import Filters from '~components/filters.svelte'
   import BindingsList from '~components/options/bindings-list.svelte'
-  import OverridesList from '~components/options/overrides-list.svelte'
   import Toaster from '~components/toaster.svelte'
   import { handleAnimationState } from '~lib/animation-state'
   import { Binding } from '~lib/binding'
@@ -20,13 +19,19 @@
   import { ResourceMigrator } from '~lib/resource-migrator'
   import type { SymbolName } from '~lib/symbols'
   import { themeController } from '~lib/theme-controller'
+  import { Domain, Path } from '~lib/url'
   import { wakeUp } from '~messages/tabs'
   import Migrator from '~options/migrator.svelte'
+
+  type orderedDomainMapOfOrderedPathMap = [
+    string,
+    [string, { bindings: Binding[]; enabled: boolean }][],
+  ]
 
   const pageController = new PageController('options')
   const resourceMigrator = new ResourceMigrator(
     pageController.bindingsChannel,
-    pageController.overridesChannel,
+    pageController.disabledPathsChannel,
   )
   pageController.refreshResources()
 
@@ -46,11 +51,6 @@
       icon: 'link',
     },
     {
-      name: 'Overrides',
-      key: 'overrides',
-      icon: 'arrowTriangleBranch',
-    },
-    {
       name: 'Import/Export',
       key: 'migrator',
       icon: 'arrowDownRightAndArrowUpLeft',
@@ -59,18 +59,58 @@
   let activeKey = options[0].key
 
   const onMouse = mouse$.pipe(first())
-  const bindingsMap = pageController.bindingsByPathMap$.pipe(
+  const bindingsMap = combineLatest([
+    pageController.bindingsByPathMap$,
+    pageController.disabledDomainPaths$,
+  ]).pipe(
+    map(([fromMap, disabledPaths]) => {
+      const map = new Map<
+        string,
+        Map<
+          string,
+          {
+            enabled: boolean
+            bindings: Binding[]
+          }
+        >
+      >()
+
+      for (const [_domain, pathMap] of fromMap) {
+        const domain = new Domain(_domain)
+
+        const domainMap =
+          map.get(domain.value) ??
+          new Map<
+            string,
+            {
+              enabled: boolean
+              bindings: Binding[]
+            }
+          >()
+        map.set(domain.value, domainMap)
+
+        for (const [_path, bindings] of pathMap) {
+          const path = new Path(_path)
+          domainMap.set(path.value, {
+            enabled: !disabledPaths.has(domain.join(path)),
+            bindings,
+          })
+        }
+      }
+
+      return map
+    }),
     map((map) => {
-      return MapToOrderedTuple(map, (a, b) => a.localeCompare(b)).map<
-        [string, [string, Binding[]][]]
-      >(([key, map]) => [
+      return MapToOrderedTuple(map, (a, b) =>
+        a.localeCompare(b),
+      ).map<orderedDomainMapOfOrderedPathMap>(([key, map]) => [
         key,
         MapToOrderedTuple(map, (a, b) => a.localeCompare(b)),
       ])
     }),
     share(),
-  )
-  const overridesMap = pageController.overridesByPathMap$
+  ) // TODO abstract this out into something more pretty
+
   const { bg1, bg2 } = (() => {
     const base = chroma.random()
     const darkFactor = -1
@@ -83,8 +123,8 @@
   async function deleteBinding(id: string) {
     pageController.bindingsChannel.removeBinding(id)
   }
-  async function removeOverride(id: number) {
-    pageController.overridesChannel.removePageOverride(id)
+  async function togglePath(domain: Domain, path: Path) {
+    pageController.disabledPathsChannel.togglePath(domain, path)
   }
 </script>
 
@@ -143,12 +183,8 @@
         {#if activeKey === 'bindings'}
           <BindingsList
             {bindingsMap}
-            on:remove={(e) => deleteBinding(e.detail.id)} />
-        {/if}
-        {#if activeKey === 'overrides'}
-          <OverridesList
-            {overridesMap}
-            on:remove={(e) => removeOverride(e.detail.id)} />
+            on:remove={(e) => deleteBinding(e.detail.id)}
+            on:togglePath={(e) => togglePath(e.detail.domain, e.detail.path)} />
         {/if}
         {#if activeKey === 'migrator'}
           <Migrator migrator={resourceMigrator} />

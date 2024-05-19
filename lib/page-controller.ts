@@ -4,8 +4,7 @@ import { BehaviorSubject, Subject, combineLatest, filter, map, merge, share } fr
 import { Domain, Path } from './url'
 import { BindingChannelImpl } from './messages/bindings'
 import { isBindableKeydownEvent } from './element'
-import { PageOverridesChannelImpl } from './messages/overrides'
-import { PageOverrideInput, pageOverridesMap, type PageOverride } from './page-override'
+import { DisabledPathsChannelImpl } from './messages/disabled-paths'
 import { expose } from './rxjs'
 import { match } from 'ts-pattern'
 import { sleep } from './control-flow'
@@ -26,10 +25,10 @@ export class PageController {
         log.info('Binding updated, refreshing bindings')
         this.refreshBindings()
       })
-    this.onEveryPageOverrideEvent$
+    this.onEveryDisabledPathEvent$
       .subscribe(() => {
-        log.info('PageOverride updated, refreshing overrides')
-        this.refreshOverrides()
+        log.info('DisabledPath updated, refreshing disabled paths')
+        this.refreshDisabledPaths()
       })
 
     this.currentUrlSubject
@@ -42,7 +41,7 @@ export class PageController {
   public triggeredBinding$ = this.triggeredBinding.asObservable()
 
   public bindingsChannel = new BindingChannelImpl()
-  public overridesChannel = new PageOverridesChannelImpl()
+  public disabledPathsChannel = new DisabledPathsChannelImpl()
 
   private currentUrlSubject: BehaviorSubject<URL | null> = new BehaviorSubject<URL | null>(null)
   public currentSite$ = this.currentUrlSubject.pipe(
@@ -59,7 +58,7 @@ export class PageController {
       }))
     )
   private bindingsSubject: BehaviorSubject<Binding[]> = new BehaviorSubject<Binding[]>([])
-  private pageOverridesSubject: BehaviorSubject<PageOverride[]> = new BehaviorSubject<PageOverride[]>([])
+  private disabledPathsSubject: BehaviorSubject<Set<string>> = new BehaviorSubject(new Set<string>())
 
   public onBindingRemoved$ = this.bindingsChannel.onBindingRemoved$
   public onBindingAdded$ = this.bindingsChannel.onBindingAdded$
@@ -71,22 +70,20 @@ export class PageController {
     this.onBindingUpdated$
   )
 
-  public onPageOverrideRemoved$ = this.overridesChannel.onPageOverrideRemoved$
-  public onPageOverrideAdded$ = this.overridesChannel.onPageOverrideAdded$
-  public onPageOverrideUpdated$ = this.overridesChannel.onPageOverrideUpdated$
+  public onDisabledBindingPathRemoved$ = this.disabledPathsChannel.onDisabledBindingPathRemoved$
+  public onDisabledBindingPathAdded$ = this.disabledPathsChannel.onDisabledBindingPathAdded$
 
-  public onEveryPageOverrideEvent$ = merge(
-    this.onPageOverrideRemoved$,
-    this.onPageOverrideAdded$,
-    this.onPageOverrideUpdated$
+  public onEveryDisabledPathEvent$ = merge(
+    this.onDisabledBindingPathRemoved$,
+    this.onDisabledBindingPathAdded$,
   )
 
   public bindings$ = this.bindingsSubject.asObservable()
-  public overrides$ = this.pageOverridesSubject.asObservable()
+  public disabledDomainPaths$ = this.disabledPathsSubject.asObservable()
 
-  public overridesSet$ = this.overrides$.pipe(
-    map((overrides) =>
-      new Set(overrides.map(override => override.bindingsPath.value))
+  public disabledPathsSet$ = this.disabledDomainPaths$.pipe(
+    map((paths) =>
+      new Set([...paths.values()].map((path) => new Path(path).value))
     )
   )
 
@@ -104,77 +101,38 @@ export class PageController {
     )
   )
 
-  public overridesByPathMap$ = this.overrides$.pipe(
-    map((overrides) =>
-      pageOverridesMap(overrides)
-    )
-  )
-
-  public displayBindings$ = combineLatest([this.currentDomainBindings$, this.currentSiteSplitted$]).pipe( // TODO buffer to prevent multiple updates
-    map(([domainBindings, { path }]) => {
-
-      const returns = {
-        overlapping: new Map<Path['value'], Binding[]>(),
-        nonOverlapping: new Map<Path['value'], Binding[]>(),
-      }
-
-      if (!path) {
-        return returns
-      }
-
-      for (const [bindingPath, bindings] of domainBindings) {
-        match(path.eitherIncludes(new Path(bindingPath)))
-          .with(true, () =>
-            returns.overlapping.set(bindingPath, bindings)
-          )
-          .with(false, () =>
-            returns.nonOverlapping.set(bindingPath, bindings)
-          )
-          .exhaustive()
-      }
-
-      return returns
-    }),
-    share()
-  )
-
   public domainBindingsByNesting$ = combineLatest([this.currentDomainBindings$, this.currentSiteSplitted$]).pipe(
-    map(([domainBindingsMap, { path }]) => {
-      const currentPath = (path as Path).value
+    map(([domainBindingsMap, { path: currentPath }]) => {
 
       const returns = {
         enclosing: new Map<Path['value'], Binding[]>(),
         branching: new Map<Path['value'], Binding[]>(),
       }
 
-      for (const [domainPath, domainBindings] of domainBindingsMap) {
+      for (const [pathPattern, pathBindings] of domainBindingsMap) {
         let map = returns.branching
 
-        if (currentPath.startsWith(domainPath)) {
+        if (new Path(pathPattern).matchStart(currentPath)) {
           map = returns.enclosing
         }
 
-        map.set(domainPath, domainBindings)
+        map.set(pathPattern, pathBindings)
       }
 
       return returns
     })
   )
 
-  public includedBindingPaths$ = combineLatest([this.domainBindingsByNesting$, this.overridesSet$])
+  public includedBindingPaths$ = combineLatest([this.domainBindingsByNesting$, this.disabledPathsSet$])
     .pipe(
       filter(([domainBindingsMap]) => domainBindingsMap !== null),
-      map(([domainBindingsMap, overrides]) => {
+      map(([domainBindingsMap, disabledPaths]) => {
         const { enclosing, branching } = domainBindingsMap
 
         const includedPaths = new Set(enclosing.keys())
 
-        for (const override of overrides) {
-          if (enclosing.has(override)) {
-            includedPaths.delete(override)
-          } else if (branching.has(override)) { // TODO check if just `else` suffices
-            includedPaths.add(override)
-          }
+        for (const path of disabledPaths) {
+          includedPaths.delete(path)
         }
 
         return includedPaths
@@ -220,17 +178,17 @@ export class PageController {
     this.updateBindings(this.currentUrlSubject.value)
   }
 
-  async refreshOverrides () {
+  async refreshDisabledPaths () {
     if (this.pageType === 'options') {
-      return this.loadAllOverrides()
+      return this.loadAllDisabledPaths()
     }
 
     if (!this.currentUrlSubject.value) {
-      log.error('currentUrlSubject is null in refreshOverrides')
-      throw new Error('currentUrlSubject is null in refreshOverrides')
+      log.error('currentUrlSubject is null in refreshDisabledPaths')
+      throw new Error('currentUrlSubject is null in refreshDisabledPaths')
     }
 
-    this.updateOverrides(this.currentUrlSubject.value)
+    this.updateDisabledPaths(this.currentUrlSubject.value)
   }
 
 
@@ -238,7 +196,7 @@ export class PageController {
     if (this.pageType === 'options') {
       return Promise.all([
         this.loadAllBindings(),
-        this.loadAllOverrides()
+        this.loadAllDisabledPaths()
       ])
     }
 
@@ -249,7 +207,7 @@ export class PageController {
 
     return Promise.all([
       this.updateBindings(url),
-      this.updateOverrides(url),
+      this.updateDisabledPaths(url),
     ])
   }
 
@@ -258,9 +216,9 @@ export class PageController {
     this.bindingsSubject.next(bindings)
   }
 
-  private async updateOverrides (url: URL) {
-    const overrides = await this.overridesChannel.getPageOverridesForSite(new Domain(url.host), new Path(url.pathname))
-    this.pageOverridesSubject.next(overrides)
+  private async updateDisabledPaths (url: URL) {
+    const disabledPaths = await this.disabledPathsChannel.queryDisabledPaths(new Domain(url.host), Path.empty())
+    this.disabledPathsSubject.next(disabledPaths)
   }
 
   private async loadAllBindings () {
@@ -269,10 +227,11 @@ export class PageController {
     this.bindingsSubject.next(bindings)
   }
 
-  private async loadAllOverrides () {
-    log.info('Loading all overrides')
-    const overrides = await this.overridesChannel.getAllPageOverrides()
-    this.pageOverridesSubject.next(overrides)
+  private async loadAllDisabledPaths () {
+    log.info('Loading all disabled paths')
+    const domain_paths = await this.disabledPathsChannel.getAllDisabledPaths()
+    log.debug('domain_paths', domain_paths)
+    this.disabledPathsSubject.next(domain_paths)
   }
 
   // ------------------------------------------
@@ -322,7 +281,7 @@ export class PageController {
       element.focus()
       await this.click(element)
     } else {
-      console.log('no element found for binding', binding)
+      log.info('no element found for binding', binding)
       throw new InexistentElementError()
     }
   }
@@ -353,6 +312,6 @@ export class PageController {
       throw new Error('No domain found')
     }
 
-    this.overridesChannel.togglePageOverride(new PageOverrideInput(site.domain, site.path || new Path(''), new Path(path)))
+    this.disabledPathsChannel.togglePath(site.domain, new Path(path))
   }
 }

@@ -1,21 +1,20 @@
 import type { BindingsStorage } from '~background/storage/bindings-storage'
-import type { PageOverridesStorage } from '~background/storage/page-overrides-storage'
+import type { DisabledBindingPathsStorage } from '~background/storage/disabled-paths-storage'
 import { getAssertedActiveTabId } from '~background/utils/tab'
 import { serializeError } from '~lib/error'
 import { log } from '~lib/log'
-import { bindingsMessages, pageOverridesMessages, type ErrResponse } from '~messages/storage'
+import { Domain, Path } from '~lib/url'
+import { bindingsMessages, disabledPathsMessages, type ErrResponse } from '~messages/storage'
 
 export class StorageHandlers {
   constructor(
     private bindingsStorage: BindingsStorage,
-    private pageOverridesStorage: PageOverridesStorage
-  ) {
-    pageOverridesStorage.getAllPageOverrides()
-  }
+    private disabledBindingPathsStorage: DisabledBindingPathsStorage
+  ) {}
 
   init () {
     this.setupBindings()
-    this.setupPageOverrides()
+    this.setupDisabledPaths()
   }
 
   private respondError<T> (promise: Promise<T>, respond: (response: ErrResponse) => void) {
@@ -79,55 +78,41 @@ export class StorageHandlers {
     })
   }
 
-  setupPageOverrides () {
-    const pageOverridesStorage = this.pageOverridesStorage
-    pageOverridesMessages.getAllPageOverrides.stream.subscribe(async ([, sender, respond]) => {
-      const pageOverrides = await pageOverridesStorage.getAllPageOverrides()
-      respond(pageOverrides)
+  setupDisabledPaths () {
+    const storage = this.disabledBindingPathsStorage
+
+    disabledPathsMessages.getAllDisabledPaths.stream.subscribe(async ([, sender, respond]) => {
+      const disabledPaths = await storage.getAllDisabledPaths()
+      respond(disabledPaths)
     })
 
-    pageOverridesMessages.getPageOverridesForSite.stream.subscribe(async ([{ domain, path }, sender, respond]) => {
-      const pageOverrides = await pageOverridesStorage.getPageOverridesForSite(domain, path)
-      respond(pageOverrides)
+    disabledPathsMessages.queryDisabledPaths.stream.subscribe(async ([{ domain, path }, sender, respond]) => {
+      const disabledPaths = await storage.query(new Domain(domain), new Path(path))
+      respond(disabledPaths)
     })
 
-    pageOverridesMessages.addPageOverride.stream.subscribe(async ([pageOverride, sender, respond]) => {
-      this.respondError(pageOverridesStorage.addPageOverride(pageOverride), respond)
+    disabledPathsMessages.disablePath.stream.subscribe(async ([{ domain, path }, sender, respond]) => {
+      this.respondError(storage.disablePath(new Domain(domain), new Path(path)), respond)
     })
 
-    pageOverridesMessages.togglePageOverride.stream.subscribe(async ([pageOverride, sender, respond]) => {
-      this.respondError(pageOverridesStorage.togglePageOverride(pageOverride), respond)
+    disabledPathsMessages.enablePath.stream.subscribe(async ([{ domain, path }, sender, respond]) => {
+      this.respondError(storage.enablePath(new Domain(domain), new Path(path)), respond)
     })
 
-    pageOverridesMessages.updatePageOverride.stream.subscribe(async ([pageOverride, sender, respond]) => {
-      this.respondError(pageOverridesStorage.updatePageOverride(pageOverride), respond)
+    disabledPathsMessages.togglePath.stream.subscribe(async ([{ domain, path }, sender, respond]) => {
+      this.respondError(storage.togglePath(new Domain(domain), new Path(path)), respond)
     })
 
-    pageOverridesMessages.upsertPageOverride.stream.subscribe(async ([pageOverride, sender, respond]) => {
-      this.respondError(pageOverridesStorage.upsertPageOverride(pageOverride), respond)
-    })
-
-    pageOverridesMessages.removePageOverride.stream.subscribe(async ([id, sender, respond]) => {
-      this.respondError(pageOverridesStorage.removePageOverride(id), respond)
-    })
-
-    pageOverridesStorage.onAdded$.subscribe(async (pageOverride) => {
-      log.info('onAdded from background index', pageOverride)
-      pageOverridesMessages.onPageOverrideAdded.ask(pageOverride, {
+    storage.onAdded$.subscribe(async (disabledPath) => {
+      log.info('onAdded from background index', disabledPath)
+      disabledPathsMessages.onDisabledBindingPathAdded.ask(disabledPath, {
         tabId: await getAssertedActiveTabId()
       })
     })
 
-    pageOverridesStorage.onUpdated$.subscribe(async (pageOverride) => {
-      log.info('onUpdated from background index', pageOverride)
-      pageOverridesMessages.onPageOverrideUpdated.ask(pageOverride, {
-        tabId: await getAssertedActiveTabId()
-      })
-    })
-
-    pageOverridesStorage.onDeleted$.subscribe(async (pageOverride) => {
-      log.info('onDeleted from background index', pageOverride)
-      pageOverridesMessages.onPageOverrideRemoved.ask(pageOverride, {
+    storage.onDeleted$.subscribe(async (disabledPath) => {
+      log.info('onDeleted from background index', disabledPath)
+      disabledPathsMessages.onDisabledBindingPathRemoved.ask(disabledPath, {
         tabId: await getAssertedActiveTabId()
       })
     })

@@ -5,17 +5,25 @@
   import { Domain, Path } from '~/lib/url'
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
+  import Toggle from '~components/toggle.svelte'
   import WithTooltip from '~components/with-tooltip.svelte'
   import type { Binding } from '~lib/binding'
 
-  export let bindingsMap: Observable<[string, [string, Binding[]][]][]>
+  export let bindingsMap: Observable<
+    [string, [string, { bindings: Binding[]; enabled: boolean }][]][]
+  >
 
   const dispatch = createEventDispatcher<{
     remove: { id: string }
+    togglePath: { domain: Domain; path: Path }
   }>()
 
   function deleteBinding(binding: Binding) {
     dispatch('remove', { id: binding.id })
+  }
+
+  function togglePath(domain: Domain, path: Path) {
+    dispatch('togglePath', { domain, path })
   }
 </script>
 
@@ -30,14 +38,20 @@
     </h2>
 
     {#each $bindingsMap as [domain, map]}
+      {@const _domain = new Domain(domain)}
       <h5 class="mb-3">
         <DisplayUrl domain={new Domain(domain)} size={'text-2xl'} />
       </h5>
-      {#each map as [path, bindings]}
-        <h5 class="w-full flex mb-3">
-          <!-- <b> <DisplayUrl {url} /> </b> -->
-          <DisplayUrl path={new Path(path)} size={'text-l'} />
-        </h5>
+      {#each map as [path, { bindings, enabled }]}
+        {@const _path = new Path(path)}
+        <div class="flex">
+          <h5 class="w-full flex mb-3">
+            <DisplayUrl path={new Path(path)} size={'text-l'} />
+          </h5>
+          <Toggle
+            checked={enabled}
+            on:click={() => togglePath(_domain, _path)} />
+        </div>
         <div class="flex mb-5 flex-wrap gap-3">
           {#each bindings as binding (binding.id)}
             <span>

@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { combineLatest, filter, map, Observable, pipe } from 'rxjs'
+  import { combineLatest, filter, interval, map, Observable, pipe } from 'rxjs'
   import { askForBinding, askForOptionsPage } from '~/messages'
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
+  import { colorSeeds } from '~lib/definitions'
   import { draggable } from '~lib/draggable'
+  import { generateId } from '~lib/id'
   import { MapToOrderedTuple } from '~lib/map'
   import type { PageController } from '~lib/page-controller'
   import { Path } from '~lib/url'
@@ -16,35 +18,37 @@
   export let pageControllerInstance: PageController
   export let close: () => void
   const currentSite = pageControllerInstance.currentSiteSplitted$
-  const displayBindings = pageControllerInstance.displayBindings$
+  const displayBindings = pageControllerInstance.domainBindingsByNesting$
   const bindingsMap = combineLatest([displayBindings, currentSite]).pipe(
-    map(([{ overlapping, nonOverlapping }, site]) => [
+    map(([{ enclosing, branching }, site]) => [
       {
-        isCurrentPath: true,
-        bindings: MapToOrderedTuple(overlapping, (a, b) => {
+        overlapping: true,
+        bindings: MapToOrderedTuple(enclosing, (a, b) => {
           if (a === site.path.value) return -1
           if (b === site.path.value) return 1
           return a.localeCompare(b)
         }),
       },
       {
-        isCurrentPath: false,
-        bindings: MapToOrderedTuple(nonOverlapping, (a, b) =>
-          a.localeCompare(b),
-        ),
+        overlapping: false,
+        bindings: MapToOrderedTuple(branching, (a, b) => a.localeCompare(b)),
       },
     ]),
   )
 
-  const overridesSet = pageControllerInstance.overridesSet$
+  const bindsToPattern = currentSite.pipe(
+    map((site) => site.path.inferPattern()),
+  )
+
   const includedPaths = pageControllerInstance.includedBindingPaths$
 
   function openOptions() {
     askForOptionsPage()
   }
 
-  async function registerNewBinding() {
-    askForBinding()
+  async function registerNewBinding(path?: string) {
+    // TODO use path
+    askForBinding() // TODO emit instead
   }
 </script>
 
@@ -79,13 +83,16 @@
           class="mx-auto mb-5 flex flex-col items-center justify-center gap-2">
           <DisplayUrl domain={$currentSite.domain} size={'text-4xl'} />
           {#if !$currentSite.path.isRoot()}
-            <DisplayUrl path={$currentSite.path} size={'text-l'} />
+            <DisplayUrl
+              path={$currentSite.path}
+              size={'text-l'}
+              maxPathCharLength={15} />
           {/if}
         </div>
         <div class="text-center">
           <div>
             {#if $displayBindings}
-              {#if $displayBindings.overlapping.size === 0}
+              {#if $displayBindings.enclosing.size === 0}
                 <h3 class="font-bold mb-5">No bindings on this page</h3>
               {/if}
             {/if}
@@ -96,7 +103,7 @@
                   <div class="divider"></div>
                 {/if}
                 <div>
-                  {#if !bmap.isCurrentPath}
+                  {#if !bmap.overlapping}
                     <h3
                       class="font-bold made-tommy text-xl mb-4 flex gap-2 justify-center">
                       Others on <DisplayUrl
@@ -110,11 +117,13 @@
                       <span class="flex gap-1">
                         <DisplayUrl path={new Path(path)} size={'text-md'} />
                       </span>
-                      <Toggle
-                        {disabled}
-                        checked={$includedPaths.has(path)}
-                        on:click={() =>
-                          pageControllerInstance.togglePath(path)} />
+                      {#if bmap.overlapping}
+                        <Toggle
+                          {disabled}
+                          checked={$includedPaths.has(path)}
+                          on:click={() =>
+                            pageControllerInstance.togglePath(path)} />
+                      {/if}
                     </h5>
                     <div
                       class="grid grid-cols-5 gap-4 mb-5 v_toggle-availability"
@@ -131,6 +140,14 @@
                           on:blur={() =>
                             pageControllerInstance.blurBinding(binding)} />
                       {/each}
+                      {#if $includedPaths.has(path)}
+                        <SymbolButton
+                          size="55px"
+                          padding="1em"
+                          name={'plus'}
+                          glassy
+                          on:click={() => registerNewBinding(path)} />
+                      {/if}
                     </div>
                   {/each}
                 </div>
@@ -139,8 +156,17 @@
           </div>
         </div>
       </main>
-      <div class="flex justify-center sticky bottom-0">
-        <Button {disabled} on:click={registerNewBinding}>Bind</Button>
+      <div class="flex flex-col justify-center sticky bottom-0">
+        <Button {disabled} on:click={() => registerNewBinding()}>Bind</Button>
+
+        <!-- {#if !$bindsToPattern.is($currentSite.path)} -->
+        <div class="flex justify-center items-center gap-2 mt-2">
+          → <DisplayUrl
+            path={$bindsToPattern}
+            size={'text-md'}
+            maxPathCharLength={5} />
+        </div>
+        <!-- {/if} -->
       </div>
     </div>
   </div>

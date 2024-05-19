@@ -104,7 +104,7 @@ export class RegistrationController {
     // ----------------------------------------------
     this.setRegistrationState(RegistrationState.SavingBinding)
 
-    const binding = Binding.fromElement(selectedElement, key, site.domain, site.path)
+    const binding = Binding.fromElement(selectedElement, key, site.domain, site.path.inferPattern())
     log.info('Saving binding:', binding)
     // ----------------------------------------------
     return this.pageControllerInstance.bindingsChannel.addBinding(binding)
@@ -129,7 +129,7 @@ export class RegistrationController {
 
         match(result.ok)
           .with(true, () => {
-            console.log('XPATH', result.val)
+            log.info('XPATH', result.val)
             confirmElement(element)
           })
           .with(false, () => {

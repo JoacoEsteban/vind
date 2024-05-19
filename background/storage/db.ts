@@ -8,27 +8,28 @@ export type BindingDoc = {
   selector: string
 }
 
-export type PageOverrideDoc = {
-  id: number
-  overrides_domain_path: string
-  bindings_path: string
+export type DisabledBindingPathDoc = {
+  domain_path: string
 }
-
-export type PageOverrideInsertType = Omit<PageOverrideDoc, 'id'>
-
 export class VindDB extends Dexie {
   bindings: Dexie.Table<BindingDoc, string>
-  pageOverrides: Dexie.Table<PageOverrideDoc, number, PageOverrideInsertType>
+  disabledBindingPaths: Dexie.Table<DisabledBindingPathDoc>
 
   constructor() {
     super('vind-db')
     // debugger
     this.version(2).stores({
-      bindings: 'id, *domain, path, key, selector',
+      bindings: 'id, *domain, path, key, selector', // TODO turn domain into simple index
       pageOverrides: '++id, *overrides_domain_path, bindings_path'
     })
 
+
+    this.version(3).stores({
+      pageOverrides: null,
+      disabledBindingPaths: '&domain_path',
+    })
+
     this.bindings = this.table('bindings')
-    this.pageOverrides = this.table<PageOverrideDoc, number>('pageOverrides')
+    this.disabledBindingPaths = this.table('disabledBindingPaths')
   }
 }

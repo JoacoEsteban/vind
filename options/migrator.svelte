@@ -116,8 +116,8 @@
   <main>
     <h2>Migrator</h2>
     <p>
-      If you want to share/backup your your Bindings and Overrides you can use
-      the buttons below to import and export.
+      If you want to share/backup your your Bindings you can use the buttons
+      below to import and export.
     </p>
     <p>
       You can import from the clipboard or a file, and export to the clipboard

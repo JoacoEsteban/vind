@@ -1,12 +1,13 @@
 import { Array, Record, String, type Static, Number } from 'runtypes'
 import { toBindingDoc, type BindingChannel, fromManyBindingDoc } from './messages/bindings'
-import { toPageOverridesDoc, type PageOverridesChannel, fromManyPageOverridesDoc } from './messages/overrides'
-import type { BindingDoc, PageOverrideDoc } from '~background/storage/db'
+import { type DisabledPathsChannel } from './messages/disabled-paths'
+import type { BindingDoc } from '~background/storage/db'
 import { Err } from 'ts-results'
 import { wrapResult, wrapResultAsync } from './control-flow'
 import { ImportedResourceVersionError, InvalidImportedJSONError } from './error'
 import semver from 'semver'
-import { areSameMajor, getExtensionVersion } from './misc'
+import { getExtensionVersion } from './misc'
+import { Domain, Path } from './url'
 
 const BindingPayload = Record({
   id: String,
@@ -17,16 +18,12 @@ const BindingPayload = Record({
 })
 type BindingPayload = Static<typeof BindingPayload>
 
-const PageOverridePayload = Record({
-  id: Number,
-  overrides_domain_path: String,
-  bindings_path: String
-})
-type PageOverridePayload = Static<typeof PageOverridePayload>
+const DisabledPathPayload = String
+type DisabledPathPayload = Static<typeof DisabledPathPayload>
 
 const ResourcePayload = Record({
   bindings: Array(BindingPayload),
-  pageOverrides: Array(PageOverridePayload),
+  disabledPaths: Array(DisabledPathPayload).optional(),
   vindVersion: String.withConstraint(version => semver.valid(version) !== null)
 })
 type ResourcePayload = Static<typeof ResourcePayload>
@@ -34,27 +31,27 @@ type ResourcePayload = Static<typeof ResourcePayload>
 export class ResourceMigrator {
   constructor(
     private bindingChannel: BindingChannel,
-    private pageOverridesChannel: PageOverridesChannel
+    private disabledPathsChannel: DisabledPathsChannel
   ) {}
 
   async exportAllResources () {
     return wrapResultAsync(async () => {
       const [
         bindings,
-        pageOverrides,
+        disabledPaths,
       ] = await Promise.all([
         this.bindingChannel.getAllBindings().then(bindings => bindings.map(toBindingDoc)),
-        this.pageOverridesChannel.getAllPageOverrides().then(pageOverrides => pageOverrides.map(toPageOverridesDoc))
+        this.disabledPathsChannel.getAllDisabledPaths()
       ])
 
-      return this.exportResources(bindings, pageOverrides)
+      return this.exportResources(bindings, disabledPaths)
     })
   }
 
-  exportResources (bindings: BindingDoc[], pageOverrides: PageOverrideDoc[]) {
+  exportResources (bindings: BindingDoc[], disabledPaths: Set<string>) {
     return JSON.stringify(ResourcePayload.check({
       bindings,
-      pageOverrides,
+      disabledPaths: [...disabledPaths.values()],
       vindVersion: getExtensionVersion()
     } as ResourcePayload), null, 2)
   }
@@ -68,7 +65,7 @@ export class ResourceMigrator {
 
     if (err) return Err(new InvalidImportedJSONError())
 
-    const { bindings, pageOverrides, vindVersion: resourceVersion } = val
+    const { bindings, disabledPaths = [], vindVersion: resourceVersion } = val
     const extensionVersion = getExtensionVersion()
 
     const [majorResourceVersion, majorExtensionVersion] = [resourceVersion, extensionVersion].map((v) => semver.major(v))
@@ -79,7 +76,7 @@ export class ResourceMigrator {
 
     return wrapResultAsync(() => Promise.all([
       ...fromManyBindingDoc(bindings).map(this.bindingChannel.upsertBinding),
-      ...fromManyPageOverridesDoc(pageOverrides).map(this.pageOverridesChannel.upsertPageOverride),
+      ...disabledPaths.map(domain_path => this.disabledPathsChannel.disablePath(new Domain(domain_path), new Path(domain_path)))
     ]))
   }
 }
