@@ -15,6 +15,7 @@ import listClipboardFillRaw from '~/assets/symbols/list.clipboard.fill.json'
 import arrowDownRightAndArrowUpLeftRaw from '~/assets/symbols/arrow.down.right.and.arrow.up.left.json'
 import arrowUpDocFillRaw from '~/assets/symbols/arrow.up.doc.fill.json'
 import arrowDownDocFillRaw from '~/assets/symbols/arrow.down.doc.fill.json'
+import plusRaw from '~/assets/symbols/plus.json'
 
 import { default as SvelteSymbolComponent } from '~components/symbol.svelte'
 import type { ComponentConstructorOptions } from 'svelte'
@@ -48,6 +49,7 @@ const [
   arrowDownRightAndArrowUpLeft,
   arrowUpDocFill,
   arrowDownDocFill,
+  plus,
 ] = [
   gearRaw,
   arrowDownRaw,
@@ -64,6 +66,7 @@ const [
   arrowDownRightAndArrowUpLeftRaw,
   arrowUpDocFillRaw,
   arrowDownDocFillRaw,
+  plusRaw,
 ]
   .map(checkSymbol)
   .map(symbol => {
@@ -99,6 +102,7 @@ export const symbols = {
   arrowDownRightAndArrowUpLeft,
   arrowUpDocFill,
   arrowDownDocFill,
+  plus,
 }
 export type SymbolName = keyof typeof symbols
 
