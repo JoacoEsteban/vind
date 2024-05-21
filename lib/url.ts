@@ -145,15 +145,27 @@ export class Path {
     return new Path(replaced)
   }
 
-  makeGlob (targetIndex: number): Path {
+  replacePart (index: number, value: string): Path {
     const parts = this.value.split('/')
-    parts[targetIndex] = '*'
-    return new Path(parts.join('/'))
+    parts[index] = value
+    return Path.fromParts(parts)
   }
 
-  static removeTail (path: Path): Path {
-    return new Path(path.value.split('/').slice(0, -1).join('/'))
+  makeGlob (targetIndex: number): Path {
+    return this.replacePart(targetIndex, '*')
   }
+
+  removeGlobbedTail () {
+    if (this.value.endsWith('/*')) {
+      return this.removeTail()
+    }
+    return this
+  }
+
+  removeTail () {
+    return new Path(this.value.split('/').slice(0, -1).join('/'))
+  }
+
 
   static removeHead (path: Path | string): Path {
     path = path instanceof Path ? path : new Path(path)
@@ -162,6 +174,10 @@ export class Path {
 
   static empty (): Path {
     return new Path('')
+  }
+
+  static fromParts (parts: string[]): Path {
+    return new Path(parts.join('/'))
   }
 }
 
