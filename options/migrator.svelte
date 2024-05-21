@@ -116,7 +116,7 @@
   <main>
     <h2>Migrator</h2>
     <p>
-      If you want to share/backup your your Bindings you can use the buttons
+      If you want to share/backup your Bindings you can use the buttons
       below to import and export.
     </p>
     <p>
