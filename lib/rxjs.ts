@@ -51,3 +51,13 @@ export function Stack () {
     }
   }
 }
+
+export class ToggleSubject extends BehaviorSubject<boolean> {
+  constructor(initial: boolean = false) {
+    super(initial)
+  }
+
+  toggle () {
+    this.next(!this.value)
+  }
+}
