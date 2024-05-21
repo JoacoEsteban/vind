@@ -23,6 +23,7 @@ const config = {
         dark: {
           ...themes["dark"],
           '--_blur-bg': 'rgba(20, 20, 20, 0.5)',
+          '--_blur-bg-soft': 'rgba(200, 200, 200, 0.25)',
           '--_blur-text-color': 'rgb(255, 255, 255)',
           '--options-blended-text-color': '#aaa',
           '--_glassy-gradient-top': '#7771',
@@ -34,6 +35,7 @@ const config = {
         light: {
           ...themes["light"],
           '--_blur-bg': 'rgba(238, 238, 238, 0.5)',
+          '--_blur-bg-soft': 'rgba(238, 238, 238, 0.5)',
           '--_blur-text-color': 'rgb(50, 50, 50)',
           '--options-blended-text-color': '#666',
           '--_glassy-gradient-top': '#9996',
