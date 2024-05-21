@@ -51,13 +51,13 @@
       {#each map as [_path, { bindings, enabled }]}
         {@const path = new Path(_path)}
         <div class="flex">
-          <h5 class="w-full flex mb-3">
+          <div class="w-full flex mb-3">
             <DisplayUrl
               editable
               {path}
               size={'text-l'}
               on:updatePath={(e) => updatePath(domain, path, e.detail.path)} />
-          </h5>
+          </div>
           <Toggle checked={enabled} on:click={() => togglePath(domain, path)} />
         </div>
         <div class="flex mb-5 flex-wrap gap-3">
