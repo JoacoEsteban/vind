@@ -1,8 +1,12 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { identity } from '~lib/misc'
+  import { ToggleSubject } from '~lib/rxjs'
   import { wrapIterable } from '~lib/svelte'
   import { Domain, Path } from '~lib/url'
+  import Button from './button.svelte'
+  import Symbol from './symbol.svelte'
+  import WithTooltip from './with-tooltip.svelte'
 
   export let domain: Domain | null = null
   export let path: Path | null = null
@@ -11,6 +15,7 @@
   export let maxPathCharLength: number = Infinity
   export let editable = false
 
+  const hide$ = new ToggleSubject()
   $: role = editable ? 'button' : undefined
 
   const dispatch = createEventDispatcher<{
@@ -35,7 +40,8 @@
     size,
   ].join(' ')
 
-  const greySpan = (text: string) => `<span class="opacity-50">${text}</span>`
+  const greySpan = (text: string) =>
+    `<span class="opacity-50 blend cursor-default">${text}</span>`
 
   const doTrim = (part: string) => {
     return part.length > maxPathCharLength
@@ -58,11 +64,51 @@
       path: path.makeGlob(index),
     })
   }
+
+  function editPart(index: number) {
+    if (!editable) {
+      return
+    }
+
+    if (!path) {
+      throw new Error('Path must be provided')
+    }
+
+    const part = pathParts[index]
+
+    if (!part) {
+      throw new Error('Path must be provided')
+    }
+
+    const edited = prompt('Edit path part', part)
+
+    if (!edited) {
+      return
+    }
+
+    dispatch('updatePath', {
+      path: path.replacePart(index, edited),
+    })
+  }
+
+  function removeLast() {
+    if (!editable) {
+      return
+    }
+
+    if (!path) {
+      throw new Error('Path must be provided')
+    }
+
+    dispatch('updatePath', {
+      path: path.removeGlobbedTail(),
+    })
+  }
 </script>
 
 <div class={classes}>
   {#if domain}
-    <span>{domain.value}</span>
+    <span class="cursor-default">{domain.value}</span>
   {/if}
 
   {#if path}
@@ -70,7 +116,39 @@
   {/if}
 
   {#each wrapIterable(pathParts) as { item: part, last, index }}
-    <div {role} on:click={() => togglePart(index)}>{trim(part)}</div>
+    <WithTooltip
+      placement="top"
+      bordered
+      hideSignal={$hide$}
+      enabled={editable}>
+      <div class="part blend cursor-default">
+        {#if part === '*'}
+          <Symbol size=".75em" name="asterisk" />
+        {:else}
+          {trim(part)}
+        {/if}
+      </div>
+      <div slot="tooltip" class="flex gap-3">
+        <Button opaque icon={'pencil'} on:click={() => editPart(index)}>
+          Edit
+        </Button>
+        {#if part !== '*'}
+          <Button
+            icon={'asteriskCircleFill'}
+            opaque
+            on:click={() => {
+              hide$.toggle()
+              togglePart(index)
+            }}>
+            Wildcard
+          </Button>
+        {:else if last}
+          <Button opaque icon={'trashFill'} on:click={removeLast}>
+            Remove
+          </Button>
+        {/if}
+      </div>
+    </WithTooltip>
     {#if !last}
       {@html greySpan('/')}
     {/if}

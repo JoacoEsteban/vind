@@ -5,6 +5,11 @@
   import { fade, scale, type TransitionConfig } from 'svelte/transition'
 
   export let placement: 'top' | 'bottom' | 'left' | 'right' = 'top'
+  export let bordered = false
+  export let enabled = true
+  export let hideSignal: boolean
+
+  $: (hideSignal || true) && hideTooltip()
 
   const [floatingRef, floatingContent] = createFloatingActions({
     strategy: 'absolute',
@@ -23,8 +28,12 @@
 
   function onLeave({ target }: MouseEvent) {
     setTimeout(() => {
-      if (hoverTarget === target) hoverTarget = null
+      if (hoverTarget === target) hideTooltip()
     })
+  }
+
+  function hideTooltip() {
+    hoverTarget = null
   }
 
   function tooltipTransition(easing = circOut, duration = 200) {
@@ -48,6 +57,7 @@
 
 <div
   role="none"
+  class="wrapper"
   bind:this={tooltipAnchor}
   on:mouseenter={onHover}
   on:mouseleave={onLeave}
@@ -55,18 +65,31 @@
   <slot />
 </div>
 
-{#if showTooltip}
-  <div
-    bind:this={tooltipEl}
-    on:mouseenter={onHover}
-    on:mouseleave={onLeave}
-    use:floatingContent
-    role="tooltip"
-    style:position="absolute"
-    style:padding="8px"
-    style:z-index="1000"
-    in:trIn
-    out:trOut>
-    <slot name="tooltip" />
-  </div>
+{#if enabled}
+  {#if showTooltip}
+    <div
+      bind:this={tooltipEl}
+      on:mouseenter={onHover}
+      on:mouseleave={onLeave}
+      use:floatingContent
+      role="tooltip"
+      style:position="absolute"
+      style:padding="8px"
+      style:z-index="1000"
+      class={bordered ? 'bg-blur bg-blur:soft bg-blur:round' : ''}
+      in:trIn
+      out:trOut>
+      <slot name="tooltip" />
+    </div>
+  {/if}
 {/if}
+
+<style lang="scss">
+  .wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-width: 1em;
+  }
+</style>
