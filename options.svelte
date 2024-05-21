@@ -213,9 +213,9 @@
 
 <style lang="sass">
 main :global, footer :global
-  h1, h2, h3, h4, h5, h6
+  h1, h2, h3, h4, h5, h6, .blend
     font-weight: 700
-  h1, h2, h3, h4, h5, h6, p, a, ul, ol, li, blockquote, pre, code, hr
+  h1, h2, h3, h4, h5, h6, p, a, ul, ol, li, blockquote, pre, code, hr, .blend
     mix-blend-mode: color-dodge
     color: var(--options-blended-text-color)
   p
