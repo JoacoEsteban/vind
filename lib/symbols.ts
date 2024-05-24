@@ -20,6 +20,7 @@ import asteriskRaw from '~/assets/symbols/asterisk.json'
 import asteriskCircleRaw from '~/assets/symbols/asterisk.circle.json'
 import asteriskCircleFillRaw from '~/assets/symbols/asterisk.circle.fill.json'
 import pencilRaw from '~/assets/symbols/pencil.json'
+import pencilCircleFillRaw from '~/assets/symbols/pencil.circle.fill.json'
 
 import { default as SvelteSymbolComponent } from '~components/symbol.svelte'
 import type { ComponentConstructorOptions } from 'svelte'
@@ -58,6 +59,7 @@ const [
   asteriskCircle,
   asteriskCircleFill,
   pencil,
+  pencilCircleFill,
 ] = [
   gearRaw,
   arrowDownRaw,
@@ -79,6 +81,7 @@ const [
   asteriskCircleRaw,
   asteriskCircleFillRaw,
   pencilRaw,
+  pencilCircleFillRaw,
 ]
   .map(checkSymbol)
   .map(symbol => {
@@ -119,6 +122,7 @@ export const symbols = {
   asteriskCircle,
   asteriskCircleFill,
   pencil,
+  pencilCircleFill,
 }
 export type SymbolName = keyof typeof symbols
 
