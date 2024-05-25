@@ -83,8 +83,8 @@
     }
 
     const edited = await prompt({
-      title: `Editing path part`,
-      subtitle: `You can change where the bindings of this path will be applied. If you want to match all paths, you can click the 'Match All' button.`,
+      title: `Editing path part <i>${part}</i>`,
+      subtitle: `You can change on which <b>path</b> these bindings apply.<br>If you want to match all paths, you can click the <b>Match All</b> button.`,
       value: part,
       placeholder: 'Enter new path part',
     }).promise
