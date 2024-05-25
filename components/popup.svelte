@@ -164,11 +164,11 @@
       <div class="flex flex-col justify-center sticky bottom-0">
         <Button {disabled} on:click={() => registerNewBinding()}>Bind</Button>
 
-        <!-- {#if !$bindsToPattern.is($currentSite.path)} -->
-        <div class="flex justify-center items-center gap-2 mt-2">
-          → <DisplayUrl path={$bindsToPattern} size={'text-sm'} />
-        </div>
-        <!-- {/if} -->
+        {#if !$bindsToPattern.is($currentSite.path)}
+          <div class="flex justify-center items-center gap-2 mt-2">
+            → <DisplayUrl path={$bindsToPattern} size={'text-sm'} />
+          </div>
+        {/if}
       </div>
     </div>
   </div>
