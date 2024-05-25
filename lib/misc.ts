@@ -20,3 +20,11 @@ export function exportedResourceFilename () {
 
 export function noop () {}
 export function identity<T> (x: T): T { return x }
+
+export function promiseToSignal<T> (promise: Promise<T>): AbortSignal {
+  const controller = new AbortController()
+  promise.finally(() =>
+    controller.abort('Promise resolved')
+  )
+  return controller.signal
+}
