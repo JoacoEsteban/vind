@@ -8,6 +8,7 @@ export interface BindingsStorage {
   getAllBindings: () => Promise<BindingDoc[]>
   getBindingsForDomain: (domain: string) => Promise<BindingDoc[]>
   getBindingsForSite: (domain: string, site: string) => Promise<BindingDoc[]>
+  query: (domain: string, site: string) => Promise<BindingDoc[]>
   addBinding: (binding: BindingDoc) => Promise<void>
   updateBinding: (binding: BindingDoc) => Promise<void>
   upsertBinding: (binding: BindingDoc) => Promise<void>
@@ -16,6 +17,11 @@ export interface BindingsStorage {
   onDeleted$: Observable<BindingDoc>
   onAdded$: Observable<BindingDoc>
   onUpdated$: Observable<BindingDoc>
+  onPathChange$: Observable<{
+    domain: Domain
+    from: Path
+    to: Path
+  }>
 }
 
 export class BindingsStorageImpl implements BindingsStorage {
@@ -26,23 +32,29 @@ export class BindingsStorageImpl implements BindingsStorage {
   public onAdded$ = this.onAddedSubject.asObservable()
   private onUpdatedSubject = new Subject<BindingDoc>()
   public onUpdated$ = this.onUpdatedSubject.asObservable()
+  private onPathChangeSubject = new Subject<{
+    domain: Domain
+    from: Path
+    to: Path
+  }>()
+  public onPathChange$ = this.onPathChangeSubject.asObservable()
 
   constructor(
     private db: VindDB
   ) {
     this.collection = db.bindings
 
-    this.collection.hook('updating', (modifications, primKey, obj, transaction) => {
-      log.info('Updating binding', { modifications, primKey, obj, transaction })
-      this.onUpdatedSubject.next(obj)
-    })
     this.collection.hook('creating', (primKey, obj, transaction) => {
       log.info('Creating binding', { primKey, obj, transaction })
-      this.onAddedSubject.next(obj)
+      transaction.on('complete', () => this.onAddedSubject.next(obj))
+    })
+    this.collection.hook('updating', (modifications, primKey, obj, transaction) => {
+      log.info('Updating binding', { modifications, primKey, obj, transaction })
+      transaction.on('complete', () => this.onUpdatedSubject.next(obj))
     })
     this.collection.hook('deleting', (primKey, obj, transaction) => {
       log.info('Deleting binding', { primKey, obj, transaction })
-      this.onDeletedSubject.next(obj)
+      transaction.on('complete', () => this.onDeletedSubject.next(obj))
     })
 
     log.info('Bindings storage initialized')
@@ -57,7 +69,12 @@ export class BindingsStorageImpl implements BindingsStorage {
   }
 
   async getBindingsForSite (domain: string, site: string): Promise<BindingDoc[]> {
-    return (await this.collection.where('domain').equals(domain).and((binding) => site.startsWith(binding.path)).toArray())
+    return this.collection.where('domain').equals(domain).and((binding) => site.startsWith(binding.path)).toArray()
+  }
+
+  async query (domain: string, site: string): Promise<BindingDoc[]> {
+    console.log({ domain, site })
+    return this.collection.where(['domain', 'path']).equals([domain, site]).toArray()
   }
 
   async addBinding (binding: BindingDoc): Promise<void> {
@@ -84,5 +101,7 @@ export class BindingsStorageImpl implements BindingsStorage {
       binding.path = to.value
       return this.collection.update(binding.id, binding)
     }))
+
+    this.onPathChangeSubject.next({ domain, from, to })
   }
 }

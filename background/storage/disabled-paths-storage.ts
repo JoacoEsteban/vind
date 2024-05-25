@@ -7,8 +7,9 @@ import { match } from 'ts-pattern'
 export interface DisabledBindingPathsStorage {
   getAllDisabledPaths: () => Promise<DisabledBindingPathDoc[]>
   query: (domain: Domain, path: Path) => Promise<DisabledBindingPathDoc[]>
-  disablePath: (domain: Domain, path: Path) => Promise<void>
-  enablePath: (domain: Domain, path: Path) => Promise<void>
+  addEntry: (domain: Domain, path: Path) => Promise<void>
+  removeEntry: (domain: Domain, path: Path) => Promise<void>
+  renameEntry: (domain: Domain, from: Path, to: Path) => Promise<void>
   togglePath: (domain: Domain, path: Path) => Promise<boolean>
   onDeleted$: Observable<DisabledBindingPathDoc>
   onAdded$: Observable<DisabledBindingPathDoc>
@@ -28,11 +29,11 @@ export class DisabledBindingPathsStorageImpl implements DisabledBindingPathsStor
 
     this.collection.hook('creating', (primKey, obj, transaction) => {
       log.info('Creating disabled path', { primKey, obj, transaction })
-      this.onAddedSubject.next(obj)
+      transaction.on('complete', () => this.onAddedSubject.next(obj))
     })
     this.collection.hook('deleting', (primKey, obj, transaction) => {
       log.info('Deleting disabled path', { primKey, obj, transaction })
-      this.onDeletedSubject.next(obj)
+      transaction.on('complete', () => this.onDeletedSubject.next(obj))
     })
 
     log.info('Disabled paths storage initialized')
@@ -48,20 +49,32 @@ export class DisabledBindingPathsStorageImpl implements DisabledBindingPathsStor
     return this.collection.where('domain_path').startsWith(domain_path).toArray()
   }
 
-  async disablePath (domain: Domain, path: Path): Promise<void> {
+  async addEntry (domain: Domain, path: Path): Promise<void> {
     const domain_path = domain.join(path)
-    log.info('disabling path', { domain, path, domain_path })
+    log.info('adding disabled path entry', { domain, path, domain_path })
 
     return this.collection.put({
       domain_path
     })
   }
 
-  async enablePath (domain: Domain, path: Path): Promise<void> {
+  async removeEntry (domain: Domain, path: Path): Promise<void> {
     const domain_path = domain.join(path)
-    log.info('disabling path', { domain, path, domain_path })
+    log.info('reomving disabled path entry', { domain, path, domain_path })
 
     await this.collection.where('domain_path').equals(domain_path).delete()
+  }
+
+  async renameEntry (domain: Domain, from: Path, to: Path): Promise<void> {
+    const domain_from = domain.join(from)
+    const domain_to = domain.join(to)
+    log.info('renaming disabled path', { domain, from, to, domain_from, domain_to })
+
+    if (await this.collection.where('domain_path').equals(domain_to).first()) {
+      return this.removeEntry(domain, from)
+    }
+
+    await this.collection.where('domain_path').equals(domain_from).modify({ domain_path: domain_to })
   }
 
   async togglePath (domain: Domain, path: Path): Promise<boolean> {
@@ -70,11 +83,11 @@ export class DisabledBindingPathsStorageImpl implements DisabledBindingPathsStor
 
     return match(await this.collection.where('domain_path').equals(domain_path).first())
       .when(Boolean, async () => {
-        await this.enablePath(domain, path)
+        await this.removeEntry(domain, path)
         return true
       })
       .otherwise(async () => {
-        await this.disablePath(domain, path)
+        await this.addEntry(domain, path)
         return false
       })
   }

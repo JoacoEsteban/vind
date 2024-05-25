@@ -15,6 +15,7 @@ export class StorageHandlers {
   init () {
     this.setupBindings()
     this.setupDisabledPaths()
+    this.setupEvents()
   }
 
   private respondError<T> (promise: Promise<T>, respond: (response: ErrResponse<T>) => void) {
@@ -96,11 +97,11 @@ export class StorageHandlers {
     })
 
     disabledPathsMessages.disablePath.stream.subscribe(async ([{ domain, path }, sender, respond]) => {
-      this.respondError(storage.disablePath(new Domain(domain), new Path(path)), respond)
+      this.respondError(storage.addEntry(new Domain(domain), new Path(path)), respond)
     })
 
     disabledPathsMessages.enablePath.stream.subscribe(async ([{ domain, path }, sender, respond]) => {
-      this.respondError(storage.enablePath(new Domain(domain), new Path(path)), respond)
+      this.respondError(storage.removeEntry(new Domain(domain), new Path(path)), respond)
     })
 
     disabledPathsMessages.togglePath.stream.subscribe(async ([{ domain, path }, sender, respond]) => {
@@ -119,6 +120,20 @@ export class StorageHandlers {
       disabledPathsMessages.onDisabledBindingPathRemoved.ask(disabledPath, {
         tabId: await getAssertedActiveTabId()
       })
+    })
+  }
+
+  setupEvents () {
+    this.bindingsStorage.onPathChange$.subscribe(async ({ domain, from, to }) => {
+      log.info('onPathChange from background index, renaming disabled path', { domain, from, to })
+      await this.disabledBindingPathsStorage.renameEntry(domain, from, to)
+    })
+    this.bindingsStorage.onDeleted$.subscribe(async (binding) => {
+      log.info('onDeleted from background index, checking if disabled paths should be pruned', binding)
+      const bindings = await this.bindingsStorage.query(binding.domain, binding.path)
+      if (bindings.length === 0) {
+        await this.disabledBindingPathsStorage.removeEntry(new Domain(binding.domain), new Path(binding.path))
+      }
     })
   }
 }

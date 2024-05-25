@@ -29,6 +29,10 @@ export class VindDB extends Dexie {
       disabledBindingPaths: '&domain_path',
     })
 
+    this.version(4).stores({
+      bindings: 'id, [domain+path], key, selector',
+    })
+
     this.bindings = this.table('bindings')
     this.disabledBindingPaths = this.table('disabledBindingPaths')
   }
