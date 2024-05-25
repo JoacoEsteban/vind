@@ -22,3 +22,7 @@ export const colorSeeds = {
   redCancel: '10a',
   greenAccept: '67',
 }
+
+export enum Messages {
+  UncaughtError = 'An unexpected error just happened. If it persists, please contact us at support@vind-works.io'
+}

@@ -4,8 +4,10 @@
   import chroma from 'chroma-js'
   import githubMark from 'data-text:~assets/svg/github-mark.svg'
   import { combineLatest, first, map, share } from 'rxjs'
+  import toast from 'svelte-french-toast/dist'
   import logo from '~/assets/icon.png'
   import Button from '~components/button.svelte'
+  import Dialog from '~components/dialog.svelte'
   import Filters from '~components/filters.svelte'
   import BindingsList from '~components/options/bindings-list.svelte'
   import Footer from '~components/options/footer.svelte'
@@ -13,6 +15,8 @@
   import { handleAnimationState } from '~lib/animation-state'
   import { Binding } from '~lib/binding'
   import { cursorPosition, mouse$ } from '~lib/cursor-position'
+  import { Messages } from '~lib/definitions'
+  import { isPromptOpen$ } from '~lib/dialog'
   import { log } from '~lib/log'
   import { MapToOrderedTuple } from '~lib/map'
   import { getExtensionVersion, openGithub } from '~lib/misc'
@@ -125,23 +129,35 @@
     pageController.bindingsChannel.removeBinding(id)
   }
   async function togglePath(domain: Domain, path: Path) {
-    pageController.disabledPathsChannel.togglePath(domain, path)
+    const newValue = await pageController.disabledPathsChannel.togglePath(
+      domain,
+      path,
+    )
+
+    toast.success(`Bindings ${newValue ? 'enabled' : 'disabled'}`)
   }
   async function updatePath(params: {
     domain: Domain
     fromPath: Path
     toPath: Path
   }) {
-    pageController.bindingsChannel.moveBindings(
+    await pageController.bindingsChannel.moveBindings(
       params.domain,
       params.fromPath,
       params.toPath,
     )
+    toast.success('Path updated')
   }
+
+  window.addEventListener('unhandledrejection', function (event) {
+    toast.error(Messages.UncaughtError)
+  })
 </script>
 
-<div use:themeController use:cursorPosition>
-  <div class="options-container p-5 min-h-screen flex flex-col justify-between">
+<div use:themeController use:cursorPosition class:dialog-open={$isPromptOpen$}>
+  <div
+    class="options-container p-5 min-h-screen flex flex-col justify-between"
+    inert={$isPromptOpen$ ? true : undefined}>
     <div
       use:handleAnimationState
       class="backdrop"
@@ -209,6 +225,7 @@
   </div>
   <Filters />
   <Toaster />
+  <Dialog />
 </div>
 
 <style lang="sass">
@@ -248,6 +265,14 @@ main :global, footer :global
     background: var(--fallback-b1, oklch(var(--b1) / 1))
     opacity: 0.4
     z-index: 1
+
+.backdrop
+  transition: transform .5s var(--bezier-symmetric)
+.dialog-open
+  .backdrop
+    transform: scale(1.15)
+  .mosaic
+    animation-play-state: paused
 
 ._container
   width: min(80em, 100%)

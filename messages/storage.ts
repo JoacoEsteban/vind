@@ -2,8 +2,9 @@ import { getMessage } from '@extend-chrome/messages'
 import type { BindingDoc, DisabledBindingPathDoc } from '~background/storage/db'
 import { splitMessage } from './lib'
 
-export type ErrResponse = {
-  error: string | null
+export type ErrResponse<T = void> = {
+  error: string | null,
+  value?: T
 }
 
 export type DisabledPathPayload = {
@@ -75,7 +76,7 @@ export const disabledPathsMessages = {
     'enablePath',
     { async: true }
   )),
-  togglePath: splitMessage(getMessage<DisabledPathPayload, ErrResponse>(
+  togglePath: splitMessage(getMessage<DisabledPathPayload, ErrResponse<boolean>>(
     'togglePath',
     { async: true }
   )),

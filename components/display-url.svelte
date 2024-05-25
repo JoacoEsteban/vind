@@ -1,5 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { prompt } from '~lib/dialog'
+  import { log } from '~lib/log'
   import { identity } from '~lib/misc'
   import { ToggleSubject } from '~lib/rxjs'
   import { wrapIterable } from '~lib/svelte'
@@ -65,7 +67,7 @@
     })
   }
 
-  function editPart(index: number) {
+  async function editPart(index: number) {
     if (!editable) {
       return
     }
@@ -80,7 +82,12 @@
       throw new Error('Path must be provided')
     }
 
-    const edited = prompt('Edit path part', part)
+    const edited = await prompt({
+      title: `Editing path part`,
+      subtitle: `You can change where the bindings of this path will be applied. If you want to match all paths, you can click the 'Match All' button.`,
+      value: part,
+      placeholder: 'Enter new path part',
+    }).promise
 
     if (!edited) {
       return
@@ -129,7 +136,13 @@
         {/if}
       </div>
       <div slot="tooltip" class="flex gap-3">
-        <Button opaque icon={'pencil'} on:click={() => editPart(index)}>
+        <Button
+          opaque
+          icon={'pencil'}
+          on:click={() => {
+            hide$.toggle()
+            editPart(index)
+          }}>
           Edit
         </Button>
         {#if part !== '*'}
@@ -140,10 +153,10 @@
               hide$.toggle()
               togglePart(index)
             }}>
-            Wildcard
+            Match All
           </Button>
         {:else if last}
-          <Button opaque icon={'trashFill'} on:click={removeLast}>
+          <Button opaque icon={'deleteLeftFill'} on:click={removeLast}>
             Remove
           </Button>
         {/if}

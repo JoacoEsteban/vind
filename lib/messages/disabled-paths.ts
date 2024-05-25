@@ -8,7 +8,7 @@ export interface DisabledPathsChannel {
   queryDisabledPaths: (domain: Domain, path: Path) => Promise<Set<string>>
   disablePath: (domain: Domain, path: Path) => Promise<void>
   enablePath: (domain: Domain, path: Path) => Promise<void>
-  togglePath: (domain: Domain, path: Path) => Promise<void>
+  togglePath: (domain: Domain, path: Path) => Promise<boolean>
 }
 
 function toSet (docs: DisabledBindingPathDoc[]) {
@@ -42,7 +42,7 @@ export class DisabledPathsChannelImpl implements DisabledPathsChannel {
   async enablePath (domain: Domain, path: Path) {
     return disabledPathsMessages.enablePath.ask(toPayload(domain, path)).then(throwOnResponseError)
   }
-  async togglePath (domain: Domain, path: Path) {
-    return disabledPathsMessages.togglePath.ask(toPayload(domain, path)).then(throwOnResponseError)
+  async togglePath (domain: Domain, path: Path): Promise<boolean> {
+    return disabledPathsMessages.togglePath.ask(toPayload(domain, path)).then(throwOnResponseError<boolean>)
   }
 }

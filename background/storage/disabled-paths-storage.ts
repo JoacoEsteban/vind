@@ -9,7 +9,7 @@ export interface DisabledBindingPathsStorage {
   query: (domain: Domain, path: Path) => Promise<DisabledBindingPathDoc[]>
   disablePath: (domain: Domain, path: Path) => Promise<void>
   enablePath: (domain: Domain, path: Path) => Promise<void>
-  togglePath: (domain: Domain, path: Path) => Promise<void>
+  togglePath: (domain: Domain, path: Path) => Promise<boolean>
   onDeleted$: Observable<DisabledBindingPathDoc>
   onAdded$: Observable<DisabledBindingPathDoc>
 }
@@ -64,12 +64,18 @@ export class DisabledBindingPathsStorageImpl implements DisabledBindingPathsStor
     await this.collection.where('domain_path').equals(domain_path).delete()
   }
 
-  async togglePath (domain: Domain, path: Path): Promise<void> {
+  async togglePath (domain: Domain, path: Path): Promise<boolean> {
     const domain_path = domain.join(path)
     log.info('togglePath', { domain, path, domain_path })
 
     return match(await this.collection.where('domain_path').equals(domain_path).first())
-      .when(Boolean, () => this.enablePath(domain, path))
-      .otherwise(() => this.disablePath(domain, path))
+      .when(Boolean, async () => {
+        await this.enablePath(domain, path)
+        return true
+      })
+      .otherwise(async () => {
+        await this.disablePath(domain, path)
+        return false
+      })
   }
 }

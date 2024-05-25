@@ -17,9 +17,9 @@ export class StorageHandlers {
     this.setupDisabledPaths()
   }
 
-  private respondError<T> (promise: Promise<T>, respond: (response: ErrResponse) => void) {
+  private respondError<T> (promise: Promise<T>, respond: (response: ErrResponse<T>) => void) {
     promise
-      .then(() => respond({ error: null }))
+      .then((value) => respond({ error: null, value }))
       .catch((error) => respond({ error: serializeError(error) }))
   }
 
