@@ -94,11 +94,11 @@
                   <h2
                     class="m-0 font-medium text-3xl sm:text-3xl"
                     id="modal-title">
-                    {prompt?.options.title}
+                    {@html prompt?.options.title}
                   </h2>
                   {#if prompt?.options.subtitle}
                     <h3 class="mt-0 font-normal sm:text-lg">
-                      {prompt?.options.subtitle}
+                      {@html prompt?.options.subtitle}
                     </h3>
                   {/if}
                 </div>
