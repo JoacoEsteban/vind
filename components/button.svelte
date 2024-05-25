@@ -16,6 +16,7 @@
   export let glassy: boolean = false
   export let disabled: boolean = false
   export let icon: SymbolName | null = null
+  export let iconPosition: 'left' | 'right' = 'left'
   export let roundSize: string = ''
   export let roundPadding: string = ''
   export let as: string = 'button'
@@ -62,7 +63,9 @@
     on:mouseleave={() => dispatch('mouseleave')}
     on:focus={() => dispatch('focus')}
     on:blur={() => dispatch('blur')}>
-    <div class="inner flex gap-2 items-center">
+    <div
+      class="inner flex gap-2 items-center"
+      class:flex-row-reverse={iconPosition === 'right'}>
       {#if icon}
         <Symbol name={icon} size={'1em'} />
       {/if}
