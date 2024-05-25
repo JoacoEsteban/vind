@@ -7,7 +7,7 @@
   export let placement: 'top' | 'bottom' | 'left' | 'right' = 'top'
   export let bordered = false
   export let enabled = true
-  export let hideSignal: boolean
+  export let hideSignal: boolean = false
 
   $: (hideSignal || true) && hideTooltip()
 
