@@ -1,4 +1,5 @@
 import { pEvent, type CancelablePromise } from 'p-event'
+import { noop } from './misc'
 
 export const unBindableKeys = new Set(['TAB', 'ENTER', 'ESCAPE', 'SHIFT', 'CONTROL', 'ALT', 'META'])
 
@@ -31,6 +32,14 @@ export function highlightElement (element: HTMLElement) {
 
   document.body.appendChild(overlay)
   return overlay
+}
+
+export async function waitForKey (key: string, signal?: AbortSignal): Promise<void> {
+  await pEvent<string, KeyboardEvent>(document, 'keydown', {
+    signal,
+    filter: (e) => e.key === key
+  })
+    .catch(noop)
 }
 
 export function recordInputKey (signal?: AbortSignal): Promise<string> {
