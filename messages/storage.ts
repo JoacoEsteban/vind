@@ -56,6 +56,10 @@ export const bindingsMessages = {
   onBindingUpdated: splitMessage(getMessage<BindingDoc>(
     'onBindingUpdated',
   )),
+  deleteAllBindings: splitMessage(getMessage<void, ErrResponse>(
+    'deleteAllBindings',
+    { async: true }
+  )),
 }
 
 export const disabledPathsMessages = {

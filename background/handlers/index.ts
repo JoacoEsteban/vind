@@ -61,6 +61,10 @@ export class StorageHandlers {
       this.respondError(bindingsStorage.moveBindings(new Domain(payload.domain), new Path(payload.from), new Path(payload.to)), respond)
     })
 
+    bindingsMessages.deleteAllBindings.stream.subscribe(async ([, sender, respond]) => {
+      this.respondError(bindingsStorage.deleteAllBindings(), respond)
+    })
+
     bindingsStorage.onAdded$.subscribe(async (binding) => {
       log.info('onAdded from background index', binding)
       bindingsMessages.onBindingAdded.ask(binding, {

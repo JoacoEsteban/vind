@@ -5,6 +5,8 @@
   import { Err, None, Ok, type Result } from 'ts-results'
   import Button from '~components/button.svelte'
   import { wrapResultAsync } from '~lib/control-flow'
+  import { colorSeeds } from '~lib/definitions'
+  import { prompt, PromptType } from '~lib/dialog'
   import { VindError } from '~lib/error'
   import { exportedResourceFilename } from '~lib/misc'
   import type { ResourceMigrator } from '~lib/resource-migrator'
@@ -110,14 +112,32 @@
 
     toast.success('Exported successfully')
   }
+
+  async function wipe() {
+    const result = await prompt({
+      type: PromptType.Boolean,
+      title: 'Are you sure you want to delete all bindings?',
+      subtitle: 'This cannot be undone',
+    }).promise
+
+    if (result) {
+      const result = await migrator.wipeResources()
+      if (result.err) {
+        toast.error('Uh oh, there was an error')
+        return
+      }
+
+      toast.success('Successfully deleted all bindings')
+    }
+  }
 </script>
 
 <template>
   <main>
     <h2>Migrator</h2>
     <p>
-      If you want to share/backup your Bindings you can use the buttons
-      below to import and export.
+      If you want to share/backup your Bindings you can use the buttons below to
+      import and export.
     </p>
     <p>
       You can import from the clipboard or a file, and export to the clipboard
@@ -138,5 +158,14 @@
       >Save to File</Button>
     <Button icon="arrowUpDocFill" opaque on:click={fromFile}
       >Load from File</Button>
+  </div>
+
+  <Heading classes="!text-red-500" title="Danger Zone" symbol="trashFill" />
+  <div class="flex gap-3 flex-wrap">
+    <Button
+      colorSeed={colorSeeds.redCancel}
+      icon="trashFill"
+      opaque
+      on:click={wipe}>Delete all bindings</Button>
   </div>
 </template>

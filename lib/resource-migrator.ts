@@ -79,4 +79,12 @@ export class ResourceMigrator {
       ...disabledPaths.map(domain_path => this.disabledPathsChannel.disablePath(new Domain(domain_path), new Path(domain_path)))
     ]))
   }
+
+  async wipeResources () {
+    return wrapResultAsync(async () => {
+      await Promise.all([
+        this.bindingChannel.deleteAllBindings(),
+      ])
+    })
+  }
 }

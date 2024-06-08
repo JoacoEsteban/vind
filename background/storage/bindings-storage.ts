@@ -14,6 +14,7 @@ export interface BindingsStorage {
   upsertBinding: (binding: BindingDoc) => Promise<void>
   removeBinding: (id: string) => Promise<void>
   moveBindings: (domain: Domain, from: Path, to: Path) => Promise<void>
+  deleteAllBindings: () => Promise<void>
   onDeleted$: Observable<BindingDoc>
   onAdded$: Observable<BindingDoc>
   onUpdated$: Observable<BindingDoc>
@@ -103,5 +104,9 @@ export class BindingsStorageImpl implements BindingsStorage {
     }))
 
     this.onPathChangeSubject.next({ domain, from, to })
+  }
+
+  async deleteAllBindings (): Promise<void> {
+    await this.collection.clear()
   }
 }

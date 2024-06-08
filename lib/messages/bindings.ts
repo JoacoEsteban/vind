@@ -14,6 +14,7 @@ export interface BindingChannel {
   updateBinding: (binding: Binding) => void
   upsertBinding: (binding: Binding) => void
   removeBinding: (id: string) => void
+  deleteAllBindings: () => void
 }
 
 export function toBindingDoc (binding: Binding): BindingDoc {
@@ -72,5 +73,8 @@ export class BindingChannelImpl implements BindingChannel {
       from: from.value,
       to: to.value
     }).then(throwOnResponseError)
+  }
+  deleteAllBindings () {
+    return bindingsMessages.deleteAllBindings.ask().then(throwOnResponseError)
   }
 }
