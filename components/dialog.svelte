@@ -1,30 +1,56 @@
 <script lang="ts">
+  import { merge } from 'rxjs'
   import { quintOut } from 'svelte/easing'
   import { fade, scale } from 'svelte/transition'
+  import { match } from 'ts-pattern'
   import { colorSeeds } from '~lib/definitions'
-  import { Prompt$, type Prompt } from '~lib/dialog'
+  import {
+    BooleanPrompt$,
+    Prompt$,
+    PromptType,
+    type AnyPrompt,
+    type AnyReturnOfPrompt,
+    type Prompt,
+  } from '~lib/dialog'
   import { waitForKey } from '~lib/element'
   import { noop, promiseToSignal } from '~lib/misc'
   import Button from './button.svelte'
   import Symbol from './symbol.svelte'
 
   let open = false
-  let prompt: Prompt | null = null
-  let input = ''
-  $: isError =
-    input.includes(' ') ||
-    input.includes('/') ||
-    input.includes('\\') ||
-    input.includes(':')
-  $: isValid = !isError && input.length > 0 && input !== prompt?.options.value
+  let prompt: AnyPrompt | null = null
+  let input: AnyReturnOfPrompt | null = null
+  let type: PromptType | null = null
 
-  Prompt$.subscribe(async (_prompt) => {
+  $: isError =
+    type === PromptType.PathEdit
+      ? typeof input !== 'string' ||
+        input.includes(' ') ||
+        input.includes('/') ||
+        input.includes('\\') ||
+        input.includes(':')
+      : false
+
+  $: isValid = match(type)
+    .with(PromptType.Boolean, () => true)
+    .with(
+      PromptType.PathEdit,
+      () =>
+        !isError &&
+        (input as string).length > 0 &&
+        input !== prompt?.options.value,
+    )
+    .otherwise(() => false)
+
+  // TODO try to çouple this into one
+  merge(Prompt$, BooleanPrompt$).subscribe(async (_prompt) => {
     prompt = _prompt
     open = true
     input = prompt?.options.value || ''
+    type = prompt?.options.type
 
     document.body.classList.add('dialog-open')
-    waitForKey('Escape', promiseToSignal(prompt.promise))
+    waitForKey('Escape', promiseToSignal<any>(prompt.promise))
       .then(cancel)
       .catch(noop)
       .finally(reset)
@@ -36,11 +62,21 @@
 
   function confirm() {
     if (!isValid) return
-    prompt?.resolve(input)
+    if (!prompt || !type) return
+
+    match(type)
+      .with(PromptType.Boolean, () => {
+        ;(prompt as Prompt<PromptType.Boolean>).resolve(true)
+      })
+      .with(PromptType.PathEdit, () => {
+        ;(prompt as Prompt<PromptType.PathEdit>).resolve(input as string)
+      })
   }
 
   function makeWildcard() {
-    prompt?.resolve('*')
+    if (type !== PromptType.PathEdit) throw new Error('Invalid type')
+    if (!prompt) throw new Error('No prompt')
+    ;(prompt as Prompt<PromptType.PathEdit>).resolve('*')
   }
 
   function backdropKeydown(event: KeyboardEvent) {
@@ -105,23 +141,27 @@
               {/if}
             </div>
           </div>
-          <form
-            class="mt-3 text-center sm:text-left px-4 sm:px-6 pb-4"
-            on:submit|preventDefault={confirm}>
-            <input
-              autofocus
-              class="input input-bordered w-full !bg-[#fff4] rounded-full text-xl font-medium text-center"
-              type="text"
-              placeholder={prompt?.options.placeholder || 'Enter text'}
-              class:input-error={isError}
-              bind:value={input} />
-          </form>
+          {#if type === PromptType.PathEdit}
+            <form
+              class="mt-3 text-center sm:text-left px-4 sm:px-6 pb-4"
+              on:submit|preventDefault={confirm}>
+              <input
+                autofocus
+                class="input input-bordered w-full !bg-[#fff4] rounded-full text-xl font-medium text-center"
+                type="text"
+                placeholder={prompt?.options.placeholder || 'Enter text'}
+                class:input-error={isError}
+                bind:value={input} />
+            </form>
+          {/if}
           <div
             class="px-4 py-3 flex flex-col sm:flex-row flex-wrap sm:px-6 gap-2 justify-between">
-            <Button
-              on:click={makeWildcard}
-              icon="asteriskCircleFill"
-              type="button">Match All</Button>
+            {#if type === PromptType.PathEdit}
+              <Button
+                on:click={makeWildcard}
+                icon="asteriskCircleFill"
+                type="button">Match All</Button>
+            {/if}
             <div
               class="flex flex-row flex-wrap gap-2 justify-center sm:justify-end">
               <Button

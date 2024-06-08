@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { prompt } from '~lib/dialog'
+  import { prompt, PromptType } from '~lib/dialog'
   import { log } from '~lib/log'
   import { identity } from '~lib/misc'
   import { ToggleSubject } from '~lib/rxjs'
@@ -83,6 +83,7 @@
     }
 
     const edited = await prompt({
+      type: PromptType.PathEdit,
       title: `Editing path part <i>${part}</i>`,
       subtitle: `You can change on which <b>path</b> these bindings apply.<br>If you want to match all paths, you can click the <b>Match All</b> button.`,
       value: part,
