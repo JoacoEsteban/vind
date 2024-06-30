@@ -3,7 +3,7 @@ import { log } from './log'
 import { BehaviorSubject, Subject, combineLatest, filter, map, merge, share } from 'rxjs'
 import { Domain, Path } from './url'
 import { BindingChannelImpl } from './messages/bindings'
-import { isBindableKeydownEvent } from './element'
+import { bindingOverlayId, highlightElement, isBindableKeydownEvent } from './element'
 import { DisabledPathsChannelImpl } from './messages/disabled-paths'
 import { expose } from './rxjs'
 import { match } from 'ts-pattern'
@@ -289,13 +289,15 @@ export class PageController {
   async focusBinding (binding: Binding) {
     const element = binding.getElement()
     if (element) {
+      const overlay = highlightElement(element)
+      overlay.id = bindingOverlayId(binding)
     }
   }
 
   async blurBinding (binding: Binding) {
-    const element = binding.getElement()
-    if (element) {
-    }
+    document
+      .querySelectorAll('#' + bindingOverlayId(binding))
+      .forEach((el) => el.remove())
   }
 
   async onKeyPress (e: KeyboardEvent) {

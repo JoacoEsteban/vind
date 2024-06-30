@@ -1,5 +1,6 @@
 import { pEvent, type CancelablePromise } from 'p-event'
 import { noop } from './misc'
+import type { Binding } from './binding'
 
 export const unBindableKeys = new Set(['TAB', 'ENTER', 'ESCAPE', 'SHIFT', 'CONTROL', 'ALT', 'META'])
 
@@ -94,4 +95,8 @@ export function isConfirmableElement (e: MouseEvent) {
   return document
     .elementsFromPoint(e.clientX, e.clientY)
     .some(el => el.classList.contains('vind-overlay'))
+}
+
+export function bindingOverlayId (binding: Binding) {
+  return `overlay-${binding.id}`
 }
