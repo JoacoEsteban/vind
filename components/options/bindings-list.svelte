@@ -9,6 +9,7 @@
   import Toggle from '~components/toggle.svelte'
   import WithTooltip from '~components/with-tooltip.svelte'
   import type { Binding } from '~lib/binding'
+  import { ENV_PROD } from '~lib/env'
   import { wrapIterable } from '~lib/svelte'
 
   export let bindingsMap: Observable<
@@ -73,6 +74,11 @@
                     on:click={() => deleteBinding(binding)}>
                     Remove
                   </Button>
+                  <!-- {#if !ENV_PROD}
+                    <div class="bg-blur py-1 px-3">
+                      {binding.selector}
+                    </div>
+                  {/if} -->
                 </div>
               </WithTooltip>
             </span>

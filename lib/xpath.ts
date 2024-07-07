@@ -77,11 +77,14 @@ export class XPathObject {
 
 export class XPathAttr {
   public readonly computed: string
+  public readonly operator: 'equals' | 'contains'
   constructor(
     public readonly name: string,
     public readonly value: string[],
-    public readonly operator: 'equals' | 'contains' = 'equals',
   ) {
+    const operator = this.operator = match(name)
+      .with('class', () => 'contains' as const)
+      .otherwise(() => 'equals')
 
     name = match(name)
       .with('text', 'string', () => `${name}()`)
@@ -184,17 +187,17 @@ export function buildCompleteXPathObject (element: Element): Result<XPathObject,
 
   const nodeText = getNodeText(targetElement)
   if (nodeText.length) {
-    attrs.push(new XPathAttr('text', [nodeText], 'equals'))
+    attrs.push(new XPathAttr('text', [nodeText]))
   } else if (targetElement.textContent?.length) {
     const text = targetElement.textContent
     if (text.length <= 20) {
-      attrs.push(new XPathAttr('string', [text], 'equals'))
+      attrs.push(new XPathAttr('string', [text]))
     }
   }
 
   if (targetElement.classList.length) {
     const classes = [...targetElement.classList]
-    attrs.push(new XPathAttr('class', classes, 'contains'))
+    attrs.push(new XPathAttr('class', classes))
   }
 
   const xpathObj = new XPathObject(tagName, attrs, parentXpath?.val)
