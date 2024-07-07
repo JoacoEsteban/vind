@@ -169,37 +169,22 @@ export class RegistrationController {
     const element$ = this.targetedElement$
       .pipe(
         takeUntil(stopper),
-        map(async (el) => {
-          const result = buildCompleteXPathObject(el)
-          if (result.ok) {
-            const { val } = result
-            log.info('xpath instance', val, 'for element', el)
-            log.info('>>> resolve to unique', await val.resolveToUniqueElement())
-          }
-          // navigator.clipboard.writeText(xpath)
-          const toastId = toast('xpath', {
-            duration: Infinity,
-            position: 'top-right',
-            style: `width: 100vw;`,
-          })
-          return [highlightElement(el), toastId] as [HTMLElement, string]
+        map((el) => {
+          return highlightElement(el) as HTMLElement
         }),
-        unwrapPromise(),
         share()
       )
 
     element$.pipe(
       pairwise(),
-      tap(([[prev, toastId], _]) => {
+      tap(([prev, _]) => {
         document.body.removeChild(prev)
-        toast.dismiss(toastId)
       })
     ).subscribe()
 
     element$.pipe(last())
-      .forEach(([last, toastId]) => {
+      .forEach((last) => {
         document.body.removeChild(last)
-        toast.dismiss(toastId)
       })
   }
 }
