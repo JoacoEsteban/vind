@@ -275,7 +275,7 @@ export class PageController {
   }
 
   async clickBinding (binding: Binding) {
-    const element = binding.getElement()
+    const element = await binding.getElement()
     if (element) {
       await sleep()
       element.focus()
@@ -287,7 +287,7 @@ export class PageController {
   }
 
   async focusBinding (binding: Binding) {
-    const element = binding.getElement()
+    const element = await binding.getElement()
     if (element) {
       const overlay = highlightElement(element)
       overlay.id = bindingOverlayId(binding)

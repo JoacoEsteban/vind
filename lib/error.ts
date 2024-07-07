@@ -51,3 +51,9 @@ export class UnexpectedError extends VindError {
     super("Oops, something went wrong.", 'UNEXPECTED_ERROR')
   }
 }
+
+export class NoUniqueXPathExpressionErrorForElement extends VindError {
+  constructor() {
+    super("That element cannot be bound because it Vind cannot uniquely identify it.", 'NO_UNIQUE_XPATH_EXPRESSION')
+  }
+}

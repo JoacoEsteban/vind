@@ -4,11 +4,12 @@ import { log } from './log'
 import { PromiseWithResolvers } from './polyfills'
 import { getClosestBindableElement, highlightElement, isConfirmableElement, isHighlightableElement, recordInputKey, waitForKeyDown } from './element'
 import { Binding } from './binding'
-import { exposeSubject, PromiseStopper } from './rxjs'
+import { exposeSubject, PromiseStopper, unwrapPromise } from './rxjs'
 import { RegistrationAbortedError, UnbindableElementError } from './error'
-import { getXPath } from './xpath'
+import { vindXPathStrategy, buildCompleteXPathObject } from './xpath'
 import { match } from 'ts-pattern'
 import type { Domain, Path } from './url'
+import toast from 'svelte-french-toast/dist'
 
 export enum RegistrationState {
   Idle,
@@ -99,7 +100,7 @@ export class RegistrationController {
     // ----------------------------------------------
     this.setRegistrationState(RegistrationState.SavingBinding)
 
-    const binding = Binding.fromElement(selectedElement, key, domain, path)
+    const binding = await Binding.fromElement(selectedElement, key, domain, path)
     log.info('Saving binding:', binding)
     // ----------------------------------------------
     return this.pageControllerInstance.bindingsChannel.addBinding(binding)
@@ -118,9 +119,9 @@ export class RegistrationController {
       fromEvent<MouseEvent>(document, 'click')
         .pipe(filter(isConfirmableElement))
     ])
-      .subscribe((val) => {
+      .subscribe(async (val) => {
         const [element] = val
-        const result = getXPath(element)
+        const result = await vindXPathStrategy(element)
 
         match(result.ok)
           .with(true, () => {
@@ -164,21 +165,41 @@ export class RegistrationController {
 
   // ----------------------------------------------
   private highlightCurrentElement (stopper: Subject<any>) {
+    // let toastId = ''
     const element$ = this.targetedElement$
       .pipe(
         takeUntil(stopper),
-        map((el) => highlightElement(el)),
+        map(async (el) => {
+          const result = buildCompleteXPathObject(el)
+          if (result.ok) {
+            const { val } = result
+            log.info('xpath instance', val, 'for element', el)
+            log.info('>>> resolve to unique', await val.resolveToUniqueElement())
+          }
+          // navigator.clipboard.writeText(xpath)
+          const toastId = toast('xpath', {
+            duration: Infinity,
+            position: 'top-right',
+            style: `width: 100vw;`,
+          })
+          return [highlightElement(el), toastId] as [HTMLElement, string]
+        }),
+        unwrapPromise(),
         share()
       )
 
     element$.pipe(
       pairwise(),
-      tap(([prev, _]) => {
+      tap(([[prev, toastId], _]) => {
         document.body.removeChild(prev)
+        toast.dismiss(toastId)
       })
     ).subscribe()
 
     element$.pipe(last())
-      .forEach((last) => document.body.removeChild(last))
+      .forEach(([last, toastId]) => {
+        document.body.removeChild(last)
+        toast.dismiss(toastId)
+      })
   }
 }
