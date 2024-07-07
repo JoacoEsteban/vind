@@ -1,6 +1,6 @@
 import { RobulaPlus } from "px-robula-plus"
 import { Err, Ok, Result } from "ts-results"
-import { sleep, wrapResult } from './control-flow'
+import { sleep, wrapResult, wrapResultAsync } from './control-flow'
 import { match } from 'ts-pattern'
 import { NoUniqueXPathExpressionErrorForElement } from './error'
 import { combinations, combinationsDescending, pairCombinations } from './generator'
@@ -141,20 +141,31 @@ export function getElementByXPath (xpath: string) {
 export async function vindXPathStrategy (element: Element, parentElement?: Element | null): Promise<Result<string, Error>> {
   const res = buildCompleteXPathObject(element)
 
-  if (res.ok) {
-    const resolution = await res.val.resolveToUniqueElement()
-    if (resolution) {
-      const [selector, el] = resolution
-      if (el !== element) {
-        return Err(new Error('Element mismatch'))
-      }
-      return Ok(selector)
-    }
+  if (res.err) {
+    log.error('failed to build xpath object', res.val)
+    return res
+  }
 
+  const result = await wrapResultAsync(res.val.resolveToUniqueElement.bind(res.val))
+
+  if (result.err) {
+    log.error('failed to resolve to unique element', result.val)
+    return Err(result.val)
+  }
+
+  const resolution = result.val
+
+  if (!resolution) {
+    log.error('no unique xpath expression found for element')
     return Err(new NoUniqueXPathExpressionErrorForElement())
   }
 
-  return res
+  const [selector, el] = resolution
+  if (el !== element) {
+    log.error('Element mismatch')
+    return Err(new Error('Element mismatch'))
+  }
+  return Ok(selector)
 }
 
 export function buildCompleteXPathObject (element: Element): Result<XPathObject, Error> {
