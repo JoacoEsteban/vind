@@ -144,7 +144,6 @@ export class XPathObject {
   }
 
   static fromSerializable (obj: SerializableXpathObject): XPathObject {
-    console.log({ obj })
     return new XPathObject(
       obj.tagName,
       obj.attrs.map(([name, value]) => new XPathAttr(name, value)),
