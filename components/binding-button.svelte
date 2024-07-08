@@ -41,7 +41,7 @@
     pressed={$pressed$}
     colorSeed={binding.key}
     on:click={() => dispatch('click')}
-    on:mouseover={() => dispatch('focus')}
+    on:mouseenter={() => dispatch('focus')}
     on:mouseleave={() => dispatch('blur')}
     on:focus={() => dispatch('focus')}
     on:blur={() => dispatch('blur')}>

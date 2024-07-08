@@ -60,6 +60,7 @@
     style:--_round-padding_={roundPadding}
     on:click={() => dispatch('click')}
     on:mouseover={() => dispatch('mouseover')}
+    on:mouseenter={() => dispatch('mouseenter')}
     on:mouseleave={() => dispatch('mouseleave')}
     on:focus={() => dispatch('focus')}
     on:blur={() => dispatch('blur')}>
