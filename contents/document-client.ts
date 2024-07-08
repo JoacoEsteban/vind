@@ -40,17 +40,20 @@ export const onPageControllerReady = (async () => {
       ))
       .subscribe(async (event) => {
         instance.onKeyPress(event)
-          .then((presses) => {
-            if (presses.length) {
-              toast.success('Binding activated', { duration: 500 })
-            }
-          })
-          .catch(err => {
-            const message = match<Error, string>(err)
-              .when(() => err instanceof InexistentElementError, () => 'The element that the binding is trying to target does not exist on this page. You can try binding it again')
-              .when(() => err instanceof VindError, () => err.message)
-              .otherwise(() => 'An unknown error occurred')
-            toast.error(message, { duration: 5000 })
-          })
       })
+
+    instance.triggers$.subscribe(async (trigger) => {
+      trigger
+        .then((presses) => {
+          toast.success('Binding activated', { duration: 500 })
+        })
+        .catch(err => {
+          log.error('Error in trigger', err)
+          const message = match<Error, string>(err)
+            .when(() => err instanceof InexistentElementError, () => 'The element that the binding is trying to target does not exist on this page. You can try binding it again')
+            .when(() => err instanceof VindError, () => err.message)
+            .otherwise(() => 'An unknown error occurred')
+          toast.error(message, { duration: 5000 })
+        })
+    })
   })

@@ -40,6 +40,9 @@ export class PageController {
   private triggeredBinding = new Subject<string>()
   public triggeredBinding$ = this.triggeredBinding.asObservable()
 
+  private triggers = new Subject<Promise<unknown>>() // TODO type
+  public triggers$ = this.triggers.asObservable()
+
   public bindingsChannel = new BindingChannelImpl()
   public disabledPathsChannel = new DisabledPathsChannelImpl()
 
@@ -274,7 +277,11 @@ export class PageController {
     })
   }
 
-  async clickBinding (binding: Binding) {
+  public async clickBinding (binding: Binding) {
+    this.triggers.next(this._clickBinding_(binding))
+  }
+
+  private async _clickBinding_ (binding: Binding) {
     const element = await binding.getElement()
     if (element) {
       await sleep()
