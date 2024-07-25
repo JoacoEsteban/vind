@@ -154,13 +154,14 @@ export class XPathObject {
 
 export class XPathAttr {
   public readonly computed: string
-  public readonly operator: 'equals' | 'contains'
+  public readonly operator: 'equals' | 'contains' | 'starts-with'
   constructor(
     public readonly name: string,
     public readonly value: string[],
   ) {
     const operator = this.operator = match(name)
       .with('class', () => 'contains' as const)
+      .with('href', () => 'starts-with' as const)
       .otherwise(() => 'equals')
 
     name = match(name)
@@ -169,7 +170,7 @@ export class XPathAttr {
 
     const expression = match(operator)
       .with('equals', () => `${name}='${value.join(' ')}'`)
-      .with('contains', () => value.map(val => `contains(${name}, '${val}')`).join(' or '))
+      .with('contains', 'starts-with', (op) => value.map(val => `${op}(${name}, '${val}')`).join(' or '))
       .exhaustive()
 
     this.computed = `[${expression}]`
@@ -265,6 +266,7 @@ export function buildCompleteXPathObject (element: Element): Result<XPathObject,
     'title',
     'aria-labelledby',
     'aria-label',
+    'href',
     // TODO position?
   ]
     .map<[string, string | null]>(attr => [attr, targetElement.getAttribute(attr)])
