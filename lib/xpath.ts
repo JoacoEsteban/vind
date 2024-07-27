@@ -256,10 +256,14 @@ export function buildCompleteXPathObject (element: Element): Result<XPathObject,
     return Err(parentXpath.val)
   }
 
-  const targetElement = element
+  const tagName = element.tagName.toLowerCase()
+  const attrs = getAttributes(element)
 
-  let tagName = targetElement.tagName.toLowerCase()
+  const xpathObj = new XPathObject(tagName, attrs, parentXpath?.val)
+  return Ok(xpathObj)
+}
 
+export function getAttributes (targetElement: Element) {
   const attrs = [
     'id',
     'name',
@@ -289,9 +293,7 @@ export function buildCompleteXPathObject (element: Element): Result<XPathObject,
     const classes = [...targetElement.classList]
     attrs.push(new XPathAttr('class', classes))
   }
-
-  const xpathObj = new XPathObject(tagName, attrs, parentXpath?.val)
-  return Ok(xpathObj)
+  return attrs
 }
 
 export function getNodeText (node: Node): string {
