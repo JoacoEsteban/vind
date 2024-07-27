@@ -18,7 +18,7 @@ export class XPathObject {
 
 
   public async resolveToUniqueElement (): Promise<[string, HTMLElement] | null> {
-    const [iterations, res] = await this.resolveToUniqueElementDeep('', Infinity)
+    const [iterations, res] = await this.resolveToUniqueElementDeep('')
 
     log.success('resolved to unique', { iterations }, ...(res || ['no unique found']))
 
@@ -27,7 +27,7 @@ export class XPathObject {
 
   public async benchmarkResolveToUniqueElement (): Promise<[string, HTMLElement] | null> {
     const [deep] = await Promise.all([
-      this.resolveToUniqueElementDeep('', Infinity),
+      this.resolveToUniqueElementDeep(''),
     ])
 
     const [iterations, res] = deep
@@ -40,10 +40,7 @@ export class XPathObject {
     return res
   }
 
-  private async resolveToUniqueElementDeep (childSelector?: string, maxLevel = 5, level = 0, iterations = 0): Promise<[number, [string, HTMLElement]] | [number, null]> {
-    if (level > maxLevel) {
-      return [iterations, null]
-    }
+  private async resolveToUniqueElementDeep (childSelector?: string, level = 0, iterations = 0): Promise<[number, [string, HTMLElement]] | [number, null]> {
 
     let i = 0
     for (const attr of combinationsDescending(this.attrs)) {
@@ -66,7 +63,7 @@ export class XPathObject {
         return [iterations, [absoluteSelector, el]]
       }
 
-      const [iterations_, fromParent] = await this.parent?.resolveToUniqueElementDeep(selector, maxLevel, level + 1, iterations) || [iterations, null]
+      const [iterations_, fromParent] = await this.parent?.resolveToUniqueElementDeep(selector, level + 1, iterations) || [iterations, null]
       iterations = iterations_
       if (fromParent) {
         return [iterations, fromParent]
