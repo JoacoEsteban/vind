@@ -17,11 +17,8 @@ export class XPathObject {
   ) {}
 
 
-  public async resolveToUniqueElement (behavior: 'width' | 'depth' = 'depth'): Promise<[string, HTMLElement] | null> {
-    const [iterations, res] = await match(behavior)
-      .with('width', () => this.resolveToUniqueElementWide('', Infinity))
-      .with('depth', () => this.resolveToUniqueElementDeep('', Infinity))
-      .exhaustive()
+  public async resolveToUniqueElement (): Promise<[string, HTMLElement] | null> {
+    const [iterations, res] = await this.resolveToUniqueElementDeep('', Infinity)
 
     log.success('resolved to unique', { iterations }, ...(res || ['no unique found']))
 
@@ -29,16 +26,14 @@ export class XPathObject {
   }
 
   public async benchmarkResolveToUniqueElement (): Promise<[string, HTMLElement] | null> {
-    const [wide, deep] = await Promise.all([
-      this.resolveToUniqueElementWide('', Infinity),
+    const [deep] = await Promise.all([
       this.resolveToUniqueElementDeep('', Infinity),
     ])
 
-    const [iterations, res] = wide[0] < deep[0] ? wide : deep
+    const [iterations, res] = deep
 
-    log.success('resolved to unique', 'wide', wide[0], 'deep', deep[0])
+    log.success('resolved to unique', deep[0])
     log.success(res)
-    log.success('shortest was', match(wide[0]).when(it => it < deep[0], () => 'wide').when(it => it > deep[0], () => 'deep').otherwise(() => 'equal'))
 
     log.success('resolved to unique', { iterations }, ...(res || ['no unique found']))
 
@@ -84,54 +79,6 @@ export class XPathObject {
     }
 
     log.debug('no unique found for ', { tagName: this.tagName, attrs: this.attrs, childSelector, iterations, level })
-    return [iterations, null]
-  }
-
-  private async resolveToUniqueElementWide (childSelector?: string, maxLevel = 5, level = 0, iterations = 0): Promise<[number, [string, HTMLElement]] | [number, null]> {
-    if (level > maxLevel) {
-      return [iterations, null]
-    }
-
-    const matches = []
-
-    let i = 0
-    for (const attr of combinationsDescending(this.attrs)) {
-      await sleep()
-      iterations++
-      const first = i++ === 0
-
-      const selector = joinXpath(this.tagName + attr.map(attr => attr.computed).join(''), childSelector)
-      const absoluteSelector = toGlobal(selector)
-      const results = evalXpath(absoluteSelector).unwrap()
-
-      log.debug('resolving with attrs', { attr, iterations, level, results: results.length })
-
-      if (results.length === 0) {
-        continue
-      }
-
-      if (results.length === 1) { // unique
-        const [el] = results
-        return [iterations, [absoluteSelector, el]]
-      }
-
-      if (first) { // TODO try to make this run for all, first should that combinationsDescending iterates from most specific to least specific every time
-        log.debug('most specific has multiple matches, breaking')
-        break
-      }
-
-      matches.push(selector)
-    }
-
-    for (const selector of matches) {
-      const [iterations_, fromParent] = await this.parent?.resolveToUniqueElementWide(selector, maxLevel, level + 1, iterations) || [iterations, null]
-      iterations = iterations_
-      if (fromParent) {
-        return [iterations, fromParent]
-      }
-    }
-
-    log.debug('no unique found for ', { tagName: this.tagName, attrs: this.attrs, childSelector, depth: iterations })
     return [iterations, null]
   }
 
