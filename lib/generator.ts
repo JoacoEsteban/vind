@@ -1,40 +1,45 @@
-export function* combinations<T> (arr: T[]): Generator<T[]> {
-  const n = arr.length
-  debugger
-  // Generate binary numbers from 0 to 2^n - 1
-  for (let i = 0; i < (1 << n); i++) {
-    const combination: T[] = []
-    for (let j = 0; j < n; j++) {
-      // If the j-th bit is set, include the j-th element
-      if (i & (1 << j)) {
-        combination.push(arr[j])
-      }
+function* combinationsGenerator<T> (arr: T[], size: number): Generator<T[], void, unknown> {
+  const maxSize = arr.length
+  if (size > maxSize) {
+    throw new Error("size cannot be greater than the array length")
+  }
+
+  for (const indices of generateIndices(0, 0, size, maxSize)) {
+    yield indices.map(i => arr[i])
+  }
+}
+
+function* generateIndices (start: number, depth: number, size: number, maxSize: number): Generator<number[], void, unknown> {
+  if (depth === size) {
+    yield []
+    return
+  }
+
+  for (let i = start; i <= maxSize - size + depth; i++) {
+    for (const rest of generateIndices(i + 1, depth + 1, size, maxSize)) {
+      yield [i, ...rest]
     }
-    yield combination
   }
 }
 
 export function* combinationsDescending<T> (arr: T[]): Generator<T[]> {
-  const n = arr.length
-
-  // Generate binary numbers from 2^n - 1 down to 0
-  for (let i = (1 << n) - 1; i >= 0; i--) {
-    const combination: T[] = []
-    for (let j = 0; j < n; j++) {
-      // If the j-th bit is set, include the j-th element
-      if (i & (1 << j)) {
-        combination.push(arr[j])
-      }
+  for (let i = arr.length; i >= 0; i--) {
+    for (const combination of combinationsGenerator(arr, i)) {
+      yield combination
     }
-    yield combination
+  }
+}
+
+export function* combinationsAscending<T> (arr: T[]): Generator<T[]> {
+  for (let i = 0; i <= arr.length; i++) {
+    for (const combination of combinationsGenerator(arr, i)) {
+      yield combination
+    }
   }
 }
 
 export function* pairCombinations<T> (arr: T[]): Generator<[T, T]> {
-  const n = arr.length
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      yield [arr[i], arr[j]]
-    }
+  for (const combination of combinationsGenerator(arr, 2)) {
+    yield combination as [T, T]
   }
 }

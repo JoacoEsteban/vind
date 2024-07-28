@@ -3,7 +3,7 @@ import { Err, Ok, Result } from "ts-results"
 import { sleep, wrapResult, wrapResultAsync } from './control-flow'
 import { match } from 'ts-pattern'
 import { NoUniqueXPathExpressionErrorForElement } from './error'
-import { combinations, combinationsDescending, pairCombinations } from './generator'
+import { combinationsDescending } from './generator'
 import { log } from './log'
 import type { SerializableChildXpathObject, SerializableParentXpathObject, SerializableXpathObject } from '~background/storage/db'
 import { noop } from './misc'
