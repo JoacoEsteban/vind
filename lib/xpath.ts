@@ -57,11 +57,12 @@ export class XPathObject {
 
   private async resolveToUniqueElementDeep (carrySelector?: string, direction: 'up' | 'down' = 'up', level = 0, iterations = 0): Promise<[number, [string, HTMLElement]] | [number, null]> {
 
-    let i = 0
-    for (const attrCombination of combinationsDescending(this.attrs)) {
+    for (const {
+      combination: attrCombination,
+      lastOfSize,
+    } of combinationsDescending(this.attrs)) {
       await sleep()
       iterations++
-      const first = i++ === 0
 
       const expression = this.xpathString(attrCombination)
 
@@ -110,7 +111,7 @@ export class XPathObject {
         return [iterations, fromChild]
       }
 
-      if (first) { // TODO try to make this run for all, first should that combinationsDescending iterates from most specific to least specific every time
+      if (lastOfSize()) {// if most specific has multiple matches it means that all following combinations will also have multiple matches
         log.debug('most specific has multiple matches, breaking')
         break
       }

@@ -1,3 +1,12 @@
+export type CombinationYield<T> = {
+  combination: T[]
+  size: number,
+  iteration: number,
+  firstOfSize: () => boolean,
+  lastOfSize: () => boolean,
+  amountOfCombinationsForSize: () => number,
+}
+
 function* combinationsGenerator<T> (arr: T[], size: number): Generator<T[], void, unknown> {
   const maxSize = arr.length
   if (size > maxSize) {
@@ -22,15 +31,37 @@ function* generateIndices (start: number, depth: number, size: number, maxSize: 
   }
 }
 
-export function* combinationsDescending<T> (arr: T[]): Generator<T[]> {
-  for (let i = arr.length; i >= 0; i--) {
-    for (const combination of combinationsGenerator(arr, i)) {
-      yield combination
+const binomialCoefficient = (n: number, k: number): number => {
+  if (k > n) return 0
+  if (k === 0 || k === n) return 1
+
+  let result = 1
+  for (let i = 1; i <= k; i++) {
+    result *= (n - i + 1) / i
+  }
+  return Math.round(result)
+}
+
+
+export function* combinationsDescending<T> (arr: T[]): Generator<CombinationYield<T>> {
+  for (let size = arr.length; size >= 0; size--) {
+    let iteration = 0
+    for (const combination of combinationsGenerator(arr, size)) {
+      yield {
+        combination,
+        size,
+        iteration,
+        firstOfSize: () => iteration === 0,
+        lastOfSize: () => iteration === binomialCoefficient(arr.length, size) - 1,
+        amountOfCombinationsForSize: () => binomialCoefficient(arr.length, size),
+      }
+
+      iteration++
     }
   }
 }
 
-export function* combinationsAscending<T> (arr: T[]): Generator<T[]> {
+export function* combinationsAscending<T> (arr: T[]): Generator<CombinationYield<T>> {
   for (let i = 0; i <= arr.length; i++) {
     for (const combination of combinationsGenerator(arr, i)) {
       yield combination
