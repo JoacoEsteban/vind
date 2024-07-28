@@ -3,8 +3,12 @@ import Dexie from 'dexie'
 export type SerializableXpathObject = {
   tagName: string,
   attrs: [string, string[]][],
-  parent: SerializableXpathObject | null,
+  parent: SerializableParentXpathObject | null,
+  children: SerializableChildXpathObject[] | null,
 }
+
+export type SerializableParentXpathObject = SerializableXpathObject & { children: null }
+export type SerializableChildXpathObject = SerializableXpathObject & { parent: null }
 
 export type BindingDoc = {
   id: string

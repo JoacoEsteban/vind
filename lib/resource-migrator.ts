@@ -1,7 +1,7 @@
 import { Array, Record, String, type Static, Number, Lazy, Union, Undefined, Null, Tuple, type Runtype } from 'runtypes'
 import { toBindingDoc, type BindingChannel, fromManyBindingDoc } from './messages/bindings'
 import { type DisabledPathsChannel } from './messages/disabled-paths'
-import { type SerializableXpathObject, type BindingDoc } from '~background/storage/db'
+import { type SerializableXpathObject, type BindingDoc, type SerializableParentXpathObject, type SerializableChildXpathObject } from '~background/storage/db'
 import { Err } from 'ts-results'
 import { wrapResult, wrapResultAsync } from './control-flow'
 import { ImportedResourceVersionError, InvalidImportedJSONError } from './error'
@@ -13,7 +13,24 @@ const RTSerializableXpathObject: Runtype<SerializableXpathObject> = Lazy(() =>
   Record({
     tagName: String,
     attrs: Array(Tuple(String, Array(String))),
-    parent: Union(RTSerializableXpathObject, Null)
+    parent: Union(RTSerializableParentXpathObject, Null),
+    children: Union(Array(RTSerializableChildXpathObject), Null),
+  })
+)
+const RTSerializableParentXpathObject: Runtype<SerializableParentXpathObject> = Lazy(() =>
+  Record({
+    tagName: String,
+    attrs: Array(Tuple(String, Array(String))),
+    parent: Union(RTSerializableParentXpathObject, Null),
+    children: Null,
+  })
+)
+const RTSerializableChildXpathObject: Runtype<SerializableChildXpathObject> = Lazy(() =>
+  Record({
+    tagName: String,
+    attrs: Array(Tuple(String, Array(String))),
+    parent: Null,
+    children: Union(Array(RTSerializableChildXpathObject), Null),
   })
 )
 

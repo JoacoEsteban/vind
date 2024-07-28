@@ -5,8 +5,8 @@ import { PromiseWithResolvers } from './polyfills'
 import { getClosestBindableElement, highlightElement, isConfirmableElement, isHighlightableElement, recordInputKey, waitForKeyDown } from './element'
 import { Binding } from './binding'
 import { exposeSubject, PromiseStopper, unwrapPromise } from './rxjs'
-import { RegistrationAbortedError, UnbindableElementError } from './error'
-import { vindXPathStrategy, buildCompleteXPathObject } from './xpath'
+import { RegistrationAbortedError, UnbindableElementError, VindError } from './error'
+import { vindXPathStrategy, XPathObject } from './xpath'
 import { match } from 'ts-pattern'
 import type { Domain, Path } from './url'
 import toast from 'svelte-french-toast/dist'
@@ -93,25 +93,25 @@ export class RegistrationController {
     this.setRegistrationState(RegistrationState.SelectingElement)
     const onElement = this.selectElement(abortSignal)
     this.highlightCurrentElement(PromiseStopper(onElement).stopper)
-    const selectedElement = await onElement
+    const [selectedElement, xpathObject, selector] = await onElement
     // ----------------------------------------------
     this.setRegistrationState(RegistrationState.SelectingKey)
     const key = await this.selectKey(abortSignal)
     // ----------------------------------------------
     this.setRegistrationState(RegistrationState.SavingBinding)
 
-    const binding = await Binding.fromElement(selectedElement, key, domain, path)
+    const binding = new Binding(domain, path, key, selector, xpathObject)
     log.info('Saving binding:', binding)
     // ----------------------------------------------
     return this.pageControllerInstance.bindingsChannel.addBinding(binding)
   }
 
-  private async selectElement (abortSignal: AbortSignal): Promise<HTMLElement> {
+  private async selectElement (abortSignal: AbortSignal): Promise<[HTMLElement, XPathObject, string]> {
     if (abortSignal.aborted) {
       throw abortSignal.reason
     }
 
-    const { promise: selectedElement, resolve: confirmElement, reject: cancel } = PromiseWithResolvers<HTMLElement>()
+    const { promise: selectedElement, resolve: confirmElement, reject: cancel } = PromiseWithResolvers<[HTMLElement, XPathObject, string]>()
     abortSignal.addEventListener('abort', () => cancel(abortSignal.reason))
 
     const sub = combineLatest([
@@ -126,10 +126,12 @@ export class RegistrationController {
         match(result.ok)
           .with(true, () => {
             log.info('XPATH', result.val)
-            confirmElement(element)
+            const [xpathObject, selector] = result.val as [XPathObject, string]
+            confirmElement([element, xpathObject, selector])
           })
           .with(false, () => {
-            cancel(new UnbindableElementError())
+            const err = result.val as Error
+            cancel(err instanceof VindError ? err : new UnbindableElementError())
           })
       })
 

@@ -27,14 +27,15 @@ export class Binding {
   }
 
   static async fromElement (element: HTMLElement, key: string, domain: Domain, path: Path) {
-    const selector = (await vindXPathStrategy(element)).toOption()
-    const xpathObject = buildCompleteXPathObject(element).unwrap()
+    const res = (await vindXPathStrategy(element)).toOption() || []
 
-    if (selector.none) {
+    if (res.none) {
       throw new Error('Could not generate XPath for element')
     }
 
-    const b = new Binding(domain, path, key, selector.val, xpathObject)
+    const [xpathObject, selector] = res.val
+
+    const b = new Binding(domain, path, key, selector, xpathObject)
     return b
   }
 
