@@ -5,7 +5,7 @@ import { match } from 'ts-pattern'
 import { NoUniqueXPathExpressionErrorForElement } from './error'
 import { combinationsDescending } from './generator'
 import { log } from './log'
-import type { SerializableChildXpathObject, SerializableParentXpathObject, SerializableXpathObject } from '~background/storage/db'
+import type { SerializableChildXPathObject, SerializableParentXPathObject, SerializableXPathObject } from '~background/storage/db'
 import { noop } from './misc'
 const robulaClient = new RobulaPlus()
 
@@ -125,7 +125,7 @@ export class XPathObject {
     return this.tagName + attrs.map(attr => attr.computed).join('')
   }
 
-  public toSerializable (): SerializableXpathObject {
+  public toSerializable (): SerializableXPathObject {
     return {
       tagName: this.tagName,
       attrs: this.attrs.map(attr => [attr.name, attr.value]),
@@ -134,7 +134,7 @@ export class XPathObject {
     }
   }
 
-  static fromSerializable (obj: SerializableXpathObject): XPathObject {
+  static fromSerializable (obj: SerializableXPathObject): XPathObject {
     return new XPathObject(
       obj.tagName,
       obj.attrs.map(([name, value]) => new XPathAttr(name, value)),
@@ -145,7 +145,7 @@ export class XPathObject {
 }
 
 export class ParentXPathObject extends XPathObject {
-  override toSerializable (): SerializableParentXpathObject {
+  override toSerializable (): SerializableParentXPathObject {
     return {
       tagName: this.tagName,
       attrs: this.attrs.map(attr => [attr.name, attr.value]),
@@ -154,7 +154,7 @@ export class ParentXPathObject extends XPathObject {
     }
   }
 
-  static fromSerializable (obj: SerializableParentXpathObject): ParentXPathObject {
+  static fromSerializable (obj: SerializableParentXPathObject): ParentXPathObject {
     return new ParentXPathObject(
       obj.tagName,
       obj.attrs.map(([name, value]) => new XPathAttr(name, value)),
@@ -165,7 +165,7 @@ export class ParentXPathObject extends XPathObject {
 }
 
 export class ChildXPathObject extends XPathObject {
-  override toSerializable (): SerializableChildXpathObject {
+  override toSerializable (): SerializableChildXPathObject {
     return {
       tagName: this.tagName,
       attrs: this.attrs.map(attr => [attr.name, attr.value]),
@@ -174,7 +174,7 @@ export class ChildXPathObject extends XPathObject {
     }
   }
 
-  static fromSerializable (obj: SerializableChildXpathObject): ChildXPathObject {
+  static fromSerializable (obj: SerializableChildXPathObject): ChildXPathObject {
     return new ChildXPathObject(
       obj.tagName,
       obj.attrs.map(([name, value]) => new XPathAttr(name, value)),

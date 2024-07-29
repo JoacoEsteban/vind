@@ -1,69 +1,22 @@
-import { z } from 'zod'
 import { toBindingDoc, type BindingChannel, fromManyBindingDoc } from './messages/bindings'
 import { type DisabledPathsChannel } from './messages/disabled-paths'
-import { type SerializableXpathObject, type BindingDoc, type SerializableParentXpathObject, type SerializableChildXpathObject } from '~background/storage/db'
+import { type BindingDoc } from '~background/storage/db'
 import { Err } from 'ts-results'
 import { wrapResult, wrapResultAsync } from './control-flow'
 import { ImportedResourceVersionError, InvalidImportedJSONError } from './error'
 import semver from 'semver'
 import { getExtensionVersion } from './misc'
 import { Domain, Path } from './url'
+import { ResourceParser, type ResourcePayload } from './resource-parser'
 
-const SerializableXpathObject: z.ZodType<SerializableXpathObject> = z.lazy(() =>
-  z.object({
-    tagName: z.string(),
-    attrs: z.array(z.tuple([z.string(), z.array(z.string())])),
-    parent: z.union([z.lazy(() => SerializableParentXpathObject), z.null()]),
-    children: z.union([z.array(z.lazy(() => SerializableChildXpathObject)), z.null()]),
-  })
-)
-
-const SerializableParentXpathObject: z.ZodType<SerializableParentXpathObject> = z.lazy(() =>
-  z.object({
-    tagName: z.string(),
-    attrs: z.array(z.tuple([z.string(), z.array(z.string())])),
-    parent: z.union([z.lazy(() => SerializableParentXpathObject), z.null()]),
-    children: z.null(),
-  })
-)
-
-const SerializableChildXpathObject: z.ZodType<SerializableChildXpathObject> = z.lazy(() =>
-  z.object({
-    tagName: z.string(),
-    attrs: z.array(z.tuple([z.string(), z.array(z.string())])),
-    parent: z.null(),
-    children: z.union([z.array(z.lazy(() => SerializableChildXpathObject)), z.null()]),
-  })
-)
-
-const BindingPayload = z.object({
-  id: z.string(),
-  domain: z.string(),
-  path: z.string(),
-  key: z.string(),
-  selector: z.string(),
-  xpathObject: z.union([SerializableXpathObject, z.null()]),
-})
-
-type BindingPayload = z.infer<typeof BindingPayload>
-
-const DisabledPathPayload = z.string()
-type DisabledPathPayload = z.infer<typeof DisabledPathPayload>
-
-const ResourcePayload = z.object({
-  bindings: z.array(BindingPayload),
-  disabledPaths: z.array(DisabledPathPayload).optional(),
-  vindVersion: z.string().refine(version => semver.valid(version) !== null, {
-    message: "Invalid semver version",
-  }),
-})
-
-type ResourcePayload = z.infer<typeof ResourcePayload>
 export class ResourceMigrator {
+  private parser = new ResourceParser(getExtensionVersion(), 2, false)
+
   constructor(
     private bindingChannel: BindingChannel,
     private disabledPathsChannel: DisabledPathsChannel
-  ) {}
+  ) {
+  }
 
   async exportAllResources () {
     return wrapResultAsync(async () => {
@@ -80,15 +33,15 @@ export class ResourceMigrator {
   }
 
   exportResources (bindings: BindingDoc[], disabledPaths: Set<string>) {
-    return JSON.stringify(ResourcePayload.parse({
+    return this.parser.serialize({
       bindings,
       disabledPaths: [...disabledPaths.values()],
-      vindVersion: getExtensionVersion()
-    } as ResourcePayload), null, 2)
+      vindVersion: getExtensionVersion(),
+    })
   }
 
   parsePayload (json: string): ResourcePayload {
-    return ResourcePayload.parse(JSON.parse(json))
+    return this.parser.parse(JSON.parse(json))
   }
 
   async importResources (json: string) {

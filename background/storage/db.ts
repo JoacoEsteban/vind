@@ -1,14 +1,14 @@
 import Dexie from 'dexie'
 
-export type SerializableXpathObject = {
+export type SerializableXPathObject = {
   tagName: string,
   attrs: [string, string[]][],
-  parent: SerializableParentXpathObject | null,
-  children: SerializableChildXpathObject[] | null,
+  parent: SerializableParentXPathObject | null,
+  children: SerializableChildXPathObject[] | null,
 }
 
-export type SerializableParentXpathObject = SerializableXpathObject & { children: null }
-export type SerializableChildXpathObject = SerializableXpathObject & { parent: null }
+export type SerializableParentXPathObject = SerializableXPathObject & { children: null }
+export type SerializableChildXPathObject = SerializableXPathObject & { parent: null }
 
 export type BindingDoc = {
   id: string
@@ -16,7 +16,7 @@ export type BindingDoc = {
   path: string
   key: string
   selector: string
-  xpathObject?: SerializableXpathObject | null
+  xpathObject?: SerializableXPathObject | null
 }
 
 export type DisabledBindingPathDoc = {
