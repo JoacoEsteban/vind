@@ -1,4 +1,4 @@
-import { getElementByXPath, vindXPathStrategy, getXPath, XPathObject, buildCompleteXPathObject } from './xpath'
+import { getElementByXPath, buildXPathAndResolveToUniqueElement, getXPath, XPathObject, buildCompleteXPathObject } from './xpath'
 import { Domain, Path, getCurrentUrl } from './url'
 import { generateId } from './id'
 import { match } from 'ts-pattern'
@@ -27,7 +27,7 @@ export class Binding {
   }
 
   static async fromElement (element: HTMLElement, key: string, domain: Domain, path: Path) {
-    const res = (await vindXPathStrategy(element)).toOption() || []
+    const res = (await buildXPathAndResolveToUniqueElement(element)).toOption() || []
 
     if (res.none) {
       throw new Error('Could not generate XPath for element')

@@ -6,7 +6,7 @@ import { getClosestBindableElement, highlightElement, isConfirmableElement, isHi
 import { Binding } from './binding'
 import { exposeSubject, PromiseStopper, unwrapPromise } from './rxjs'
 import { RegistrationAbortedError, UnbindableElementError, UnkownError, VindError } from './error'
-import { vindXPathStrategy, XPathObject } from './xpath'
+import { buildXPathAndResolveToUniqueElement, XPathObject } from './xpath'
 import { match } from 'ts-pattern'
 import type { Domain, Path } from './url'
 import toast from 'svelte-french-toast/dist'
@@ -121,7 +121,7 @@ export class RegistrationController {
     ])
       .subscribe(async (val) => {
         const [element] = val
-        const result = await vindXPathStrategy(element)
+        const result = await buildXPathAndResolveToUniqueElement(element)
 
         match(result.ok)
           .with(true, () => {

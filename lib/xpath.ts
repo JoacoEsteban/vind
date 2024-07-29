@@ -248,7 +248,7 @@ export function getElementByXPath (xpath: string) {
   return robulaClient.getElementByXPath(xpath, document) as HTMLElement
 }
 
-export async function vindXPathStrategy (element: Element): Promise<Result<[XPathObject, string], Error>> {
+export async function buildXPathAndResolveToUniqueElement (element: Element): Promise<Result<[XPathObject, string], Error>> {
   const completeXPathResult = buildCompleteXPathObject(element)
 
   if (completeXPathResult.err) {
