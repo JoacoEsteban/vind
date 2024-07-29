@@ -5,7 +5,7 @@ import { PromiseWithResolvers } from './polyfills'
 import { getClosestBindableElement, highlightElement, isConfirmableElement, isHighlightableElement, recordInputKey, waitForKeyDown } from './element'
 import { Binding } from './binding'
 import { exposeSubject, PromiseStopper, unwrapPromise } from './rxjs'
-import { RegistrationAbortedError, UnbindableElementError, VindError } from './error'
+import { RegistrationAbortedError, UnbindableElementError, UnkownError, VindError } from './error'
 import { vindXPathStrategy, XPathObject } from './xpath'
 import { match } from 'ts-pattern'
 import type { Domain, Path } from './url'
@@ -131,7 +131,7 @@ export class RegistrationController {
           })
           .with(false, () => {
             const err = result.val as Error
-            cancel(err instanceof VindError ? err : new UnbindableElementError())
+            cancel(err instanceof VindError ? err : new UnkownError())
           })
       })
 

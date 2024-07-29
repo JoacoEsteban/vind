@@ -16,6 +16,12 @@ export class VindError extends Error {
   }
 }
 
+export class UnkownError extends VindError {
+  constructor() {
+    super("An unknown error occurred", 'UNKNOWN_ERROR')
+  }
+}
+
 export class RegistrationAbortedError extends VindError {
   constructor() {
     super("Registration aborted by user", 'REGISTRATION_ABORTED')
