@@ -1,4 +1,4 @@
-import { Array, Record, String, type Static, Number, Lazy, Union, Undefined, Null, Tuple, type Runtype } from 'runtypes'
+import { z } from 'zod'
 import { toBindingDoc, type BindingChannel, fromManyBindingDoc } from './messages/bindings'
 import { type DisabledPathsChannel } from './messages/disabled-paths'
 import { type SerializableXpathObject, type BindingDoc, type SerializableParentXpathObject, type SerializableChildXpathObject } from '~background/storage/db'
@@ -9,52 +9,56 @@ import semver from 'semver'
 import { getExtensionVersion } from './misc'
 import { Domain, Path } from './url'
 
-const RTSerializableXpathObject: Runtype<SerializableXpathObject> = Lazy(() =>
-  Record({
-    tagName: String,
-    attrs: Array(Tuple(String, Array(String))),
-    parent: Union(RTSerializableParentXpathObject, Null),
-    children: Union(Array(RTSerializableChildXpathObject), Null),
-  })
-)
-const RTSerializableParentXpathObject: Runtype<SerializableParentXpathObject> = Lazy(() =>
-  Record({
-    tagName: String,
-    attrs: Array(Tuple(String, Array(String))),
-    parent: Union(RTSerializableParentXpathObject, Null),
-    children: Null,
-  })
-)
-const RTSerializableChildXpathObject: Runtype<SerializableChildXpathObject> = Lazy(() =>
-  Record({
-    tagName: String,
-    attrs: Array(Tuple(String, Array(String))),
-    parent: Null,
-    children: Union(Array(RTSerializableChildXpathObject), Null),
+const SerializableXpathObject: z.ZodType<SerializableXpathObject> = z.lazy(() =>
+  z.object({
+    tagName: z.string(),
+    attrs: z.array(z.tuple([z.string(), z.array(z.string())])),
+    parent: z.union([z.lazy(() => SerializableParentXpathObject), z.null()]),
+    children: z.union([z.array(z.lazy(() => SerializableChildXpathObject)), z.null()]),
   })
 )
 
-const BindingPayload: Runtype<BindingDoc> = Record({
-  id: String,
-  domain: String,
-  path: String,
-  key: String,
-  selector: String,
-  xpathObject: RTSerializableXpathObject.Or(Null),
+const SerializableParentXpathObject: z.ZodType<SerializableParentXpathObject> = z.lazy(() =>
+  z.object({
+    tagName: z.string(),
+    attrs: z.array(z.tuple([z.string(), z.array(z.string())])),
+    parent: z.union([z.lazy(() => SerializableParentXpathObject), z.null()]),
+    children: z.null(),
+  })
+)
+
+const SerializableChildXpathObject: z.ZodType<SerializableChildXpathObject> = z.lazy(() =>
+  z.object({
+    tagName: z.string(),
+    attrs: z.array(z.tuple([z.string(), z.array(z.string())])),
+    parent: z.null(),
+    children: z.union([z.array(z.lazy(() => SerializableChildXpathObject)), z.null()]),
+  })
+)
+
+const BindingPayload = z.object({
+  id: z.string(),
+  domain: z.string(),
+  path: z.string(),
+  key: z.string(),
+  selector: z.string(),
+  xpathObject: z.union([SerializableXpathObject, z.null()]),
 })
 
-type BindingPayload = Static<typeof BindingPayload>
+type BindingPayload = z.infer<typeof BindingPayload>
 
-const DisabledPathPayload = String
-type DisabledPathPayload = Static<typeof DisabledPathPayload>
+const DisabledPathPayload = z.string()
+type DisabledPathPayload = z.infer<typeof DisabledPathPayload>
 
-const ResourcePayload = Record({
-  bindings: Array(BindingPayload),
-  disabledPaths: Array(DisabledPathPayload).optional(),
-  vindVersion: String.withConstraint(version => semver.valid(version) !== null)
+const ResourcePayload = z.object({
+  bindings: z.array(BindingPayload),
+  disabledPaths: z.array(DisabledPathPayload).optional(),
+  vindVersion: z.string().refine(version => semver.valid(version) !== null, {
+    message: "Invalid semver version",
+  }),
 })
-type ResourcePayload = Static<typeof ResourcePayload>
 
+type ResourcePayload = z.infer<typeof ResourcePayload>
 export class ResourceMigrator {
   constructor(
     private bindingChannel: BindingChannel,
@@ -76,7 +80,7 @@ export class ResourceMigrator {
   }
 
   exportResources (bindings: BindingDoc[], disabledPaths: Set<string>) {
-    return JSON.stringify(ResourcePayload.check({
+    return JSON.stringify(ResourcePayload.parse({
       bindings,
       disabledPaths: [...disabledPaths.values()],
       vindVersion: getExtensionVersion()
@@ -84,7 +88,7 @@ export class ResourceMigrator {
   }
 
   parsePayload (json: string): ResourcePayload {
-    return ResourcePayload.check(JSON.parse(json))
+    return ResourcePayload.parse(JSON.parse(json))
   }
 
   async importResources (json: string) {

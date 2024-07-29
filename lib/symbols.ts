@@ -1,4 +1,4 @@
-import { Record as RTRecord, String, Number, type Static } from 'runtypes'
+import { z } from 'zod'
 
 import gearRaw from '~/assets/symbols/gear.json'
 import arrowDownRaw from '~/assets/symbols/arrow.down.json'
@@ -27,17 +27,17 @@ import deleteRightFillRaw from '~/assets/symbols/delete.right.fill.json'
 import { default as SvelteSymbolComponent } from '~components/symbol.svelte'
 import type { ComponentConstructorOptions } from 'svelte'
 
-export const SymbolSchema = RTRecord({
-  path: String,
-  geometry: RTRecord({
-    width: Number,
-    height: Number,
-  })
+export const SymbolSchema = z.object({
+  path: z.string(),
+  geometry: z.object({
+    width: z.number(),
+    height: z.number(),
+  }),
 })
-export type Symbol = Static<typeof SymbolSchema>
+export type Symbol = z.infer<typeof SymbolSchema>
 
-function checkSymbol (raw: any): Symbol {
-  return SymbolSchema.check(raw)
+function checkSymbol (raw: unknown): Symbol {
+  return SymbolSchema.parse(raw)
 }
 
 const [
