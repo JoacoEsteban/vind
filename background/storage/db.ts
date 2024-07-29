@@ -1,11 +1,22 @@
 import Dexie from 'dexie'
 
+export type SerializableXpathObject = {
+  tagName: string,
+  attrs: [string, string[]][],
+  parent: SerializableParentXpathObject | null,
+  children: SerializableChildXpathObject[] | null,
+}
+
+export type SerializableParentXpathObject = SerializableXpathObject & { children: null }
+export type SerializableChildXpathObject = SerializableXpathObject & { parent: null }
+
 export type BindingDoc = {
   id: string
   domain: string
   path: string
   key: string
   selector: string
+  xpathObject?: SerializableXpathObject | null
 }
 
 export type DisabledBindingPathDoc = {
@@ -31,6 +42,10 @@ export class VindDB extends Dexie {
 
     this.version(4).stores({
       bindings: 'id, [domain+path], key, selector',
+    })
+
+    this.version(5).stores({
+      bindings: 'id, [domain+path], key, selector, xpathObject',
     })
 
     this.bindings = this.table('bindings')

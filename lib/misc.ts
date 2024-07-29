@@ -28,3 +28,8 @@ export function promiseToSignal<T> (promise: Promise<T>): AbortSignal {
   )
   return controller.signal
 }
+
+export function time (label: string) {
+  console.time(label)
+  return () => console.timeEnd(label)
+}

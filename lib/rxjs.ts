@@ -1,4 +1,4 @@
-import { BehaviorSubject, Subject, type Observable, map, queue } from 'rxjs'
+import { BehaviorSubject, Subject, type Observable, map, queue, type OperatorFunction, mergeMap, from, isObservable } from 'rxjs'
 
 export function expose<T> (observable: Observable<T>) {
   const subject = new BehaviorSubject<T | null>(null)
@@ -61,3 +61,12 @@ export class ToggleSubject extends BehaviorSubject<boolean> {
     this.next(!this.value)
   }
 }
+
+// pipeable operator
+export function unwrapPromise<T> () {
+  return (source: Observable<Promise<T>>): Observable<T> =>
+    source.pipe(
+      mergeMap(value => from(value))
+    )
+}
+

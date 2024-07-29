@@ -8,6 +8,7 @@
   import { colorSeeds } from '~lib/definitions'
   import { prompt, PromptType } from '~lib/dialog'
   import { VindError } from '~lib/error'
+  import { log } from '~lib/log'
   import { exportedResourceFilename } from '~lib/misc'
   import type { ResourceMigrator } from '~lib/resource-migrator'
   import Heading from './heading.svelte'
@@ -37,6 +38,7 @@
     const result = await migrator.exportAllResources()
 
     if (result.err) {
+      log.error('Error exporting', result.val)
       toast.error('Uh oh, there was an error exporting')
       return Err(result.val)
     }

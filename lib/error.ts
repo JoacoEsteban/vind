@@ -16,6 +16,12 @@ export class VindError extends Error {
   }
 }
 
+export class UnkownError extends VindError {
+  constructor() {
+    super("An unknown error occurred", 'UNKNOWN_ERROR')
+  }
+}
+
 export class RegistrationAbortedError extends VindError {
   constructor() {
     super("Registration aborted by user", 'REGISTRATION_ABORTED')
@@ -49,5 +55,11 @@ export class ImportedResourceVersionError extends VindError {
 export class UnexpectedError extends VindError {
   constructor() {
     super("Oops, something went wrong.", 'UNEXPECTED_ERROR')
+  }
+}
+
+export class NoUniqueXPathExpressionErrorForElement extends VindError {
+  constructor() {
+    super("That element cannot be bound because it Vind cannot uniquely identify it.", 'NO_UNIQUE_XPATH_EXPRESSION')
   }
 }

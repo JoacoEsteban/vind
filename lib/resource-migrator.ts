@@ -1,7 +1,7 @@
-import { Array, Record, String, type Static, Number } from 'runtypes'
+import { Array, Record, String, type Static, Number, Lazy, Union, Undefined, Null, Tuple, type Runtype } from 'runtypes'
 import { toBindingDoc, type BindingChannel, fromManyBindingDoc } from './messages/bindings'
 import { type DisabledPathsChannel } from './messages/disabled-paths'
-import type { BindingDoc } from '~background/storage/db'
+import { type SerializableXpathObject, type BindingDoc, type SerializableParentXpathObject, type SerializableChildXpathObject } from '~background/storage/db'
 import { Err } from 'ts-results'
 import { wrapResult, wrapResultAsync } from './control-flow'
 import { ImportedResourceVersionError, InvalidImportedJSONError } from './error'
@@ -9,13 +9,40 @@ import semver from 'semver'
 import { getExtensionVersion } from './misc'
 import { Domain, Path } from './url'
 
-const BindingPayload = Record({
+const RTSerializableXpathObject: Runtype<SerializableXpathObject> = Lazy(() =>
+  Record({
+    tagName: String,
+    attrs: Array(Tuple(String, Array(String))),
+    parent: Union(RTSerializableParentXpathObject, Null),
+    children: Union(Array(RTSerializableChildXpathObject), Null),
+  })
+)
+const RTSerializableParentXpathObject: Runtype<SerializableParentXpathObject> = Lazy(() =>
+  Record({
+    tagName: String,
+    attrs: Array(Tuple(String, Array(String))),
+    parent: Union(RTSerializableParentXpathObject, Null),
+    children: Null,
+  })
+)
+const RTSerializableChildXpathObject: Runtype<SerializableChildXpathObject> = Lazy(() =>
+  Record({
+    tagName: String,
+    attrs: Array(Tuple(String, Array(String))),
+    parent: Null,
+    children: Union(Array(RTSerializableChildXpathObject), Null),
+  })
+)
+
+const BindingPayload: Runtype<BindingDoc> = Record({
   id: String,
   domain: String,
   path: String,
   key: String,
-  selector: String
+  selector: String,
+  xpathObject: RTSerializableXpathObject.Or(Null),
 })
+
 type BindingPayload = Static<typeof BindingPayload>
 
 const DisabledPathPayload = String

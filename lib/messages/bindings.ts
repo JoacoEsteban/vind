@@ -5,6 +5,8 @@ import { log } from '../log'
 import { Domain, Path, urlFromParts } from '../url'
 import { filter } from 'rxjs'
 import { throwOnResponseError } from '.'
+import { XPathObject } from '~lib/xpath'
+import { match } from 'ts-pattern'
 
 export interface BindingChannel {
   getAllBindings: () => Promise<Binding[]>
@@ -23,12 +25,17 @@ export function toBindingDoc (binding: Binding): BindingDoc {
     domain: binding.domain.value,
     path: binding.path.value,
     key: binding.key,
-    selector: binding.selector
+    selector: binding.selector,
+    xpathObject: binding.xpathObject?.toSerializable() || null
   }
 }
 
 export function fromBindingDoc (doc: BindingDoc): Binding {
-  return new Binding(new Domain(doc.domain), new Path(doc.path), doc.key, doc.selector, doc.id)
+  const xpathObject = match(doc.xpathObject)
+    .with(undefined, null, () => null)
+    .otherwise(XPathObject.fromSerializable)
+
+  return new Binding(new Domain(doc.domain), new Path(doc.path), doc.key, doc.selector, xpathObject, doc.id)
 }
 
 export function fromManyBindingDoc (docs: BindingDoc[]): Binding[] {
