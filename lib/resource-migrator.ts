@@ -8,9 +8,10 @@ import semver from 'semver'
 import { getExtensionVersion } from './misc'
 import { Domain, Path } from './url'
 import { ResourceParser, type ResourcePayload } from './resource-parser'
+import { SERIALIZATION_JSON_INDENT, SERIALIZATION_MINIFY } from './env'
 
 export class ResourceMigrator {
-  private parser = new ResourceParser(getExtensionVersion(), 2, false)
+  private parser = new ResourceParser(getExtensionVersion(), SERIALIZATION_JSON_INDENT, SERIALIZATION_MINIFY)
 
   constructor(
     private bindingChannel: BindingChannel,
