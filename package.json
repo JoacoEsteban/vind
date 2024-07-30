@@ -1,8 +1,8 @@
 {
   "name": "vind",
-  "displayName": "Vind - Make every website keyboard friendly",
+  "displayName": "Vind: Custom Keyboard Shortcuts for Every Website",
   "version": "3.0.0",
-  "description": "Map keys to on-screen elements and trigger clicks effortlessly.",
+  "description": "Create keyboard shortcuts for any web element. Boost productivity, eliminate mouse clicks, navigate faster on all sites.",
   "author": "dev@joacoesteban.com",
   "scripts": {
     "dev": "plasmo dev",
