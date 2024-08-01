@@ -7,7 +7,7 @@
 [![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
 [![Chrome Web Store Rating Count](https://img.shields.io/chrome-web-store/rating-count/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
 
-Unleash the power of the elements to navigate your digital world. Map keys to on-screen elements and trigger clicks with a press, as effortless as the wind sweeping through the leaves.
+Create keyboard shortcuts for any web element. Boost productivity, eliminate mouse clicks, navigate faster on all sites.
 
 ## Homepage
 
