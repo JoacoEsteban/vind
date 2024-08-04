@@ -145,7 +145,7 @@ export class RegistrationController {
     return selectedElement
   }
 
-  private async selectKey (abortSignal: AbortSignal): Promise<string> {
+  async selectKey (abortSignal: AbortSignal): Promise<string> {
     if (abortSignal.aborted) {
       throw abortSignal.reason
     }
