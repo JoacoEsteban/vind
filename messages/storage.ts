@@ -42,6 +42,10 @@ export const bindingsMessages = {
     'removeBinding',
     { async: true }
   )),
+  changeKey: splitMessage(getMessage<{ id: string, key: string }, ErrResponse>(
+    'changeKey',
+    { async: true }
+  )),
   moveBindings: splitMessage(getMessage<{ domain: string, from: string, to: string }, ErrResponse>(
     'moveBindings',
     { async: true }

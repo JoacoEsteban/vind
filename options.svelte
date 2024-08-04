@@ -3,8 +3,9 @@
   import '~/lib/fonts-importer'
   import chroma from 'chroma-js'
   import githubMark from 'data-text:~assets/svg/github-mark.svg'
-  import { combineLatest, first, map, share } from 'rxjs'
+  import { BehaviorSubject, combineLatest, first, map, share } from 'rxjs'
   import toast from 'svelte-french-toast/dist'
+  import { match } from 'ts-pattern'
   import logo from '~/assets/icon.png'
   import Button from '~components/button.svelte'
   import Dialog from '~components/dialog.svelte'
@@ -15,12 +16,19 @@
   import { handleAnimationState } from '~lib/animation-state'
   import { Binding } from '~lib/binding'
   import { cursorPosition, mouse$ } from '~lib/cursor-position'
-  import { Messages } from '~lib/definitions'
+  import { Messages, registrationStateToastOptions } from '~lib/definitions'
   import { isPromptOpen$ } from '~lib/dialog'
+  import { RegistrationAbortedError, UnkownError } from '~lib/error'
+  import { RegistrationSuccess, Success } from '~lib/Event'
   import { log } from '~lib/log'
   import { MapToOrderedTuple } from '~lib/map'
-  import { getExtensionVersion, openGithub } from '~lib/misc'
+  import { getExtensionVersion, noop, openGithub } from '~lib/misc'
   import { PageController } from '~lib/page-controller'
+  import {
+    escapeKeyAborter,
+    RegistrationController,
+    RegistrationState,
+  } from '~lib/registration-controller'
   import { ResourceMigrator } from '~lib/resource-migrator'
   import type { SymbolName } from '~lib/symbols'
   import { themeController } from '~lib/theme-controller'
@@ -38,6 +46,7 @@
     pageController.bindingsChannel,
     pageController.disabledPathsChannel,
   )
+  const registrationController = new RegistrationController(pageController)
   pageController.refreshResources()
 
   wakeUp.stream.subscribe(() => {
@@ -125,8 +134,59 @@
     return { bg1, bg2 }
   })()
 
+  const currentKeyChange$ = new BehaviorSubject<string | null>(null)
+
   async function deleteBinding(id: string) {
     pageController.bindingsChannel.removeBinding(id)
+  }
+
+  async function changeKey(id: string) {
+    if (currentKeyChange$.value) {
+      return
+    }
+
+    currentKeyChange$.next(id)
+    const message =
+      registrationStateToastOptions[RegistrationState.SelectingKey]
+
+    if (!message) {
+      toast.error(new UnkownError().message)
+      throw new Error('No message found for selecting key')
+    }
+
+    const loadingToast = toast.loading('Press ESC to cancel.', {
+      position: 'top-right',
+    })
+
+    const toastId = toast(message.text, {
+      duration: Infinity,
+      icon: message.icon,
+    })
+
+    const aborter = escapeKeyAborter()
+
+    return registrationController
+      .selectKey(aborter.signal)
+      .then(async (key) => {
+        if (key) {
+          await pageController.bindingsChannel.changeKey(id, key)
+          toast.success('Key changed')
+        }
+      })
+      .catch((err) => {
+        match(err)
+          .when((val) => val instanceof RegistrationAbortedError, noop)
+          .otherwise((err) => {
+            toast.error(err.message || new UnkownError().message)
+            throw err
+          })
+      })
+      .finally(() => {
+        toast.dismiss(toastId)
+        toast.dismiss(loadingToast)
+        aborter.abort(new RegistrationSuccess())
+        currentKeyChange$.next(null)
+      })
   }
   async function togglePath(domain: Domain, path: Path) {
     const newValue = await pageController.disabledPathsChannel.togglePath(
@@ -200,6 +260,7 @@
             <Button
               opaque={true}
               role="tab"
+              disabled={$currentKeyChange$ !== null}
               highlight={activeKey === option.key}
               on:click={() => (activeKey = option.key)}
               icon={option.icon}>
@@ -210,7 +271,9 @@
         {#if activeKey === 'bindings'}
           <BindingsList
             {bindingsMap}
+            currentlyEditingBinding={$currentKeyChange$}
             on:remove={(e) => deleteBinding(e.detail.id)}
+            on:changeKey={(e) => changeKey(e.detail.id)}
             on:togglePath={(e) => togglePath(e.detail.domain, e.detail.path)}
             on:updatePath={(e) => updatePath(e.detail)} />
         {/if}

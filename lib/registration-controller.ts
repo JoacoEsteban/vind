@@ -9,7 +9,7 @@ import { RegistrationAbortedError, UnbindableElementError, UnkownError, VindErro
 import { buildXPathAndResolveToUniqueElement, XPathObject } from './xpath'
 import { match } from 'ts-pattern'
 import type { Domain, Path } from './url'
-import toast from 'svelte-french-toast/dist'
+import { RegistrationSuccess, Success } from './Event'
 
 export enum RegistrationState {
   Idle,
@@ -62,17 +62,12 @@ export class RegistrationController {
     }
     this.registrationInProgress$$.next(true)
 
-    const aborter = new AbortController()
-    waitForKeyDown('Escape', aborter.signal)
-      .then(() => {
-        log.warn('Registration aborted')
-        aborter.abort(new RegistrationAbortedError())
-      })
+    const aborter = escapeKeyAborter()
 
     return this.startRegistrationFlow(aborter.signal, domain, path)
       .finally(() => {
         log.info('Registration finished')
-        aborter.abort() // cleanup
+        aborter.abort(new RegistrationSuccess()) // cleanup
         this.registrationInProgress$$.next(false)
         this.setRegistrationState(RegistrationState.Idle)
       })
@@ -145,7 +140,7 @@ export class RegistrationController {
     return selectedElement
   }
 
-  private async selectKey (abortSignal: AbortSignal): Promise<string> {
+  async selectKey (abortSignal: AbortSignal): Promise<string> {
     if (abortSignal.aborted) {
       throw abortSignal.reason
     }
@@ -189,4 +184,19 @@ export class RegistrationController {
         document.body.removeChild(last)
       })
   }
+}
+
+export function escapeKeyAborter () {
+  const aborter = new AbortController()
+  waitForKeyDown('Escape', aborter.signal)
+    .then(() => {
+      log.warn('Registration aborted')
+      aborter.abort(new RegistrationAbortedError())
+    })
+    .catch((err) => {
+      if (!(err instanceof Success)) {
+        throw err
+      }
+    })
+  return aborter
 }

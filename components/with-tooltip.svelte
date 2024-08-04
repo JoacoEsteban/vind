@@ -20,9 +20,10 @@
   let hoverTarget: HTMLElement | null = null
   let tooltipEl: HTMLElement | null = null
   let tooltipAnchor: HTMLElement | null = null
-  $: showTooltip = Boolean(hoverTarget)
+  $: showTooltip = Boolean(enabled && hoverTarget)
 
   function onHover({ target }: MouseEvent) {
+    if (!enabled) return
     hoverTarget = target as HTMLElement
   }
 
@@ -65,23 +66,21 @@
   <slot />
 </div>
 
-{#if enabled}
-  {#if showTooltip}
-    <div
-      bind:this={tooltipEl}
-      on:mouseenter={onHover}
-      on:mouseleave={onLeave}
-      use:floatingContent
-      role="tooltip"
-      style:position="absolute"
-      style:padding="8px"
-      style:z-index="1000"
-      class={bordered ? 'bg-blur bg-blur:soft bg-blur:round' : ''}
-      in:trIn
-      out:trOut>
-      <slot name="tooltip" />
-    </div>
-  {/if}
+{#if showTooltip}
+  <div
+    bind:this={tooltipEl}
+    on:mouseenter={onHover}
+    on:mouseleave={onLeave}
+    use:floatingContent
+    role="tooltip"
+    style:position="absolute"
+    style:padding="8px"
+    style:z-index="1000"
+    class={bordered ? 'bg-blur bg-blur:soft bg-blur:round' : ''}
+    in:trIn
+    out:trOut>
+    <slot name="tooltip" />
+  </div>
 {/if}
 
 <style lang="scss">

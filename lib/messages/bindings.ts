@@ -84,4 +84,7 @@ export class BindingChannelImpl implements BindingChannel {
   deleteAllBindings () {
     return bindingsMessages.deleteAllBindings.ask().then(throwOnResponseError)
   }
+  changeKey (id: string, key: string) {
+    return bindingsMessages.changeKey.ask({ id, key }).then(throwOnResponseError)
+  }
 }
