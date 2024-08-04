@@ -13,6 +13,7 @@ export interface BindingsStorage {
   updateBinding: (binding: BindingDoc) => Promise<void>
   upsertBinding: (binding: BindingDoc) => Promise<void>
   removeBinding: (id: string) => Promise<void>
+  changeKey: (id: string, key: string) => Promise<void>
   moveBindings: (domain: Domain, from: Path, to: Path) => Promise<void>
   deleteAllBindings: () => Promise<void>
   onDeleted$: Observable<BindingDoc>
@@ -92,6 +93,13 @@ export class BindingsStorageImpl implements BindingsStorage {
 
   async removeBinding (id: string): Promise<void> {
     return this.collection.delete(id)
+  }
+
+  async changeKey (id: string, key: string): Promise<void> {
+    const binding = await this.collection.get(id)
+    if (!binding) throw new Error('Binding not found')
+    binding.key = key
+    await this.collection.update(id, binding)
   }
 
   async moveBindings (domain: Domain, from: Path, to: Path): Promise<void> {

@@ -57,6 +57,10 @@ export class StorageHandlers {
       this.respondError(bindingsStorage.removeBinding(id), respond)
     })
 
+    bindingsMessages.changeKey.stream.subscribe(async ([{ id, key }, sender, respond]) => {
+      this.respondError(bindingsStorage.changeKey(id, key), respond)
+    })
+
     bindingsMessages.moveBindings.stream.subscribe(async ([payload, sender, respond]) => {
       this.respondError(bindingsStorage.moveBindings(new Domain(payload.domain), new Path(payload.from), new Path(payload.to)), respond)
     })
