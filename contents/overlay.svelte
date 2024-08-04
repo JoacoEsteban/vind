@@ -74,18 +74,20 @@
     registration.catch((err) => {
       log.error('registering failed', err)
 
-      const message = match<Error, string>(err)
+      const [message, duration] = match<Error, [string, number]>(err)
         .when(
           (err) => err instanceof RegistrationAbortedError,
-          () => 'Registration aborted',
+          () => ['Registration aborted', 1000],
         )
         .when(
           (err) => err instanceof VindError,
-          (err: VindError) => err.message,
+          (err: VindError) => [err.message, 3000],
         )
-        .otherwise(() => 'Failed to register binding')
+        .otherwise(() => ['Failed to register binding', 3000])
 
-      toast.error(message)
+      toast.error(message, {
+        duration,
+      })
     })
 
     registration.finally(() => toast.dismiss(loadingToast))
