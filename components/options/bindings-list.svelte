@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Observable } from 'rxjs'
   import { createEventDispatcher } from 'svelte'
+  import { match } from 'ts-pattern'
   import DisplayUrl from '~/components/display-url.svelte'
   import { Domain, Path } from '~/lib/url'
   import BindingButton from '~components/binding-button.svelte'
@@ -15,15 +16,23 @@
   export let bindingsMap: Observable<
     [string, [string, { bindings: Binding[]; enabled: boolean }][]][]
   >
+  export let currentlyEditingBinding: string | null = null
+
+  $: editing = currentlyEditingBinding !== null
 
   const dispatch = createEventDispatcher<{
     remove: { id: string }
     togglePath: { domain: Domain; path: Path }
     updatePath: { domain: Domain; fromPath: Path; toPath: Path }
+    changeKey: { id: string }
   }>()
 
   function deleteBinding(binding: Binding) {
     dispatch('remove', { id: binding.id })
+  }
+
+  function changeKey(binding: Binding) {
+    dispatch('changeKey', { id: binding.id })
   }
 
   function togglePath(domain: Domain, path: Path) {
@@ -59,14 +68,24 @@
               size={'text-l'}
               on:updatePath={(e) => updatePath(domain, path, e.detail.path)} />
           </div>
-          <Toggle checked={enabled} on:click={() => togglePath(domain, path)} />
+          <div class="v_toggle-availability" class:enabled={!editing}>
+            <Toggle
+              checked={enabled}
+              on:click={() => togglePath(domain, path)}
+              disabled={editing} />
+          </div>
         </div>
         <div class="flex mb-5 flex-wrap gap-3">
           {#each bindings as binding (binding.id)}
+            {@const disabled = match(currentlyEditingBinding)
+              .with(null, binding.id, () => false)
+              .otherwise(() => true)}
             <span>
-              <WithTooltip placement="bottom">
-                <BindingButton opaque={true} {binding} />
-                <div slot="tooltip">
+              <WithTooltip placement="bottom" bordered enabled={!editing}>
+                <div class="v_toggle-availability" class:enabled={!disabled}>
+                  <BindingButton opaque={true} {binding} {disabled} />
+                </div>
+                <div slot="tooltip" class="flex gap-3">
                   <Button
                     colorSeed={binding.key}
                     opaque={true}
@@ -74,11 +93,13 @@
                     on:click={() => deleteBinding(binding)}>
                     Remove
                   </Button>
-                  <!-- {#if !ENV_PROD}
-                    <div class="bg-blur py-1 px-3">
-                      {binding.selector}
-                    </div>
-                  {/if} -->
+                  <Button
+                    colorSeed={binding.key}
+                    opaque={true}
+                    icon={'keyboard'}
+                    on:click={() => changeKey(binding)}>
+                    Change Key
+                  </Button>
                 </div>
               </WithTooltip>
             </span>
