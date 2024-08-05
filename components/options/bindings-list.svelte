@@ -63,7 +63,7 @@
         <div class="flex">
           <div class="w-full flex mb-3">
             <DisplayUrl
-              editable
+              editable={!editing}
               {path}
               size={'text-l'}
               on:updatePath={(e) => updatePath(domain, path, e.detail.path)} />
