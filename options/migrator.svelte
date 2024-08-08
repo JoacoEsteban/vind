@@ -4,20 +4,27 @@
   import { match } from 'ts-pattern'
   import { Err, None, Ok, type Result } from 'ts-results'
   import Button from '~components/button.svelte'
-  import { wrapResultAsync } from '~lib/control-flow'
+  import { sleep, wrapResultAsync } from '~lib/control-flow'
   import { colorSeeds } from '~lib/definitions'
   import { prompt, PromptType } from '~lib/dialog'
   import { VindError } from '~lib/error'
   import { log } from '~lib/log'
   import { exportedResourceFilename } from '~lib/misc'
   import type { ResourceMigrator } from '~lib/resource-migrator'
+  import { withToast } from '~lib/toast'
   import Heading from './heading.svelte'
 
   export let migrator: ResourceMigrator
 
   async function doImport(text: string): Promise<Result<None, Error>> {
+    const loadingToast = toast.loading('Importing')
+
     // TODO implement import result
     const result = await migrator.importResources(text)
+
+    await sleep(200)
+    toast.dismiss(loadingToast)
+
     if (result.err) {
       toast.error(
         match(result.val)
@@ -65,8 +72,11 @@
     document.body.appendChild(input)
 
     const change = pEvent(input, 'change')
+    const cancel = pEvent(input, 'cancel')
+
     input.click()
-    await change
+
+    await Promise.race([change, cancel])
 
     const file = input.files?.[0]
 
@@ -158,7 +168,10 @@
   <div class="flex gap-3 flex-wrap">
     <Button icon="arrowDownDocFill" opaque on:click={toFile}
       >Save to File</Button>
-    <Button icon="arrowUpDocFill" opaque on:click={fromFile}
+    <Button
+      icon="arrowUpDocFill"
+      opaque
+      on:click={() => withToast('Waiting for file', fromFile)}
       >Load from File</Button>
   </div>
 
