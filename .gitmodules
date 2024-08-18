@@ -1,0 +1,3 @@
+[submodule "vind-docs"]
+	path = vind-docs
+	url = git@github.com:JoacoEsteban/vind-docs.git
