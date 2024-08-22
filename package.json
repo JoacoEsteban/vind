@@ -76,10 +76,13 @@
         "description": "Toggle the Vind overlay on the current page."
       },
       "open-options": {
+        "description": "Open the Vind options page."
+      },
+      "new-binding": {
         "suggested_key": {
           "default": "Alt+Shift+V"
         },
-        "description": "Open the Vind options page."
+        "description": "Create a new keyboard shortcut binding."
       }
     },
     "browser_specific_settings": {

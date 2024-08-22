@@ -18,7 +18,6 @@
   import { pairwise, startWith, Subject } from 'rxjs'
   import toast from 'svelte-french-toast/dist'
   import { match } from 'ts-pattern'
-  import { askForBindingStream } from '~/messages'
   import Filters from '~components/filters.svelte'
   import Popup from '~components/popup.svelte'
   import Toaster from '~components/toaster.svelte'
@@ -31,6 +30,7 @@
   import { log } from '~lib/log'
   import { themeController } from '~lib/theme-controller'
   import type { Path } from '~lib/url'
+  import { newBinding } from '~messages/index'
   import { showOverlayStream } from '~messages/tabs'
   import {
     pageControllerInstance,
@@ -93,7 +93,7 @@
     registration.finally(() => toast.dismiss(loadingToast))
   }
 
-  askForBindingStream.subscribe(() => registerNewBinding())
+  newBinding.stream.subscribe(() => registerNewBinding())
 
   const registrationStateToastSubject = new Subject<string | null>()
   registrationStateToastSubject

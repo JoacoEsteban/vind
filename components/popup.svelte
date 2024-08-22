@@ -1,7 +1,7 @@
 <script lang="ts">
   import { combineLatest, filter, interval, map, Observable, pipe } from 'rxjs'
   import { createEventDispatcher } from 'svelte'
-  import { askForBinding, askForOptionsPage } from '~/messages'
+  import { askForOptionsPage } from '~/messages'
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
