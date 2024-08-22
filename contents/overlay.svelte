@@ -49,6 +49,10 @@
   }
 
   function registerNewBinding(path?: Path) {
+    if (registrationControllerInstance.isRegistrationInProgress()) {
+      return
+    }
+
     const site = pageControllerInstance.currentSiteSplitted()
 
     if (!site) {
