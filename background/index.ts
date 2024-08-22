@@ -1,5 +1,5 @@
-import { askForBinding, askForBindingStream, askForOptionsPageStream } from '~/messages'
-import { getActiveTabId, getAssertedActiveTabId } from './utils/tab'
+import { askForOptionsPageStream, newBinding } from '~/messages'
+import { getActiveTabId, sendToActiveTab } from './utils/tab'
 import { showOverlay, wakeUp } from '~messages/tabs'
 import { VindDB } from './storage/db'
 import { BindingsStorageImpl } from './storage/bindings-storage'
@@ -32,17 +32,17 @@ function openOptionsPage () {
   runtime.openOptionsPage()
 }
 
+function sendNewBinding () {
+  sendToActiveTab(async (tabId) => {
+    newBinding.ask.toTab({
+      tabId: tabId
+    })
+  })
+}
+
 tabs.onActivated.addListener(activeInfo => {
   wakeUp.ask.toTab({
     tabId: activeInfo.tabId
-  })
-})
-
-askForBindingStream.subscribe(async ([, sender]) => {
-  const tabId = await getActiveTabId()
-  if (!tabId) return
-  askForBinding.toTab({
-    tabId: tabId
   })
 })
 
@@ -53,6 +53,7 @@ chrome.commands.onCommand.addListener(async (command) => {
   match(command)
     .with('toggle-overlay', sendShowOverlay)
     .with('open-options', openOptionsPage)
+    .with('new-binding', sendNewBinding)
     .otherwise(() => {
       log.warn('No matching command found for', `"${command}"`)
     })
