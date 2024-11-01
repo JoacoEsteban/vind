@@ -354,6 +354,7 @@ export function getAttributes (targetElement: Element) {
     'aria-labelledby',
     'aria-label',
     'href',
+    'alt',
     // TODO position?
   ]
     .map<[string, string | null]>(attr => [attr, targetElement.getAttribute(attr)])
