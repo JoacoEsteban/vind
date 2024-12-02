@@ -41,19 +41,25 @@ export class BindingsStorageImpl implements BindingsStorage {
   }>()
   public onPathChange$ = this.onPathChangeSubject.asObservable()
 
-  constructor(
-    private db: VindDB
-  ) {
+  constructor(private db: VindDB) {
     this.collection = db.bindings
 
     this.collection.hook('creating', (primKey, obj, transaction) => {
       log.info('Creating binding', { primKey, obj, transaction })
       transaction.on('complete', () => this.onAddedSubject.next(obj))
     })
-    this.collection.hook('updating', (modifications, primKey, obj, transaction) => {
-      log.info('Updating binding', { modifications, primKey, obj, transaction })
-      transaction.on('complete', () => this.onUpdatedSubject.next(obj))
-    })
+    this.collection.hook(
+      'updating',
+      (modifications, primKey, obj, transaction) => {
+        log.info('Updating binding', {
+          modifications,
+          primKey,
+          obj,
+          transaction,
+        })
+        transaction.on('complete', () => this.onUpdatedSubject.next(obj))
+      },
+    )
     this.collection.hook('deleting', (primKey, obj, transaction) => {
       log.info('Deleting binding', { primKey, obj, transaction })
       transaction.on('complete', () => this.onDeletedSubject.next(obj))
@@ -62,59 +68,79 @@ export class BindingsStorageImpl implements BindingsStorage {
     log.info('Bindings storage initialized')
   }
 
-  async getAllBindings (): Promise<BindingDoc[]> {
-    return (await this.collection.toArray())
+  async getAllBindings(): Promise<BindingDoc[]> {
+    return await this.collection.toArray()
   }
 
-  async getBindingsForDomain (domain: string): Promise<BindingDoc[]> {
-    return (await this.collection.where('domain').equals(domain).toArray())
+  async getBindingsForDomain(domain: string): Promise<BindingDoc[]> {
+    return await this.collection.where('domain').equals(domain).toArray()
   }
 
-  async getBindingsForSite (domain: string, site: string): Promise<BindingDoc[]> {
-    return this.collection.where('domain').equals(domain).and((binding) => site.startsWith(binding.path)).toArray()
+  async getBindingsForSite(
+    domain: string,
+    site: string,
+  ): Promise<BindingDoc[]> {
+    return this.collection
+      .where('domain')
+      .equals(domain)
+      .and((binding) => site.startsWith(binding.path))
+      .toArray()
   }
 
-  async query (domain: string, site: string): Promise<BindingDoc[]> {
+  async query(domain: string, site: string): Promise<BindingDoc[]> {
     console.log({ domain, site })
-    return this.collection.where(['domain', 'path']).equals([domain, site]).toArray()
+    return this.collection
+      .where(['domain', 'path'])
+      .equals([domain, site])
+      .toArray()
   }
 
-  async addBinding (binding: BindingDoc): Promise<void> {
+  async addBinding(binding: BindingDoc): Promise<void> {
     await this.collection.add(binding)
   }
 
-  async updateBinding (binding: BindingDoc): Promise<void> {
+  async updateBinding(binding: BindingDoc): Promise<void> {
     await this.collection.update(binding.id, binding)
   }
 
-  async upsertBinding (binding: BindingDoc): Promise<void> {
+  async upsertBinding(binding: BindingDoc): Promise<void> {
     await this.collection.put(binding)
   }
 
-  async removeBinding (id: string): Promise<void> {
+  async removeBinding(id: string): Promise<void> {
     return this.collection.delete(id)
   }
 
-  async changeKey (id: string, key: string): Promise<void> {
+  async changeKey(id: string, key: string): Promise<void> {
     const binding = await this.collection.get(id)
     if (!binding) throw new Error('Binding not found')
     binding.key = key
     await this.collection.update(id, binding)
   }
 
-  async moveBindings (domain: Domain, from: Path, to: Path): Promise<void> {
-    const bindings = await this.collection.where('domain').equals(domain.value).and((binding) => binding.path === from.value).toArray()
-    log.debug('Moving bindings', { domain: domain.value, from: from.value, to: to.value }, bindings)
+  async moveBindings(domain: Domain, from: Path, to: Path): Promise<void> {
+    const bindings = await this.collection
+      .where('domain')
+      .equals(domain.value)
+      .and((binding) => binding.path === from.value)
+      .toArray()
+    log.debug(
+      'Moving bindings',
+      { domain: domain.value, from: from.value, to: to.value },
+      bindings,
+    )
 
-    await Promise.all(bindings.map((binding) => {
-      binding.path = to.value
-      return this.collection.update(binding.id, binding)
-    }))
+    await Promise.all(
+      bindings.map((binding) => {
+        binding.path = to.value
+        return this.collection.update(binding.id, binding)
+      }),
+    )
 
     this.onPathChangeSubject.next({ domain, from, to })
   }
 
-  async deleteAllBindings (): Promise<void> {
+  async deleteAllBindings(): Promise<void> {
     await this.collection.clear()
   }
 }

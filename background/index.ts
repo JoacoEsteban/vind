@@ -12,7 +12,9 @@ import { interopAction, interopRuntime, interopTabs } from './utils/runtime'
 
 const db = new VindDB()
 export const bindingsStorage = new BindingsStorageImpl(db)
-export const disabledBindingPathsStorage = new DisabledBindingPathsStorageImpl(db)
+export const disabledBindingPathsStorage = new DisabledBindingPathsStorageImpl(
+  db,
+)
 
 new StorageHandlers(bindingsStorage, disabledBindingPathsStorage).init()
 
@@ -20,29 +22,29 @@ const tabs = interopTabs()
 const runtime = interopRuntime()
 const action = interopAction()
 
-async function sendShowOverlay () {
+async function sendShowOverlay() {
   const tabId = await getActiveTabId()
   if (!tabId) return
   showOverlay.toTab({
-    tabId: tabId
+    tabId: tabId,
   })
 }
 
-function openOptionsPage () {
+function openOptionsPage() {
   runtime.openOptionsPage()
 }
 
-function sendNewBinding () {
+function sendNewBinding() {
   sendToActiveTab(async (tabId) => {
     newBinding.ask.toTab({
-      tabId: tabId
+      tabId: tabId,
     })
   })
 }
 
-tabs.onActivated.addListener(activeInfo => {
+tabs.onActivated.addListener((activeInfo) => {
   wakeUp.ask.toTab({
-    tabId: activeInfo.tabId
+    tabId: activeInfo.tabId,
   })
 })
 
@@ -59,7 +61,7 @@ chrome.commands.onCommand.addListener(async (command) => {
     })
 })
 
-action.onClicked.addListener(async function onAction () {
+action.onClicked.addListener(async function onAction() {
   log.info('Action clicked')
   sendShowOverlay()
 })

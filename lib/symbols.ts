@@ -36,7 +36,7 @@ export const SymbolSchema = z.object({
 })
 export type Symbol = z.infer<typeof SymbolSchema>
 
-function checkSymbol (raw: unknown): Symbol {
+function checkSymbol(raw: unknown): Symbol {
   return SymbolSchema.parse(raw)
 }
 
@@ -90,7 +90,7 @@ const [
   deleteRightFillRaw,
 ]
   .map(checkSymbol)
-  .map(symbol => {
+  .map((symbol) => {
     const sizes = { ...symbol.geometry }
     const max = Math.max(sizes.width, sizes.height)
 
@@ -103,7 +103,7 @@ const [
         ...symbol.geometry,
         wRatio,
         hRatio,
-      }
+      },
     }
   })
 
@@ -134,13 +134,15 @@ export const symbols = {
 }
 export type SymbolName = keyof typeof symbols
 
-export function SymbolComponent (name: SymbolName, size: string = '100%') {
+export function SymbolComponent(name: SymbolName, size: string = '100%') {
   return class extends SvelteSymbolComponent {
-    constructor(arg: ComponentConstructorOptions<typeof SvelteSymbolComponent>) {
+    constructor(
+      arg: ComponentConstructorOptions<typeof SvelteSymbolComponent>,
+    ) {
       const props = {
         ...arg.props,
         name,
-        size
+        size,
       }
 
       super({
@@ -151,8 +153,13 @@ export function SymbolComponent (name: SymbolName, size: string = '100%') {
   } as typeof SvelteSymbolComponent
 }
 
-export const SymbolComponents: Record<SymbolName, typeof SvelteSymbolComponent> = (Object.keys(symbols) as SymbolName[])
-  .reduce((obj, name) => {
+export const SymbolComponents: Record<
+  SymbolName,
+  typeof SvelteSymbolComponent
+> = (Object.keys(symbols) as SymbolName[]).reduce(
+  (obj, name) => {
     obj[name as SymbolName] = SymbolComponent(name)
     return obj
-  }, {} as Record<SymbolName, typeof SvelteSymbolComponent>)
+  },
+  {} as Record<SymbolName, typeof SvelteSymbolComponent>,
+)

@@ -2,18 +2,31 @@ import { pEvent, type CancelablePromise } from 'p-event'
 import { noop } from './misc'
 import type { Binding } from './binding'
 
-export const unBindableKeys = new Set(['TAB', 'ENTER', 'ESCAPE', 'SHIFT', 'CONTROL', 'ALT', 'META'])
+export const unBindableKeys = new Set([
+  'TAB',
+  'ENTER',
+  'ESCAPE',
+  'SHIFT',
+  'CONTROL',
+  'ALT',
+  'META',
+])
 
-export function isBindableElement (element: HTMLElement): boolean {
+export function isBindableElement(element: HTMLElement): boolean {
   // filter if not type button or input or a
-  return element.role === 'button' || ['button', 'input', 'a'].includes(element.tagName.toLowerCase())
+  return (
+    element.role === 'button' ||
+    ['button', 'input', 'a'].includes(element.tagName.toLowerCase())
+  )
 }
 
-export function getClosestBindableElement (element: HTMLElement): HTMLElement | null {
+export function getClosestBindableElement(
+  element: HTMLElement,
+): HTMLElement | null {
   return element.closest('button, input, a, div, [role="button"]')
 }
 
-export function highlightElement (element: HTMLElement) {
+export function highlightElement(element: HTMLElement) {
   const overlay = document.createElement('div')
   const boundingRect = element.getBoundingClientRect()
 
@@ -35,36 +48,34 @@ export function highlightElement (element: HTMLElement) {
   return overlay
 }
 
-export async function waitForKey (key: string, signal?: AbortSignal): Promise<void> {
+export async function waitForKey(
+  key: string,
+  signal?: AbortSignal,
+): Promise<void> {
   await pEvent<string, KeyboardEvent>(document, 'keydown', {
     signal,
-    filter: (e) => e.key === key
-  })
-    .catch(noop)
+    filter: (e) => e.key === key,
+  }).catch(noop)
 }
 
-export function recordInputKey (signal?: AbortSignal): Promise<string> {
+export function recordInputKey(signal?: AbortSignal): Promise<string> {
   return pEvent<string, KeyboardEvent>(document, 'keydown', {
     signal,
-    filter: (e) => isBindableKeydownEvent(e)
+    filter: (e) => isBindableKeydownEvent(e),
+  }).then((e) => {
+    if (!e.key) {
+      throw new Error('Missing key in event')
+    }
+
+    return e.key
   })
-    .then((e) => {
-      if (!e.key) {
-        throw new Error('Missing key in event')
-      }
-
-      return e.key
-    })
 }
 
-export function isBindableKeydownEvent (event: KeyboardEvent): boolean {
-  return !(
-    isProtectedKeydownEvent(event.target) ||
-    isUnBindableKey(event.key)
-  )
+export function isBindableKeydownEvent(event: KeyboardEvent): boolean {
+  return !(isProtectedKeydownEvent(event.target) || isUnBindableKey(event.key))
 }
 
-export function isProtectedKeydownEvent (element: EventTarget | null): boolean {
+export function isProtectedKeydownEvent(element: EventTarget | null): boolean {
   if (!element) return false
   if (!(element instanceof HTMLElement)) return false
 
@@ -72,31 +83,33 @@ export function isProtectedKeydownEvent (element: EventTarget | null): boolean {
     (element: HTMLElement) => element instanceof HTMLInputElement,
     (element: HTMLElement) => element instanceof HTMLTextAreaElement,
     (element: HTMLElement) => element.contentEditable === 'true',
-  ]
-    .some(fn => fn(element))
+  ].some((fn) => fn(element))
 }
 
-export function isUnBindableKey (key: string): boolean {
+export function isUnBindableKey(key: string): boolean {
   return unBindableKeys.has(key.toUpperCase())
 }
 
-export function waitForKeyDown (key: string, signal?: AbortSignal): CancelablePromise<KeyboardEvent> {
+export function waitForKeyDown(
+  key: string,
+  signal?: AbortSignal,
+): CancelablePromise<KeyboardEvent> {
   return pEvent<string, KeyboardEvent>(document, 'keydown', {
     signal,
-    filter: (e) => e.key === key
+    filter: (e) => e.key === key,
   })
 }
 
-export function isHighlightableElement (el: HTMLElement) {
+export function isHighlightableElement(el: HTMLElement) {
   return el.nodeName !== 'PLASMO-CSUI' && !el.classList.contains('vind-ignore')
 }
 
-export function isConfirmableElement (e: MouseEvent) {
+export function isConfirmableElement(e: MouseEvent) {
   return document
     .elementsFromPoint(e.clientX, e.clientY)
-    .some(el => el.classList.contains('vind-overlay'))
+    .some((el) => el.classList.contains('vind-overlay'))
 }
 
-export function bindingOverlayId (binding: Binding) {
+export function bindingOverlayId(binding: Binding) {
   return `overlay-${binding.id}`
 }

@@ -1,4 +1,4 @@
-export function PromiseWithResolvers<T> () {
+export function PromiseWithResolvers<T>() {
   let resolve: (value: T | PromiseLike<T>) => void = () => {}
   let reject: (reason?: any) => void = () => {}
 

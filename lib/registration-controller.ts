@@ -1,11 +1,36 @@
-import { BehaviorSubject, Subject, combineLatest, filter, fromEvent, last, map, pairwise, share, takeUntil, tap, throttleTime } from 'rxjs'
+import {
+  BehaviorSubject,
+  Subject,
+  combineLatest,
+  filter,
+  fromEvent,
+  last,
+  map,
+  pairwise,
+  share,
+  takeUntil,
+  tap,
+  throttleTime,
+} from 'rxjs'
 import type { PageController } from './page-controller'
 import { log } from './log'
 import { PromiseWithResolvers } from './polyfills'
-import { getClosestBindableElement, highlightElement, isConfirmableElement, isHighlightableElement, recordInputKey, waitForKeyDown } from './element'
+import {
+  getClosestBindableElement,
+  highlightElement,
+  isConfirmableElement,
+  isHighlightableElement,
+  recordInputKey,
+  waitForKeyDown,
+} from './element'
 import { Binding } from './binding'
 import { exposeSubject, PromiseStopper, unwrapPromise } from './rxjs'
-import { RegistrationAbortedError, UnbindableElementError, UnkownError, VindError } from './error'
+import {
+  RegistrationAbortedError,
+  UnbindableElementError,
+  UnkownError,
+  VindError,
+} from './error'
 import { buildXPathAndResolveToUniqueElement, XPathObject } from './xpath'
 import { match } from 'ts-pattern'
 import type { Domain, Path } from './url'
@@ -23,40 +48,41 @@ export class RegistrationController {
   public registrationInProgress$ = this.registrationInProgress$$.asObservable()
   public isRegistrationInProgress = exposeSubject(this.registrationInProgress$$)
 
-  private registrationState$$ = new BehaviorSubject<RegistrationState>(RegistrationState.Idle)
+  private registrationState$$ = new BehaviorSubject<RegistrationState>(
+    RegistrationState.Idle,
+  )
   public registrationState$ = this.registrationState$$.asObservable()
   public getRegistrationState = exposeSubject(this.registrationState$$)
 
-  private mouseOverElements$ = fromEvent<MouseEvent>(document, 'mousemove')
-    .pipe(
-      throttleTime(20),
-      map((e) =>
-        document.elementsFromPoint(e.clientX, e.clientY) as HTMLElement[]
-      ),
-      share()
-    )
+  private mouseOverElements$ = fromEvent<MouseEvent>(
+    document,
+    'mousemove',
+  ).pipe(
+    throttleTime(20),
+    map(
+      (e) => document.elementsFromPoint(e.clientX, e.clientY) as HTMLElement[],
+    ),
+    share(),
+  )
 
-  private targetedElement$ = this.mouseOverElements$
-    .pipe(
-      map<HTMLElement[], HTMLElement | null>((els) =>
-        els.find(isHighlightableElement) || null
-      ),
-      filter(Boolean),
-      pairwise(),
-      filter(([prev, next]) => prev !== next), // only emit when element changes
-      map(([_, next]) => {
-        return next
-      }),
-      map(getClosestBindableElement),
-      filter(Boolean),
-      share()
-    )
+  private targetedElement$ = this.mouseOverElements$.pipe(
+    map<HTMLElement[], HTMLElement | null>(
+      (els) => els.find(isHighlightableElement) || null,
+    ),
+    filter(Boolean),
+    pairwise(),
+    filter(([prev, next]) => prev !== next), // only emit when element changes
+    map(([_, next]) => {
+      return next
+    }),
+    map(getClosestBindableElement),
+    filter(Boolean),
+    share(),
+  )
 
-  constructor(
-    private pageControllerInstance: PageController
-  ) {}
+  constructor(private pageControllerInstance: PageController) {}
 
-  async register (domain: Domain, path: Path) {
+  async register(domain: Domain, path: Path) {
     if (this.registrationInProgress$$.value) {
       throw new Error('Registration already in progress')
     }
@@ -64,27 +90,32 @@ export class RegistrationController {
 
     const aborter = escapeKeyAborter()
 
-    return this.startRegistrationFlow(aborter.signal, domain, path)
-      .finally(() => {
+    return this.startRegistrationFlow(aborter.signal, domain, path).finally(
+      () => {
         log.info('Registration finished')
         aborter.abort(new RegistrationSuccess()) // cleanup
         this.registrationInProgress$$.next(false)
         this.setRegistrationState(RegistrationState.Idle)
-      })
+      },
+    )
   }
 
-  cancelRegistration () {
+  cancelRegistration() {
     if (!this.registrationInProgress$$.value) {
       throw new Error('No registration in progress')
     }
     this.registrationInProgress$$.next(false)
   }
 
-  private setRegistrationState (state: RegistrationState) {
+  private setRegistrationState(state: RegistrationState) {
     this.registrationState$$.next(state)
   }
 
-  private async startRegistrationFlow (abortSignal: AbortSignal, domain: Domain, path: Path) {
+  private async startRegistrationFlow(
+    abortSignal: AbortSignal,
+    domain: Domain,
+    path: Path,
+  ) {
     this.setRegistrationState(RegistrationState.SelectingElement)
     const onElement = this.selectElement(abortSignal)
     this.highlightCurrentElement(PromiseStopper(onElement).stopper)
@@ -101,34 +132,40 @@ export class RegistrationController {
     return this.pageControllerInstance.bindingsChannel.addBinding(binding)
   }
 
-  private async selectElement (abortSignal: AbortSignal): Promise<[HTMLElement, XPathObject, string]> {
+  private async selectElement(
+    abortSignal: AbortSignal,
+  ): Promise<[HTMLElement, XPathObject, string]> {
     if (abortSignal.aborted) {
       throw abortSignal.reason
     }
 
-    const { promise: selectedElement, resolve: confirmElement, reject: cancel } = PromiseWithResolvers<[HTMLElement, XPathObject, string]>()
+    const {
+      promise: selectedElement,
+      resolve: confirmElement,
+      reject: cancel,
+    } = PromiseWithResolvers<[HTMLElement, XPathObject, string]>()
     abortSignal.addEventListener('abort', () => cancel(abortSignal.reason))
 
     const sub = combineLatest([
       this.targetedElement$,
-      fromEvent<MouseEvent>(document, 'click')
-        .pipe(filter(isConfirmableElement))
-    ])
-      .subscribe(async (val) => {
-        const [element] = val
-        const result = await buildXPathAndResolveToUniqueElement(element)
+      fromEvent<MouseEvent>(document, 'click').pipe(
+        filter(isConfirmableElement),
+      ),
+    ]).subscribe(async (val) => {
+      const [element] = val
+      const result = await buildXPathAndResolveToUniqueElement(element)
 
-        match(result.ok)
-          .with(true, () => {
-            log.info('XPATH', result.val)
-            const [xpathObject, selector] = result.val as [XPathObject, string]
-            confirmElement([element, xpathObject, selector])
-          })
-          .with(false, () => {
-            const err = result.val as Error
-            cancel(err instanceof VindError ? err : new UnkownError())
-          })
-      })
+      match(result.ok)
+        .with(true, () => {
+          log.info('XPATH', result.val)
+          const [xpathObject, selector] = result.val as [XPathObject, string]
+          confirmElement([element, xpathObject, selector])
+        })
+        .with(false, () => {
+          const err = result.val as Error
+          cancel(err instanceof VindError ? err : new UnkownError())
+        })
+    })
 
     await selectedElement
       .catch((err) => {
@@ -140,7 +177,7 @@ export class RegistrationController {
     return selectedElement
   }
 
-  async selectKey (abortSignal: AbortSignal): Promise<string> {
+  async selectKey(abortSignal: AbortSignal): Promise<string> {
     if (abortSignal.aborted) {
       throw abortSignal.reason
     }
@@ -161,32 +198,32 @@ export class RegistrationController {
   }
 
   // ----------------------------------------------
-  private highlightCurrentElement (stopper: Subject<any>) {
+  private highlightCurrentElement(stopper: Subject<any>) {
     // let toastId = ''
-    const element$ = this.targetedElement$
+    const element$ = this.targetedElement$.pipe(
+      takeUntil(stopper),
+      map((el) => {
+        return highlightElement(el) as HTMLElement
+      }),
+      share(),
+    )
+
+    element$
       .pipe(
-        takeUntil(stopper),
-        map((el) => {
-          return highlightElement(el) as HTMLElement
+        pairwise(),
+        tap(([prev, _]) => {
+          document.body.removeChild(prev)
         }),
-        share()
       )
+      .subscribe()
 
-    element$.pipe(
-      pairwise(),
-      tap(([prev, _]) => {
-        document.body.removeChild(prev)
-      })
-    ).subscribe()
-
-    element$.pipe(last())
-      .forEach((last) => {
-        document.body.removeChild(last)
-      })
+    element$.pipe(last()).forEach((last) => {
+      document.body.removeChild(last)
+    })
   }
 }
 
-export function escapeKeyAborter () {
+export function escapeKeyAborter() {
   const aborter = new AbortController()
   waitForKeyDown('Escape', aborter.signal)
     .then(() => {

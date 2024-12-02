@@ -1,11 +1,15 @@
-import { RobulaPlus } from "px-robula-plus"
-import { Err, Ok, Result } from "ts-results"
+import { RobulaPlus } from 'px-robula-plus'
+import { Err, Ok, Result } from 'ts-results'
 import { sleep, wrapResult, wrapResultAsync } from './control-flow'
 import { match } from 'ts-pattern'
 import { NoUniqueXPathExpressionErrorForElement } from './error'
 import { combinationsDescending } from './generator'
 import { log } from './log'
-import type { SerializableChildXPathObject, SerializableParentXPathObject, SerializableXPathObject } from '~background/storage/db'
+import type {
+  SerializableChildXPathObject,
+  SerializableParentXPathObject,
+  SerializableXPathObject,
+} from '~background/storage/db'
 import { noop } from './misc'
 const robulaClient = new RobulaPlus()
 
@@ -18,45 +22,61 @@ export class XPathObject {
   ) {
     match(parent)
       .with(null, noop)
-      .when(p => p instanceof ParentXPathObject, noop)
+      .when((p) => p instanceof ParentXPathObject, noop)
       .otherwise(() => {
         throw new Error('parent must be null or instance of ParentXPathObject')
       })
     match(children)
       .with(null, noop)
-      .when(children => children.every(child => child instanceof ChildXPathObject), noop)
+      .when(
+        (children) =>
+          children.every((child) => child instanceof ChildXPathObject),
+        noop,
+      )
       .otherwise(() => {
         throw new Error('children must be null or array of ChildXPathObject')
       })
   }
 
-  public async resolveToUniqueElement (): Promise<[string, HTMLElement] | null> {
+  public async resolveToUniqueElement(): Promise<[string, HTMLElement] | null> {
     log.debug('resolving to unique', this)
 
     const [iterations, res] = await this.resolveToUniqueElementDeep('')
 
-    log.success('resolved to unique', { iterations }, ...(res || ['no unique found']))
+    log.success(
+      'resolved to unique',
+      { iterations },
+      ...(res || ['no unique found']),
+    )
 
     return res
   }
 
-  public async benchmarkResolveToUniqueElement (): Promise<[string, HTMLElement] | null> {
-    const [deep] = await Promise.all([
-      this.resolveToUniqueElementDeep(''),
-    ])
+  public async benchmarkResolveToUniqueElement(): Promise<
+    [string, HTMLElement] | null
+  > {
+    const [deep] = await Promise.all([this.resolveToUniqueElementDeep('')])
 
     const [iterations, res] = deep
 
     log.success('resolved to unique', deep[0])
     log.success(res)
 
-    log.success('resolved to unique', { iterations }, ...(res || ['no unique found']))
+    log.success(
+      'resolved to unique',
+      { iterations },
+      ...(res || ['no unique found']),
+    )
 
     return res
   }
 
-  private async resolveToUniqueElementDeep (carrySelector?: string, direction: 'up' | 'down' = 'up', level = 0, iterations = 0): Promise<[number, [string, HTMLElement]] | [number, null]> {
-
+  private async resolveToUniqueElementDeep(
+    carrySelector?: string,
+    direction: 'up' | 'down' = 'up',
+    level = 0,
+    iterations = 0,
+  ): Promise<[number, [string, HTMLElement]] | [number, null]> {
     for (const {
       combination: attrCombination,
       lastOfSize,
@@ -69,9 +89,7 @@ export class XPathObject {
       log.debug({ expression, direction, attrCombination, iterations, level })
 
       const selector = match(direction)
-        .with('up', () =>
-          joinXpath(expression, carrySelector)
-        )
+        .with('up', () => joinXpath(expression, carrySelector))
         .with('down', () => {
           if (!carrySelector) {
             throw new Error('carrySelector is required for down direction')
@@ -86,100 +104,128 @@ export class XPathObject {
       const absoluteSelector = toGlobal(selector)
       const results = evalXpath(absoluteSelector).unwrap()
 
-      log.debug('resolving with attrs', { direction, attr: attrCombination, iterations, level, results: results.length })
+      log.debug('resolving with attrs', {
+        direction,
+        attr: attrCombination,
+        iterations,
+        level,
+        results: results.length,
+      })
 
       if (results.length === 0) {
         continue
       }
 
-      if (results.length === 1) { // unique
+      if (results.length === 1) {
+        // unique
         const [el] = results
         return [iterations, [absoluteSelector, el]]
       }
 
-      const [parentIterations, fromParent] = await this.parent?.resolveToUniqueElementDeep(selector, 'up', level + 1, iterations) || [iterations, null]
+      const [parentIterations, fromParent] =
+        (await this.parent?.resolveToUniqueElementDeep(
+          selector,
+          'up',
+          level + 1,
+          iterations,
+        )) || [iterations, null]
       iterations = parentIterations
       if (fromParent) {
         log.info('found unique from parent')
         return [iterations, fromParent]
       }
 
-      const [childIterations, fromChild] = await this.children?.[0]?.resolveToUniqueElementDeep(selector, 'down', level + 1, iterations) || [iterations, null]
+      const [childIterations, fromChild] =
+        (await this.children?.[0]?.resolveToUniqueElementDeep(
+          selector,
+          'down',
+          level + 1,
+          iterations,
+        )) || [iterations, null]
       iterations = childIterations
       if (fromChild) {
         log.info('found unique from child')
         return [iterations, fromChild]
       }
 
-      if (lastOfSize()) {// if most specific has multiple matches it means that all following combinations will also have multiple matches
+      if (lastOfSize()) {
+        // if most specific has multiple matches it means that all following combinations will also have multiple matches
         log.debug('most specific has multiple matches, breaking')
         break
       }
     }
 
-    log.debug('no unique found for ', { tagName: this.tagName, attrs: this.attrs, childSelector: carrySelector, iterations, level })
+    log.debug('no unique found for ', {
+      tagName: this.tagName,
+      attrs: this.attrs,
+      childSelector: carrySelector,
+      iterations,
+      level,
+    })
     return [iterations, null]
   }
 
-  public xpathString (attrs: XPathAttr[]) {
-    return this.tagName + attrs.map(attr => attr.computed).join('')
+  public xpathString(attrs: XPathAttr[]) {
+    return this.tagName + attrs.map((attr) => attr.computed).join('')
   }
 
-  public toSerializable (): SerializableXPathObject {
+  public toSerializable(): SerializableXPathObject {
     return {
       tagName: this.tagName,
-      attrs: this.attrs.map(attr => [attr.name, attr.value]),
+      attrs: this.attrs.map((attr) => [attr.name, attr.value]),
       parent: this.parent?.toSerializable() || null,
-      children: this.children?.map(child => child.toSerializable()) || null,
+      children: this.children?.map((child) => child.toSerializable()) || null,
     }
   }
 
-  static fromSerializable (obj: SerializableXPathObject): XPathObject {
+  static fromSerializable(obj: SerializableXPathObject): XPathObject {
     return new XPathObject(
       obj.tagName,
       obj.attrs.map(([name, value]) => new XPathAttr(name, value)),
       obj.parent && ParentXPathObject.fromSerializable(obj.parent),
-      obj.children?.map(child => ChildXPathObject.fromSerializable(child))
+      obj.children?.map((child) => ChildXPathObject.fromSerializable(child)),
     )
   }
 }
 
 export class ParentXPathObject extends XPathObject {
-  override toSerializable (): SerializableParentXPathObject {
+  override toSerializable(): SerializableParentXPathObject {
     return {
       tagName: this.tagName,
-      attrs: this.attrs.map(attr => [attr.name, attr.value]),
+      attrs: this.attrs.map((attr) => [attr.name, attr.value]),
       parent: this.parent?.toSerializable() || null,
       children: null,
     }
   }
 
-  static fromSerializable (obj: SerializableParentXPathObject): ParentXPathObject {
+  static fromSerializable(
+    obj: SerializableParentXPathObject,
+  ): ParentXPathObject {
     return new ParentXPathObject(
       obj.tagName,
       obj.attrs.map(([name, value]) => new XPathAttr(name, value)),
       obj.parent && ParentXPathObject.fromSerializable(obj.parent),
-      null
+      null,
     )
   }
 }
 
 export class ChildXPathObject extends XPathObject {
-  override toSerializable (): SerializableChildXPathObject {
+  override toSerializable(): SerializableChildXPathObject {
     return {
       tagName: this.tagName,
-      attrs: this.attrs.map(attr => [attr.name, attr.value]),
+      attrs: this.attrs.map((attr) => [attr.name, attr.value]),
       parent: null,
-      children: this.children?.map(child => child.toSerializable()) || null,
+      children: this.children?.map((child) => child.toSerializable()) || null,
     }
   }
 
-  static fromSerializable (obj: SerializableChildXPathObject): ChildXPathObject {
+  static fromSerializable(obj: SerializableChildXPathObject): ChildXPathObject {
     return new ChildXPathObject(
       obj.tagName,
       obj.attrs.map(([name, value]) => new XPathAttr(name, value)),
       null,
-      obj.children?.map(child => ChildXPathObject.fromSerializable(child))
+      obj.children?.map((child) => ChildXPathObject.fromSerializable(child)),
     )
   }
 }
@@ -191,10 +237,10 @@ export class XPathAttr {
     public readonly name: string,
     public readonly value: string[],
   ) {
-    const operator = this.operator = match(name)
+    const operator = (this.operator = match(name)
       .with('class', () => 'contains' as const)
       .with('href', () => 'starts-with' as const)
-      .otherwise(() => 'equals')
+      .otherwise(() => 'equals'))
 
     name = match(name)
       .with('text', 'string', () => `${name}()`)
@@ -202,17 +248,21 @@ export class XPathAttr {
 
     const expression = match(operator)
       .with('equals', () => `${name}='${value.join(' ')}'`)
-      .with('contains', 'starts-with', (op) => value.map(val => `${op}(${name}, '${val}')`).join(' or '))
+      .with('contains', 'starts-with', (op) =>
+        value.map((val) => `${op}(${name}, '${val}')`).join(' or '),
+      )
       .exhaustive()
 
     this.computed = `[${expression}]`
   }
 }
 
-
-export function isUnique (xpath: string): Result<boolean, Error>
-export function isUnique (xpath: string, element: Element): Result<boolean, Error>
-export function isUnique (xpath: string, element?: Element) {
+export function isUnique(xpath: string): Result<boolean, Error>
+export function isUnique(
+  xpath: string,
+  element: Element,
+): Result<boolean, Error>
+export function isUnique(xpath: string, element?: Element) {
   return wrapResult(() => {
     const [el, ...tail] = evalXpath(xpath).unwrap()
 
@@ -224,9 +274,15 @@ export function isUnique (xpath: string, element?: Element) {
   })
 }
 
-export function evalXpath (xpath: string, node: Node = document) {
+export function evalXpath(xpath: string, node: Node = document) {
   return wrapResult(() => {
-    const result = document.evaluate(xpath, node, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
+    const result = document.evaluate(
+      xpath,
+      node,
+      null,
+      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+      null,
+    )
     const elements = []
     for (let i = 0; i < result.snapshotLength; i++) {
       const el = result.snapshotItem(i)
@@ -236,19 +292,21 @@ export function evalXpath (xpath: string, node: Node = document) {
   })
 }
 
-export function toGlobal (xpath: string) {
+export function toGlobal(xpath: string) {
   return '//' + xpath
 }
 
-export function getXPath (element: Element): Result<string, Error> {
+export function getXPath(element: Element): Result<string, Error> {
   return wrapResult(() => robulaClient.getRobustXPath(element, document))
 }
 
-export function getElementByXPath (xpath: string) {
+export function getElementByXPath(xpath: string) {
   return robulaClient.getElementByXPath(xpath, document) as HTMLElement
 }
 
-export async function buildXPathAndResolveToUniqueElement (element: Element): Promise<Result<[XPathObject, string], Error>> {
+export async function buildXPathAndResolveToUniqueElement(
+  element: Element,
+): Promise<Result<[XPathObject, string], Error>> {
   const completeXPathResult = buildCompleteXPathObject(element)
 
   if (completeXPathResult.err) {
@@ -257,9 +315,15 @@ export async function buildXPathAndResolveToUniqueElement (element: Element): Pr
 
   const completeXPath = completeXPathResult.val
 
-  log.debug('built complete xpath object', completeXPath, completeXPath.toSerializable())
+  log.debug(
+    'built complete xpath object',
+    completeXPath,
+    completeXPath.toSerializable(),
+  )
 
-  const result = await wrapResultAsync(completeXPath.resolveToUniqueElement.bind(completeXPath))
+  const result = await wrapResultAsync(
+    completeXPath.resolveToUniqueElement.bind(completeXPath),
+  )
 
   if (result.err) {
     log.error('failed to resolve to unique element', result.val)
@@ -282,7 +346,7 @@ export async function buildXPathAndResolveToUniqueElement (element: Element): Pr
   return Ok([completeXPath, selector])
 }
 
-export function buildCompleteXPathObject (element: Element) {
+export function buildCompleteXPathObject(element: Element) {
   const xpathWithParents = buildCompleteXPathObjectWithParents(element)
   if (xpathWithParents.err) {
     log.error('failed to build xpath object with parent', xpathWithParents.val)
@@ -290,17 +354,32 @@ export function buildCompleteXPathObject (element: Element) {
   }
   const xpathWithChildren = buildXPathObjectWithOnlyChild(element)
   if (xpathWithChildren.err) {
-    log.error('failed to build xpath object with only child', xpathWithChildren.val)
+    log.error(
+      'failed to build xpath object with only child',
+      xpathWithChildren.val,
+    )
     return xpathWithChildren
   }
-  return wrapResult(() =>
-    new XPathObject(xpathWithParents.val.tagName, xpathWithParents.val.attrs, xpathWithParents.val.parent, xpathWithChildren.val.children)
+  return wrapResult(
+    () =>
+      new XPathObject(
+        xpathWithParents.val.tagName,
+        xpathWithParents.val.attrs,
+        xpathWithParents.val.parent,
+        xpathWithChildren.val.children,
+      ),
   )
 }
 
-function buildCompleteXPathObjectWithParents (element: Element, base?: true): Result<XPathObject, Error>
-function buildCompleteXPathObjectWithParents (element: Element, base?: false): Result<ParentXPathObject, Error>
-function buildCompleteXPathObjectWithParents (element: Element, base = true) {
+function buildCompleteXPathObjectWithParents(
+  element: Element,
+  base?: true,
+): Result<XPathObject, Error>
+function buildCompleteXPathObjectWithParents(
+  element: Element,
+  base?: false,
+): Result<ParentXPathObject, Error>
+function buildCompleteXPathObjectWithParents(element: Element, base = true) {
   const parentElement = element.parentElement
   const parentXpath = match(parentElement)
     .with(null, () => null)
@@ -313,18 +392,30 @@ function buildCompleteXPathObjectWithParents (element: Element, base = true) {
   const tagName = element.tagName.toLowerCase()
   const attrs = getAttributes(element)
 
-  return wrapResult(() => match(base)
-    .with(true, () => new XPathObject(tagName, attrs, parentXpath?.val))
-    .with(false, () => new ParentXPathObject(tagName, attrs, parentXpath?.val))
-    .exhaustive()
+  return wrapResult(() =>
+    match(base)
+      .with(true, () => new XPathObject(tagName, attrs, parentXpath?.val))
+      .with(
+        false,
+        () => new ParentXPathObject(tagName, attrs, parentXpath?.val),
+      )
+      .exhaustive(),
   )
 }
 
-function buildXPathObjectWithOnlyChild (element: Element, base?: true): Result<XPathObject, Error>
-function buildXPathObjectWithOnlyChild (element: Element, base?: false): Result<ChildXPathObject, Error>
-function buildXPathObjectWithOnlyChild (element: Element, base = true) {
+function buildXPathObjectWithOnlyChild(
+  element: Element,
+  base?: true,
+): Result<XPathObject, Error>
+function buildXPathObjectWithOnlyChild(
+  element: Element,
+  base?: false,
+): Result<ChildXPathObject, Error>
+function buildXPathObjectWithOnlyChild(element: Element, base = true) {
   const childXPath = match(element.childElementCount)
-    .with(1, () => buildXPathObjectWithOnlyChild(element.firstElementChild!, false))
+    .with(1, () =>
+      buildXPathObjectWithOnlyChild(element.firstElementChild!, false),
+    )
     .otherwise(() => null)
 
   if (childXPath?.err) {
@@ -342,11 +433,11 @@ function buildXPathObjectWithOnlyChild (element: Element, base = true) {
     match(base)
       .with(true, () => new XPathObject(tagName, attrs, null, children))
       .with(false, () => new ChildXPathObject(tagName, attrs, null, children))
-      .exhaustive()
+      .exhaustive(),
   )
 }
 
-export function getAttributes (targetElement: Element) {
+export function getAttributes(targetElement: Element) {
   const attrs = [
     'id',
     'name',
@@ -357,7 +448,10 @@ export function getAttributes (targetElement: Element) {
     'alt',
     // TODO position?
   ]
-    .map<[string, string | null]>(attr => [attr, targetElement.getAttribute(attr)])
+    .map<[string, string | null]>((attr) => [
+      attr,
+      targetElement.getAttribute(attr),
+    ])
     .filter(([, val]) => {
       return val !== null
     })
@@ -380,12 +474,22 @@ export function getAttributes (targetElement: Element) {
   return attrs
 }
 
-export function getNodeText (node: Node): string {
-  const result = document.evaluate('text()', node, null, XPathResult.STRING_TYPE, null)
+export function getNodeText(node: Node): string {
+  const result = document.evaluate(
+    'text()',
+    node,
+    null,
+    XPathResult.STRING_TYPE,
+    null,
+  )
   return result.stringValue
 }
 
-export function joinXpath (parent: string, child?: string, behavior: 'locate' | 'search' = 'locate') {
+export function joinXpath(
+  parent: string,
+  child?: string,
+  behavior: 'locate' | 'search' = 'locate',
+) {
   return match(Boolean(child))
     .with(false, () => parent)
     .otherwise(() => {

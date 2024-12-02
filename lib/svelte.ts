@@ -7,7 +7,9 @@ type ContextfulIteration<T> = {
   even: boolean
 }
 
-export function wrapIterable<T> (iter: Iterable<T>): Iterable<ContextfulIteration<T>> {
+export function wrapIterable<T>(
+  iter: Iterable<T>,
+): Iterable<ContextfulIteration<T>> {
   return {
     [Symbol.iterator]: function* () {
       const arr = Array.from(iter)
@@ -24,6 +26,6 @@ export function wrapIterable<T> (iter: Iterable<T>): Iterable<ContextfulIteratio
           even,
         }
       }
-    }
+    },
   }
 }

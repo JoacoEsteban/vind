@@ -8,23 +8,23 @@ declare global {
 const extTabs = (globalThis.browser?.tabs ||
   globalThis.chrome?.tabs) as typeof chrome.tabs
 
-export function interopRuntime () {
+export function interopRuntime() {
   const extRuntime = (globalThis.browser?.runtime ||
     globalThis.chrome?.runtime) as typeof chrome.runtime
 
   if (!extRuntime) {
-    throw new Error("Extension runtime is not available")
+    throw new Error('Extension runtime is not available')
   }
   return extRuntime
 }
 
-export function interopTabs () {
+export function interopTabs() {
   if (!extTabs) {
-    throw new Error("Extension tabs API is not available")
+    throw new Error('Extension tabs API is not available')
   }
   return extTabs
 }
 
-export function interopAction () {
+export function interopAction() {
   return chrome.action || chrome.browserAction
 }

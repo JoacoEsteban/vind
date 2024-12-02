@@ -1,4 +1,4 @@
-export function draggable (node: HTMLElement) {
+export function draggable(node: HTMLElement) {
   const friction = 0.85
   const dragItem = node
 
@@ -15,7 +15,7 @@ export function draggable (node: HTMLElement) {
   let velocityY = 0
   let rafID: number
 
-  function dragStart (e: PointerEvent) {
+  function dragStart(e: PointerEvent) {
     initialX = e.clientX - xOffset
     initialY = e.clientY - yOffset
     lastX = e.clientX
@@ -27,7 +27,7 @@ export function draggable (node: HTMLElement) {
     cancelAnimationFrame(rafID) // Stop any ongoing animation
   }
 
-  function isTarget (target: HTMLElement) {
+  function isTarget(target: HTMLElement) {
     switch (target.nodeName) {
       case 'BUTTON':
       case 'INPUT':
@@ -42,7 +42,7 @@ export function draggable (node: HTMLElement) {
     return false
   }
 
-  function dragEnd (e: PointerEvent) {
+  function dragEnd(e: PointerEvent) {
     initialX = currentX
     initialY = currentY
     active = false
@@ -50,12 +50,15 @@ export function draggable (node: HTMLElement) {
     dragItem.releasePointerCapture(e.pointerId)
   }
 
-  function setOffset (x = xOffset, y = yOffset) {
+  function setOffset(x = xOffset, y = yOffset) {
     xOffset = Math.min(Math.max(x, 0), window.innerWidth - dragItem.clientWidth)
-    yOffset = Math.min(Math.max(y, 0), window.innerHeight - dragItem.clientHeight)
+    yOffset = Math.min(
+      Math.max(y, 0),
+      window.innerHeight - dragItem.clientHeight,
+    )
   }
 
-  function drag (e: PointerEvent) {
+  function drag(e: PointerEvent) {
     if (!active) return
     e.preventDefault()
     currentX = e.clientX - initialX
@@ -67,28 +70,22 @@ export function draggable (node: HTMLElement) {
     lastX = e.clientX
     lastY = e.clientY
 
-    setOffset(
-      currentX,
-      currentY,
-    )
+    setOffset(currentX, currentY)
 
     setTranslate()
   }
 
-  function setTranslate () {
+  function setTranslate() {
     dragItem.style.transform = `translate3d(${xOffset}px, ${yOffset}px, 0)`
   }
 
-  function animate () {
+  function animate() {
     if (!active && (Math.abs(velocityX) > 0.1 || Math.abs(velocityY) > 0.1)) {
       // Apply friction
       velocityX *= friction
       velocityY *= friction
 
-      setOffset(
-        xOffset + velocityX,
-        yOffset + velocityY,
-      )
+      setOffset(xOffset + velocityX, yOffset + velocityY)
       setTranslate()
 
       rafID = requestAnimationFrame(animate)

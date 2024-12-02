@@ -4,8 +4,12 @@ import type { SymbolName } from './symbols'
 import { PromiseWithResolvers } from './polyfills'
 import { match } from 'ts-pattern'
 
-export type ReturnOfPrompt<T extends PromptType> = T extends PromptType.Boolean ? boolean : string
-export type AnyReturnOfPrompt = ReturnOfPrompt<PromptType.PathEdit> | ReturnOfPrompt<PromptType.Boolean>
+export type ReturnOfPrompt<T extends PromptType> = T extends PromptType.Boolean
+  ? boolean
+  : string
+export type AnyReturnOfPrompt =
+  | ReturnOfPrompt<PromptType.PathEdit>
+  | ReturnOfPrompt<PromptType.Boolean>
 
 export enum PromptType {
   Boolean = 'boolean',
@@ -13,18 +17,18 @@ export enum PromptType {
 }
 
 type PromptOptions<T extends PromptType> = {
-  title?: string,
-  subtitle?: string,
-  placeholder?: string,
-  symbol?: SymbolName,
-  value?: ReturnOfPrompt<T>,
-  type: T,
+  title?: string
+  subtitle?: string
+  placeholder?: string
+  symbol?: SymbolName
+  value?: ReturnOfPrompt<T>
+  type: T
 }
 
 export type Prompt<T extends PromptType> = {
-  options: PromptOptions<T>,
-  resolve: (value: ReturnOfPrompt<T>) => void,
-  reject: (reason: any) => void,
+  options: PromptOptions<T>
+  resolve: (value: ReturnOfPrompt<T>) => void
+  reject: (reason: any) => void
   promise: Promise<ReturnOfPrompt<T>>
 }
 
@@ -38,14 +42,15 @@ export const Prompt$ = PromptSubject.asObservable()
 export const BooleanPrompt$ = BooleanPromptSubject.asObservable()
 export const isPromptOpen$ = PromptOpen$.asObservable()
 
-export function prompt<T extends PromptType> (options: PromptOptions<T>) {
+export function prompt<T extends PromptType>(options: PromptOptions<T>) {
   if (PromptOpen$.value) {
     throw new Error('A prompt is already open')
   }
 
   log.debug('Prompting:', options)
 
-  let { promise, reject, resolve } = PromiseWithResolvers<ReturnOfPrompt<T> | null>()
+  let { promise, reject, resolve } =
+    PromiseWithResolvers<ReturnOfPrompt<T> | null>()
   promise = promise
     .catch((err) => {
       log.debug('Prompt error:', err)
@@ -63,7 +68,7 @@ export function prompt<T extends PromptType> (options: PromptOptions<T>) {
         options: options as PromptOptions<PromptType.Boolean>,
         resolve: resolve as (value: boolean) => void,
         reject,
-        promise: promise as Promise<boolean>
+        promise: promise as Promise<boolean>,
       })
     })
     .with(PromptType.PathEdit, () => {
@@ -71,13 +76,13 @@ export function prompt<T extends PromptType> (options: PromptOptions<T>) {
         options: options as PromptOptions<PromptType.PathEdit>,
         resolve: resolve as (value: string) => void,
         reject,
-        promise: promise as Promise<string>
+        promise: promise as Promise<string>,
       })
     })
 
   PromptOpen$.next(true)
   return {
     promise,
-    cancel: reject
+    cancel: reject,
   }
 }

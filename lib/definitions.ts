@@ -4,7 +4,10 @@ import { SymbolComponent, type SymbolName } from './symbols'
 const iconSize = '2em'
 
 export const registrationStateToastOptions: {
-  [key in RegistrationState]: { text: string; icon: ReturnType<typeof SymbolComponent> } | null
+  [key in RegistrationState]: {
+    text: string
+    icon: ReturnType<typeof SymbolComponent>
+  } | null
 } = {
   [RegistrationState.Idle]: null,
   [RegistrationState.SavingBinding]: null,
@@ -24,5 +27,5 @@ export const colorSeeds = {
 }
 
 export enum Messages {
-  UncaughtError = 'An unexpected error just happened. If it persists, please contact us at support@vind-works.io'
+  UncaughtError = 'An unexpected error just happened. If it persists, please contact us at support@vind-works.io',
 }

@@ -3,14 +3,15 @@ import { ENV_PROD, LOGS_ENABLED } from './env'
 const tagLine = (tag: string) => `[${tag}]`.padEnd(7, ' ') + '-'.repeat(40)
 const noop = () => {}
 
-function wrap (fn: (...args: any[]) => void, tag: string, color: string = '') {
+function wrap(fn: (...args: any[]) => void, tag: string, color: string = '') {
   if (!LOGS_ENABLED) {
     return noop
   }
 
   const line = tagLine(tag)
   const lineEnd = tagLine('↑')
-  const colorPrint = (msg: string) => fn(`%c${msg}`, `color: ${color}; font-weight: bold;`)
+  const colorPrint = (msg: string) =>
+    fn(`%c${msg}`, `color: ${color}; font-weight: bold;`)
   const trace = console.trace.bind(console)
 
   return (...args: any[]) => {
@@ -20,7 +21,6 @@ function wrap (fn: (...args: any[]) => void, tag: string, color: string = '') {
     colorPrint(lineEnd)
   }
 }
-
 
 export const log = {
   error: wrap(console.error, 'ERROR', 'red'),

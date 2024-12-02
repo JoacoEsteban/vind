@@ -1,14 +1,18 @@
 import Dexie from 'dexie'
 
 export type SerializableXPathObject = {
-  tagName: string,
-  attrs: [string, string[]][],
-  parent: SerializableParentXPathObject | null,
-  children: SerializableChildXPathObject[] | null,
+  tagName: string
+  attrs: [string, string[]][]
+  parent: SerializableParentXPathObject | null
+  children: SerializableChildXPathObject[] | null
 }
 
-export type SerializableParentXPathObject = SerializableXPathObject & { children: null }
-export type SerializableChildXPathObject = SerializableXPathObject & { parent: null }
+export type SerializableParentXPathObject = SerializableXPathObject & {
+  children: null
+}
+export type SerializableChildXPathObject = SerializableXPathObject & {
+  parent: null
+}
 
 export type BindingDoc = {
   id: string
@@ -31,9 +35,8 @@ export class VindDB extends Dexie {
     // debugger
     this.version(2).stores({
       bindings: 'id, *domain, path, key, selector', // TODO turn domain into simple index
-      pageOverrides: '++id, *overrides_domain_path, bindings_path'
+      pageOverrides: '++id, *overrides_domain_path, bindings_path',
     })
-
 
     this.version(3).stores({
       pageOverrides: null,

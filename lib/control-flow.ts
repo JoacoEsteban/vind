@@ -1,6 +1,6 @@
 import { Err, Ok, type Result } from 'ts-results'
 
-export function wrapResult<T> (expression: () => T): Result<T, Error> {
+export function wrapResult<T>(expression: () => T): Result<T, Error> {
   try {
     return new Ok(expression())
   } catch (error) {
@@ -8,7 +8,9 @@ export function wrapResult<T> (expression: () => T): Result<T, Error> {
   }
 }
 
-export async function wrapResultAsync<T> (expression: () => Promise<T>): Promise<Result<T, Error>> {
+export async function wrapResultAsync<T>(
+  expression: () => Promise<T>,
+): Promise<Result<T, Error>> {
   try {
     return new Ok(await expression())
   } catch (error) {
@@ -16,6 +18,6 @@ export async function wrapResultAsync<T> (expression: () => Promise<T>): Promise
   }
 }
 
-export function sleep (ms?: number) {
+export function sleep(ms?: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }

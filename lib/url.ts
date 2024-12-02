@@ -6,7 +6,7 @@ type sanitizationOptions = {
   glob: boolean
 }
 
-export function sanitizeUrl (url: URL): URL {
+export function sanitizeUrl(url: URL): URL {
   const sanitized = new URL(url.href)
   sanitized.hash = ''
   sanitized.search = ''
@@ -14,29 +14,27 @@ export function sanitizeUrl (url: URL): URL {
   return sanitized
 }
 
-export function sanitizeHref (url: string): string {
+export function sanitizeHref(url: string): string {
   return sanitizeUrl(new URL(url)).href
 }
 
-function sanitizePathname (pathname: string): string {
+function sanitizePathname(pathname: string): string {
   if (!pathname.startsWith('/')) {
     pathname = '/' + pathname
   }
 
-  return pathname
-    .toLowerCase()
+  return pathname.toLowerCase()
 }
 
-export function getCurrentUrl (): URL {
+export function getCurrentUrl(): URL {
   return new URL(window.location.href)
 }
 
-export function getSanitizedCurrentUrl (): URL {
+export function getSanitizedCurrentUrl(): URL {
   return sanitizeUrl(getCurrentUrl())
 }
 
-
-export function urlFromParts (domain: string, path: string): URL {
+export function urlFromParts(domain: string, path: string): URL {
   if (!domain.startsWith('http')) {
     domain = 'https://' + domain
   }
@@ -44,7 +42,7 @@ export function urlFromParts (domain: string, path: string): URL {
   return new URL(path, domain)
 }
 
-export function resource (url: URL): string {
+export function resource(url: URL): string {
   return url.host + url.pathname
 }
 
@@ -61,21 +59,18 @@ export class Domain {
     // this.value = value
   }
 
-  withPath (path: Path) {
+  withPath(path: Path) {
     return urlFromParts(this.value, path.value)
   }
 
-  is (path: Domain): boolean {
+  is(path: Domain): boolean {
     return this.value === path.value
   }
 
-  join (path: Path): string {
+  join(path: Path): string {
     return match(path.value)
       .with('', () => this.value)
-      .otherwise(() => [
-        this.value,
-        path.value
-      ].join('/'))
+      .otherwise(() => [this.value, path.value].join('/'))
   }
 }
 
@@ -83,16 +78,31 @@ export class Path {
   public readonly regexp: RegExp
   constructor(public readonly value: string) {
     let sanitized = match(value)
-      .when(p => p.startsWith('/'), p => p)
-      .when(p => /^https?:\/\//.test(p), p => new URL(p).pathname)
-      .when(p => /^[\w\-]+\.[\w\-]+/.test(p), p => p.split('/').slice(1).join('/') || '/')
+      .when(
+        (p) => p.startsWith('/'),
+        (p) => p,
+      )
+      .when(
+        (p) => /^https?:\/\//.test(p),
+        (p) => new URL(p).pathname,
+      )
+      .when(
+        (p) => /^[\w\-]+\.[\w\-]+/.test(p),
+        (p) => p.split('/').slice(1).join('/') || '/',
+      )
       .otherwise(identity)
 
     sanitized = match(sanitized)
-      .when(p => p.startsWith('/'), p => p.slice(1))
+      .when(
+        (p) => p.startsWith('/'),
+        (p) => p.slice(1),
+      )
       .otherwise(identity)
     sanitized = match(sanitized)
-      .when(p => p.endsWith('/'), p => p.slice(0, -1))
+      .when(
+        (p) => p.endsWith('/'),
+        (p) => p.slice(0, -1),
+      )
       .otherwise(identity)
     sanitized = sanitized.toLowerCase()
 
@@ -100,88 +110,90 @@ export class Path {
     this.regexp = wildcardToRegex(this.value)
   }
 
-  withDomain (domain: Domain) {
+  withDomain(domain: Domain) {
     return urlFromParts(domain.value, this.value)
   }
 
-  is (path: Path): boolean {
+  is(path: Path): boolean {
     return this.value === path.value
   }
 
-  startsWith (path: Path): boolean {
+  startsWith(path: Path): boolean {
     return this.value.startsWith(path.value)
   }
 
-  eitherStartsWith (path: Path): boolean {
+  eitherStartsWith(path: Path): boolean {
     return this.startsWith(path) || path.startsWith(this)
   }
 
-  isRoot (): boolean {
+  isRoot(): boolean {
     return this.value === ''
   }
 
-  match (path: Path): boolean {
+  match(path: Path): boolean {
     return this.regexp.test(path.value)
   }
 
-  eitherMatch (path: Path): boolean { // TODO remove?
+  eitherMatch(path: Path): boolean {
+    // TODO remove?
     return this.match(path) || path.match(this)
   }
 
-  matchStart (path: Path): boolean {
+  matchStart(path: Path): boolean {
     return path.startsWith(this) || this.match(path)
   }
 
-  eitherMatchStart (path: Path): boolean {
+  eitherMatchStart(path: Path): boolean {
     return this.matchStart(path) || path.matchStart(this)
   }
 
-  inferPattern (): Path {
-    const replaced = this.value.split('/').map(part => {
-      return !/^[a-z-_\*]+$/.test(part) ? '*' : part
-    })
+  inferPattern(): Path {
+    const replaced = this.value
+      .split('/')
+      .map((part) => {
+        return !/^[a-z-_\*]+$/.test(part) ? '*' : part
+      })
       .join('/')
 
     return new Path(replaced)
   }
 
-  replacePart (index: number, value: string): Path {
+  replacePart(index: number, value: string): Path {
     const parts = this.value.split('/')
     parts[index] = value
     return Path.fromParts(parts)
   }
 
-  makeGlob (targetIndex: number): Path {
+  makeGlob(targetIndex: number): Path {
     return this.replacePart(targetIndex, '*')
   }
 
-  removeGlobbedTail () {
+  removeGlobbedTail() {
     if (this.value.endsWith('/*')) {
       return this.removeTail()
     }
     return this
   }
 
-  removeTail () {
+  removeTail() {
     return new Path(this.value.split('/').slice(0, -1).join('/'))
   }
 
-
-  static removeHead (path: Path | string): Path {
+  static removeHead(path: Path | string): Path {
     path = path instanceof Path ? path : new Path(path)
     return new Path(path.value.split('/').slice(1).join('/'))
   }
 
-  static empty (): Path {
+  static empty(): Path {
     return new Path('')
   }
 
-  static fromParts (parts: string[]): Path {
+  static fromParts(parts: string[]): Path {
     return new Path(parts.join('/'))
   }
 }
 
-export function safeUrl (url: string): URL {
+export function safeUrl(url: string): URL {
   if (!url.startsWith('http')) {
     url = 'https://' + url
   }
@@ -189,7 +201,7 @@ export function safeUrl (url: string): URL {
   return new URL(url)
 }
 
-function wildcardToRegex (wildcard: string): RegExp {
+function wildcardToRegex(wildcard: string): RegExp {
   if (!wildcard.endsWith('/*')) {
     wildcard = wildcard + '*' // TODO TEST
   }

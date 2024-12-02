@@ -1,36 +1,46 @@
-import { BehaviorSubject, Subject, type Observable, map, queue, type OperatorFunction, mergeMap, from, isObservable } from 'rxjs'
+import {
+  BehaviorSubject,
+  Subject,
+  type Observable,
+  map,
+  queue,
+  type OperatorFunction,
+  mergeMap,
+  from,
+  isObservable,
+} from 'rxjs'
 
-export function expose<T> (observable: Observable<T>) {
+export function expose<T>(observable: Observable<T>) {
   const subject = new BehaviorSubject<T | null>(null)
   observable.subscribe(subject)
   return subject.getValue.bind(subject)
 }
 
-export function exposeSubject<T> (subject: BehaviorSubject<T>) {
+export function exposeSubject<T>(subject: BehaviorSubject<T>) {
   return subject.getValue.bind(subject)
 }
 
-export function Stopper () {
+export function Stopper() {
   const stopper = new Subject<void>()
   return {
     stopper,
     stop: () => {
       stopper.next()
       stopper.complete()
-    }
+    },
   }
 }
 
-export function PromiseStopper (promise: Promise<any>) {
+export function PromiseStopper(promise: Promise<any>) {
   const { stopper, stop } = Stopper()
   promise.finally(stop)
   return {
     stopper,
-    stop
+    stop,
   }
 }
 
-export function Stack () {
+export function Stack() {
   const stack$$ = new BehaviorSubject<number>(0)
 
   return {
@@ -48,7 +58,7 @@ export function Stack () {
     },
     complete: function () {
       stack$$.complete()
-    }
+    },
   }
 }
 
@@ -57,16 +67,13 @@ export class ToggleSubject extends BehaviorSubject<boolean> {
     super(initial)
   }
 
-  toggle () {
+  toggle() {
     this.next(!this.value)
   }
 }
 
 // pipeable operator
-export function unwrapPromise<T> () {
+export function unwrapPromise<T>() {
   return (source: Observable<Promise<T>>): Observable<T> =>
-    source.pipe(
-      mergeMap(value => from(value))
-    )
+    source.pipe(mergeMap((value) => from(value)))
 }
-
