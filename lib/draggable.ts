@@ -96,7 +96,7 @@ export function draggable(node: HTMLElement) {
 
   const parent = (() => {
     let p = node.parentElement
-    while (p && p.style.position !== 'relative') {
+    while (p && getComputedStyle(p).position !== 'relative') {
       p = p.parentElement
     }
     return p
