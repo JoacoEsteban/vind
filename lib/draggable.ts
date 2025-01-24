@@ -1,14 +1,40 @@
-export function draggable(node: HTMLElement) {
+import { match } from 'ts-pattern'
+
+const [centerX, centerY] = [
+  (dragItem: HTMLElement) => (window.innerWidth - dragItem.clientWidth) / 2,
+  (dragItem: HTMLElement) => (window.innerHeight - dragItem.clientHeight) / 2,
+]
+
+export function draggable(
+  node: HTMLElement,
+  initialPosition: {
+    x: number | 'center'
+    y: number | 'center'
+  } = { x: 0, y: 0 },
+) {
   const friction = 0.85
   const dragItem = node
 
   let active = false
-  let currentX: number
-  let currentY: number
+  let currentX: number = 0
+  let currentY: number = 0
   let initialX: number
   let initialY: number
-  let xOffset = 0
-  let yOffset = 0
+  let [xOffset, yOffset] = [
+    {
+      value: initialPosition.x,
+      center: centerX.bind(null, dragItem),
+    },
+    {
+      value: initialPosition.y,
+      center: centerY.bind(null, dragItem),
+    },
+  ].map(({ value, center }) =>
+    match(value)
+      .with('center', center)
+      .otherwise((value) => value),
+  )
+
   let lastX: number
   let lastY: number
   let velocityX = 0
@@ -114,4 +140,6 @@ export function draggable(node: HTMLElement) {
     setOffset()
     setTranslate()
   })
+
+  setTranslate()
 }

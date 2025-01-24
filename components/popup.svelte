@@ -18,6 +18,7 @@
   export let disabled: boolean = false
   export let pageControllerInstance: PageController
   export let close: () => void
+  export let position: Record<'x' | 'y', number | 'center'> = { x: 0, y: 0 }
 
   const dispatch = createEventDispatcher<{
     registerNewBinding: { path?: Path }
@@ -62,7 +63,7 @@
     class="popup-wrapper"
     class:visible
     class:shrink={disabled}
-    use:draggable>
+    use:draggable={position}>
     <div class="popup-container bg-blur" class:ghost={disabled}>
       <div class="flex justify-between sticky top-0 z-10">
         <h2 class="font-black m-0 opacity-25">Vind</h2>
