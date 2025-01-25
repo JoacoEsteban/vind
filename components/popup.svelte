@@ -60,11 +60,11 @@
 
 {#if $bindingsMap}
   <div
-    class="popup-wrapper"
+    class="popup-wrapper vind-ignore"
     class:visible
     class:shrink={disabled}
     use:draggable={position}>
-    <div class="popup-container bg-blur" class:ghost={disabled}>
+    <div class="popup-container bg-blur vind-ignore" class:ghost={disabled}>
       <div class="flex justify-between sticky top-0 z-10">
         <h2 class="font-black m-0 opacity-25">Vind</h2>
         <div class="flex">
