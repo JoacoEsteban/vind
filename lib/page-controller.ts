@@ -10,20 +10,24 @@ import {
   share,
 } from 'rxjs'
 import { Domain, Path } from './url'
-import { BindingChannelImpl } from './messages/bindings'
+import { BindingChannelImpl, type BindingChannel } from './messages/bindings'
 import {
   bindingOverlayId,
   highlightElement,
   isBindableKeydownEvent,
 } from './element'
-import { DisabledPathsChannelImpl } from './messages/disabled-paths'
+import {
+  DisabledPathsChannelImpl,
+  type DisabledPathsChannel,
+} from './messages/disabled-paths'
 import { expose } from './rxjs'
-import { match } from 'ts-pattern'
 import { sleep } from './control-flow'
 import { InexistentElementError } from './error'
 
-export class PageController {
+class PageManager {
   constructor(
+    public bindingsChannel: BindingChannel = new BindingChannelImpl(),
+    public disabledPathsChannel: DisabledPathsChannel = new DisabledPathsChannelImpl(),
     public pageType: 'content-script' | 'options',
     currentUrl: URL | null = null,
   ) {
@@ -31,30 +35,18 @@ export class PageController {
       this.changeRoute(currentUrl)
     }
 
-    this.onEveryBindingEvent$.subscribe(() => {
-      log.info('Binding updated, refreshing bindings')
-      this.refreshBindings()
-    })
-    this.onEveryDisabledPathEvent$.subscribe(() => {
-      log.info('DisabledPath updated, refreshing disabled paths')
-      this.refreshDisabledPaths()
-    })
-
     this.currentUrlSubject.subscribe((url) => {
       this.updateResources(url)
     })
   }
 
-  private triggeredBinding = new Subject<string>()
+  protected triggeredBinding = new Subject<string>()
   public triggeredBinding$ = this.triggeredBinding.asObservable()
 
-  private triggers = new Subject<Promise<unknown>>() // TODO type
+  protected triggers = new Subject<Promise<unknown>>() // TODO type
   public triggers$ = this.triggers.asObservable()
 
-  public bindingsChannel = new BindingChannelImpl()
-  public disabledPathsChannel = new DisabledPathsChannelImpl()
-
-  private currentUrlSubject: BehaviorSubject<URL | null> =
+  protected currentUrlSubject: BehaviorSubject<URL | null> =
     new BehaviorSubject<URL | null>(null)
   public currentSite$ = this.currentUrlSubject.pipe(
     map((url) => url?.href || ''),
@@ -68,12 +60,114 @@ export class PageController {
         path: new Path(url!.pathname),
       })),
     )
-  private bindingsSubject: BehaviorSubject<Binding[]> = new BehaviorSubject<
+  protected bindingsSubject: BehaviorSubject<Binding[]> = new BehaviorSubject<
     Binding[]
   >([])
-  private disabledPathsSubject: BehaviorSubject<Set<string>> =
+  protected disabledPathsSubject: BehaviorSubject<Set<string>> =
     new BehaviorSubject(new Set<string>())
 
+  // ------------------------------------------
+
+  async changeRoute(url: URL) {
+    log.info('Changing route', url)
+
+    if (this.currentUrlSubject.value?.href === url.href) {
+      log.info(
+        `URL is the same (${this.currentUrlSubject.value}, ${url}), not updating`,
+      )
+      return
+    }
+    this.currentUrlSubject.next(url)
+  }
+
+  async refreshResources() {
+    this.updateResources(this.currentUrlSubject.value)
+  }
+
+  async refreshBindings() {
+    if (this.pageType === 'options') {
+      return this.loadAllBindings()
+    }
+
+    if (!this.currentUrlSubject.value) {
+      log.error('currentUrlSubject is null in refreshBindings')
+      throw new Error('currentUrlSubject is null in refreshBindings')
+    }
+
+    this.updateBindings(this.currentUrlSubject.value)
+  }
+
+  async refreshDisabledPaths() {
+    if (this.pageType === 'options') {
+      return this.loadAllDisabledPaths()
+    }
+
+    if (!this.currentUrlSubject.value) {
+      log.error('currentUrlSubject is null in refreshDisabledPaths')
+      throw new Error('currentUrlSubject is null in refreshDisabledPaths')
+    }
+
+    this.updateDisabledPaths(this.currentUrlSubject.value)
+  }
+
+  protected async updateResources(url: URL | null = null) {
+    if (this.pageType === 'options') {
+      return Promise.all([this.loadAllBindings(), this.loadAllDisabledPaths()])
+    }
+
+    if (!url) {
+      log.error('No url was provided to updateResources')
+      throw new Error('No url was provided')
+    }
+
+    return Promise.all([
+      this.updateBindings(url),
+      this.updateDisabledPaths(url),
+    ])
+  }
+
+  protected async updateBindings(url: URL) {
+    const bindings = await this.bindingsChannel.getBindingsForDomain(url.host)
+    this.bindingsSubject.next(bindings)
+  }
+
+  protected async updateDisabledPaths(url: URL) {
+    const disabledPaths = await this.disabledPathsChannel.queryDisabledPaths(
+      new Domain(url.host),
+      Path.empty(),
+    )
+    this.disabledPathsSubject.next(disabledPaths)
+  }
+
+  protected async loadAllBindings() {
+    log.info('Loading all bindings')
+    const bindings = await this.bindingsChannel.getAllBindings()
+    this.bindingsSubject.next(bindings)
+  }
+
+  protected async loadAllDisabledPaths() {
+    log.info('Loading all disabled paths')
+    const domain_paths = await this.disabledPathsChannel.getAllDisabledPaths()
+    log.debug('domain_paths', domain_paths)
+    this.disabledPathsSubject.next(domain_paths)
+  }
+
+  public currentSiteSplitted = expose(this.currentSiteSplitted$)
+}
+
+export class PageController extends PageManager {
+  constructor(...args: ConstructorParameters<typeof PageManager>) {
+    super(...args)
+
+    this.onEveryBindingEvent$.subscribe(() => {
+      log.info('Binding updated, refreshing bindings')
+      this.refreshBindings()
+    })
+    this.onEveryDisabledPathEvent$.subscribe(() => {
+      log.info('DisabledPath updated, refreshing disabled paths')
+      this.refreshDisabledPaths()
+    })
+  }
   public onBindingRemoved$ = this.bindingsChannel.onBindingRemoved$
   public onBindingAdded$ = this.bindingsChannel.onBindingAdded$
   public onBindingUpdated$ = this.bindingsChannel.onBindingUpdated$
@@ -171,96 +265,8 @@ export class PageController {
   )
 
   public enabledBindings = expose(this.enabledBindings$)
-  public currentSiteSplitted = expose(this.currentSiteSplitted$)
 
   // ------------------------------------------
-
-  async changeRoute(url: URL) {
-    log.info('Changing route', url)
-
-    if (this.currentUrlSubject.value?.href === url.href) {
-      log.info(
-        `URL is the same (${this.currentUrlSubject.value}, ${url}), not updating`,
-      )
-      return
-    }
-    this.currentUrlSubject.next(url)
-  }
-
-  async refreshResources() {
-    this.updateResources(this.currentUrlSubject.value)
-  }
-
-  async refreshBindings() {
-    if (this.pageType === 'options') {
-      return this.loadAllBindings()
-    }
-
-    if (!this.currentUrlSubject.value) {
-      log.error('currentUrlSubject is null in refreshBindings')
-      throw new Error('currentUrlSubject is null in refreshBindings')
-    }
-
-    this.updateBindings(this.currentUrlSubject.value)
-  }
-
-  async refreshDisabledPaths() {
-    if (this.pageType === 'options') {
-      return this.loadAllDisabledPaths()
-    }
-
-    if (!this.currentUrlSubject.value) {
-      log.error('currentUrlSubject is null in refreshDisabledPaths')
-      throw new Error('currentUrlSubject is null in refreshDisabledPaths')
-    }
-
-    this.updateDisabledPaths(this.currentUrlSubject.value)
-  }
-
-  private async updateResources(url: URL | null = null) {
-    if (this.pageType === 'options') {
-      return Promise.all([this.loadAllBindings(), this.loadAllDisabledPaths()])
-    }
-
-    if (!url) {
-      log.error('No url was provided to updateResources')
-      throw new Error('No url was provided')
-    }
-
-    return Promise.all([
-      this.updateBindings(url),
-      this.updateDisabledPaths(url),
-    ])
-  }
-
-  private async updateBindings(url: URL) {
-    const bindings = await this.bindingsChannel.getBindingsForDomain(url.host)
-    this.bindingsSubject.next(bindings)
-  }
-
-  private async updateDisabledPaths(url: URL) {
-    const disabledPaths = await this.disabledPathsChannel.queryDisabledPaths(
-      new Domain(url.host),
-      Path.empty(),
-    )
-    this.disabledPathsSubject.next(disabledPaths)
-  }
-
-  private async loadAllBindings() {
-    log.info('Loading all bindings')
-    const bindings = await this.bindingsChannel.getAllBindings()
-    this.bindingsSubject.next(bindings)
-  }
-
-  private async loadAllDisabledPaths() {
-    log.info('Loading all disabled paths')
-    const domain_paths = await this.disabledPathsChannel.getAllDisabledPaths()
-    log.debug('domain_paths', domain_paths)
-    this.disabledPathsSubject.next(domain_paths)
-  }
-
-  // ------------------------------------------
-
   getMatchingKey(event: KeyboardEvent): string | null {
     if (!isBindableKeydownEvent(event)) {
       return null
@@ -305,7 +311,7 @@ export class PageController {
     this.triggers.next(this._clickBinding_(binding))
   }
 
-  private async _clickBinding_(binding: Binding) {
+  protected async _clickBinding_(binding: Binding) {
     const element = await binding.getElement()
     if (element) {
       await sleep()
