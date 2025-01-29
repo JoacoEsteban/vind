@@ -12,18 +12,13 @@ export const unBindableKeys = new Set([
   'META',
 ])
 
-export function isBindableElement(element: HTMLElement): boolean {
-  // filter if not type button or input or a
-  return (
-    element.role === 'button' ||
-    ['button', 'input', 'a'].includes(element.tagName.toLowerCase())
-  )
-}
-
 export function getClosestBindableElement(
   element: HTMLElement,
 ): HTMLElement | null {
-  return element.closest('button, input, a, div, [role="button"]')
+  const closest = element.closest<HTMLElement>(
+    'button, input, a, div, [role="button"]',
+  )
+  return closest && isHighlightableElement(closest) ? closest : null
 }
 
 export function highlightElement(element: HTMLElement) {

@@ -19,7 +19,6 @@ import {
   getClosestBindableElement,
   highlightElement,
   isConfirmableElement,
-  isHighlightableElement,
   recordInputKey,
   waitForKeyDown,
 } from './element'
@@ -66,17 +65,16 @@ export class RegistrationController {
   )
 
   private targetedElement$ = this.mouseOverElements$.pipe(
-    map<HTMLElement[], HTMLElement | null>(
-      (els) => els.find(isHighlightableElement) || null,
-    ),
-    filter(Boolean),
+    map<HTMLElement[], HTMLElement | null>((els) => {
+      for (const el of els) {
+        const match = getClosestBindableElement(el)
+        if (match) return match
+      }
+      return null
+    }),
     pairwise(),
     filter(([prev, next]) => prev !== next), // only emit when element changes
-    map(([_, next]) => {
-      return next
-    }),
-    map(getClosestBindableElement),
-    filter(Boolean),
+    map(([_, next]) => next),
     share(),
   )
 
@@ -147,7 +145,7 @@ export class RegistrationController {
     abortSignal.addEventListener('abort', () => cancel(abortSignal.reason))
 
     const sub = combineLatest([
-      this.targetedElement$,
+      this.targetedElement$.pipe(filter(Boolean)),
       fromEvent<MouseEvent>(document, 'click').pipe(
         filter(isConfirmableElement),
       ),
@@ -202,9 +200,7 @@ export class RegistrationController {
     // let toastId = ''
     const element$ = this.targetedElement$.pipe(
       takeUntil(stopper),
-      map((el) => {
-        return highlightElement(el) as HTMLElement
-      }),
+      map((el) => el && (highlightElement(el) as HTMLElement)),
       share(),
     )
 
@@ -212,13 +208,13 @@ export class RegistrationController {
       .pipe(
         pairwise(),
         tap(([prev, _]) => {
-          document.body.removeChild(prev)
+          prev && document.body.removeChild(prev)
         }),
       )
       .subscribe()
 
     element$.pipe(last()).forEach((last) => {
-      document.body.removeChild(last)
+      last && document.body.removeChild(last)
     })
   }
 }
