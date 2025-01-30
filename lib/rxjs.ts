@@ -72,6 +72,8 @@ export class ToggleSubject extends BehaviorSubject<boolean> {
   }
 }
 
+export class VoidSubject extends Subject<void> {}
+
 // pipeable operator
 export function unwrapPromise<T>() {
   return (source: Observable<Promise<T>>): Observable<T> =>
