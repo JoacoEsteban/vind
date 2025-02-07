@@ -14,6 +14,7 @@
   export let pressed: boolean = false
   export let highlight: boolean = false
   export let glassy: boolean = false
+  export let ping: boolean = false
   export let disabled: boolean = false
   export let icon: SymbolName | null = null
   export let iconPosition: 'left' | 'right' = 'left'
@@ -51,6 +52,7 @@
     class:pressed
     class:highlight
     class:glassy
+    class:ping
     {disabled}
     style:--gradient-top={topGradient}
     style:--gradient-bottom={bottomGradient}

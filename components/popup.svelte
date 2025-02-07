@@ -19,6 +19,8 @@
   export let pageControllerInstance: PageController
   export let close: () => void
   export let position: Record<'x' | 'y', number | 'center'> = { x: 0, y: 0 }
+  export let buttonPing: boolean = false
+  export let bindingsPing: boolean = false
 
   const dispatch = createEventDispatcher<{
     registerNewBinding: { path?: Path }
@@ -136,6 +138,7 @@
                       class:enabled={$includedPaths.has(path)}>
                       {#each bindings as binding}
                         <BindingButton
+                          ping={bindingsPing}
                           triggeredBinding$={pageControllerInstance.triggeredBinding$}
                           disabled={disabled || !$includedPaths.has(path)}
                           {binding}
@@ -163,7 +166,10 @@
         </div>
       </main>
       <div class="flex flex-col justify-center sticky bottom-0">
-        <Button {disabled} on:click={() => registerNewBinding()}>Bind</Button>
+        <Button
+          {disabled}
+          ping={buttonPing && !disabled}
+          on:click={() => registerNewBinding()}>Bind</Button>
 
         {#if !$bindsToPattern.is($currentSite.path)}
           <div class="flex justify-center items-center gap-2 mt-2">

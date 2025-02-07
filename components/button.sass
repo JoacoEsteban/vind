@@ -47,6 +47,21 @@
       filter: brightness(1)
     &.round
       @include round(var(--_button-size_, 70px))
+    &.ping
+      @keyframes button-ping
+        75%, 100%
+          transform: scale(1.5)
+          opacity: 0
+      &::before
+        pointer-events: none
+        content: ''
+        position: absolute
+        width: 100%
+        height: 100%
+        border-radius: 100em
+        background-color: var(--_focus-color)
+        animation: button-ping 2s linear infinite
+
 
     border-radius: 100em
     background: linear-gradient(180deg, var(--_gradient-top) -13.04%, var(--_gradient-bottom) 136.96%)
