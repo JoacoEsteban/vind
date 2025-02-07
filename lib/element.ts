@@ -24,6 +24,7 @@ export function getClosestBindableElement(
 export function highlightElement(element: HTMLElement) {
   const overlay = document.createElement('div')
   const boundingRect = element.getBoundingClientRect()
+  const styles = getComputedStyle(element)
 
   overlay.style.position = 'fixed'
   overlay.style.top = `${boundingRect.top}px`
@@ -34,7 +35,7 @@ export function highlightElement(element: HTMLElement) {
   overlay.style.border = '2px solid #00ff00'
   overlay.style.background = '#00ff0010'
   overlay.style.zIndex = '999999999'
-  overlay.style.borderRadius = '4px'
+  overlay.style.borderRadius = styles.borderRadius
 
   overlay.classList.add('vind-overlay')
   overlay.classList.add('vind-ignore')
