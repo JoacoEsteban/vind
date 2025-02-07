@@ -79,3 +79,11 @@ export function unwrapPromise<T>() {
   return (source: Observable<Promise<T>>): Observable<T> =>
     source.pipe(mergeMap((value) => from(value)))
 }
+
+export function svelteCompat<T = unknown>(
+  subject: Subject<T>,
+): Subject<T> & { set: Subject<T>['next'] } {
+  return Object.assign(subject, {
+    set: subject.next.bind(subject),
+  })
+}
