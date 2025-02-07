@@ -167,5 +167,7 @@ export class DocumentClient {
     })
 
     registration.finally(() => toast.dismiss(loadingToast))
+
+    return registration
   }
 }
