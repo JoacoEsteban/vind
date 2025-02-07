@@ -1,6 +1,7 @@
 import { pEvent, type CancelablePromise } from 'p-event'
 import { noop } from './misc'
 import type { Binding } from './binding'
+import { Observable, Subject } from 'rxjs'
 
 export const unBindableKeys = new Set([
   'TAB',
@@ -112,4 +113,71 @@ export function isConfirmableElement(e: MouseEvent) {
 
 export function bindingOverlayId(binding: Binding) {
   return `overlay-${binding.id}`
+}
+
+function getStyle(element: HTMLElement, property: string) {
+  return getComputedStyle(element).getPropertyValue(property)
+}
+
+export function observeStylePropertyAndParents(
+  element: HTMLElement,
+  property: string,
+  callback: (args: {
+    element: HTMLElement
+    lastComputedStyle: string
+    newComputedStyle: string
+  }) => void,
+) {
+  const prevStyles: Map<HTMLElement, string> = new Map()
+
+  const observer = new MutationObserver((records) => {
+    const [record] = records
+    const element = record.target
+    if (!(element instanceof HTMLElement)) return
+
+    const newComputedStyle = getStyle(element, property)
+    const lastComputedStyle = prevStyles.get(element)
+
+    if (
+      lastComputedStyle !== undefined &&
+      lastComputedStyle !== newComputedStyle
+    ) {
+      prevStyles.set(element, newComputedStyle)
+      callback({ element, lastComputedStyle, newComputedStyle })
+    }
+  })
+
+  let currentElement = element as HTMLElement | null
+  while (currentElement) {
+    prevStyles.set(currentElement, getStyle(currentElement, property))
+
+    observer.observe(currentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'style'], // Watch for relevant attribute changes
+      childList: false,
+      subtree: false,
+    })
+
+    currentElement = currentElement.parentElement // Move to the parent element
+  }
+}
+
+export class StylePropertyAndParentsObserver extends Observable<{
+  element: HTMLElement
+  lastComputedStyle: string
+  newComputedStyle: string
+}> {
+  constructor(element: HTMLElement, property: string) {
+    super()
+    const sub = new Subject<{
+      element: HTMLElement
+      lastComputedStyle: string
+      newComputedStyle: string
+    }>()
+    observeStylePropertyAndParents(element, property, (args) => {
+      console.log('on trigger')
+      sub.next(args)
+    })
+    return sub.asObservable()
+  }
 }
