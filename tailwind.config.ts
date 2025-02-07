@@ -3,15 +3,41 @@ import typography from '@tailwindcss/typography'
 import daisyui, { type Theme } from 'daisyui'
 import themes from 'daisyui/src/theming/themes'
 import { ENV_PROD } from './lib/env'
+import plugin from 'tailwindcss/plugin'
 
 const config = {
   // 2. Opt for dark mode to be handled via the class method
   darkMode: 'class',
   content: ['./**/*.svelte'],
   theme: {
-    extend: {},
+    extend: {
+      zoom: {
+        5: '.5',
+        10: '.10',
+        25: '.25',
+        50: '.5',
+        75: '.75',
+        85: '.85',
+        90: '.9',
+        100: '1',
+        110: '1.1',
+        125: '1.25',
+        150: '1.5',
+        175: '1.75',
+        200: '2',
+      },
+    },
   },
-  plugins: [typography, daisyui],
+  plugins: [
+    typography,
+    daisyui,
+    plugin(function ({ matchUtilities, theme }) {
+      matchUtilities(
+        { zoom: (value) => ({ zoom: value }) },
+        { values: theme('zoom') },
+      )
+    }),
+  ],
   daisyui: {
     themes: [
       {
