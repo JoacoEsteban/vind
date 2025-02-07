@@ -40,7 +40,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="button-container">
+<div class="button-container vind-ignore">
   <svelte:element
     this={as}
     {role}
@@ -67,7 +67,7 @@
     on:focus={() => dispatch('focus')}
     on:blur={() => dispatch('blur')}>
     <div
-      class="inner flex gap-2 items-center"
+      class="inner flex gap-2 items-center vind-ignore"
       class:flex-row-reverse={iconPosition === 'right'}>
       {#if icon}
         <Symbol name={icon} size={'1em'} />
