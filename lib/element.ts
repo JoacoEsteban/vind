@@ -97,7 +97,11 @@ export function waitForKeyDown(
 }
 
 export function isHighlightableElement(el: HTMLElement) {
-  return el.nodeName !== 'PLASMO-CSUI' && !el.classList.contains('vind-ignore')
+  return !(
+    el.nodeName === 'PLASMO-CSUI' ||
+    ['vind-ignore'].some((className) => el.classList.contains(className)) ||
+    el.id === '__plasmo'
+  )
 }
 
 export function isConfirmableElement(e: MouseEvent) {
