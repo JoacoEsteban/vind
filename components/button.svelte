@@ -23,7 +23,7 @@
   export let as: string = 'button'
   export let role: string = 'button'
   export let tabindex: number = 0
-  export let type: string = 'button'
+  export let type: HTMLButtonElement['type'] = 'button'
 
   const opacity = 0.5
   $: topGradient = chroma(colorHash.hex(colorSeed)).alpha(opacity).hex()
