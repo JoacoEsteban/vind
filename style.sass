@@ -58,13 +58,6 @@ body.dialog-open
 .btn 
   @apply rounded-full
 
-.browser-safari
-  .bg-blur
-    -webkit-backdrop-filter: blur(15px) hue-rotate(15deg) !important
-.browser-firefox
-  .bg-blur
-    backdrop-filter: blur(15px) hue-rotate(15deg) !important
-
 .bg-blur
   backdrop-filter: blur(15px) url(#aberration) hue-rotate(15deg) !important
   // background-color: rgba(20, 20, 20, 0.5)
@@ -86,6 +79,18 @@ body.dialog-open
   &.bg-theme\:soft
     background-color: var(--_blur-bg-soft) !important
   color: var(--_blur-text-color) !important
+
+.browser-safari
+  .bg-blur
+    -webkit-backdrop-filter: blur(15px) hue-rotate(15deg) !important
+  .bg-blur\:soft
+    -webkit-backdrop-filter: blur(10px) hue-rotate(15deg) !important
+
+.browser-firefox
+  .bg-blur
+    backdrop-filter: blur(15px) hue-rotate(15deg) !important
+  .bg-blur\:soft
+    backdrop-filter: blur(10px) hue-rotate(15deg) !important
 
 .color-theme
   color: var(--_blur-text-color) !important
