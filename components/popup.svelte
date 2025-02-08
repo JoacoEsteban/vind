@@ -18,6 +18,9 @@
   export let disabled: boolean = false
   export let pageControllerInstance: PageController
   export let close: () => void
+  export let position: Record<'x' | 'y', number | 'center'> = { x: 0, y: 0 }
+  export let buttonPing: boolean = false
+  export let bindingsPing: boolean = false
 
   const dispatch = createEventDispatcher<{
     registerNewBinding: { path?: Path }
@@ -59,11 +62,11 @@
 
 {#if $bindingsMap}
   <div
-    class="popup-wrapper"
+    class="popup-wrapper vind-ignore"
     class:visible
     class:shrink={disabled}
-    use:draggable>
-    <div class="popup-container bg-blur" class:ghost={disabled}>
+    use:draggable={position}>
+    <div class="popup-container bg-blur vind-ignore" class:ghost={disabled}>
       <div class="flex justify-between sticky top-0 z-10">
         <h2 class="font-black m-0 opacity-25">Vind</h2>
         <div class="flex">
@@ -135,6 +138,7 @@
                       class:enabled={$includedPaths.has(path)}>
                       {#each bindings as binding}
                         <BindingButton
+                          ping={bindingsPing}
                           triggeredBinding$={pageControllerInstance.triggeredBinding$}
                           disabled={disabled || !$includedPaths.has(path)}
                           {binding}
@@ -162,7 +166,10 @@
         </div>
       </main>
       <div class="flex flex-col justify-center sticky bottom-0">
-        <Button {disabled} on:click={() => registerNewBinding()}>Bind</Button>
+        <Button
+          {disabled}
+          ping={buttonPing && !disabled}
+          on:click={() => registerNewBinding()}>Bind</Button>
 
         {#if !$bindsToPattern.is($currentSite.path)}
           <div class="flex justify-center items-center gap-2 mt-2">

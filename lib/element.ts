@@ -1,6 +1,7 @@
 import { pEvent, type CancelablePromise } from 'p-event'
 import { noop } from './misc'
 import type { Binding } from './binding'
+import { Observable, Subject } from 'rxjs'
 
 export const unBindableKeys = new Set([
   'TAB',
@@ -12,23 +13,19 @@ export const unBindableKeys = new Set([
   'META',
 ])
 
-export function isBindableElement(element: HTMLElement): boolean {
-  // filter if not type button or input or a
-  return (
-    element.role === 'button' ||
-    ['button', 'input', 'a'].includes(element.tagName.toLowerCase())
-  )
-}
-
 export function getClosestBindableElement(
   element: HTMLElement,
 ): HTMLElement | null {
-  return element.closest('button, input, a, div, [role="button"]')
+  const closest = element.closest<HTMLElement>(
+    'button, input, a, div, [role="button"]',
+  )
+  return closest && isHighlightableElement(closest) ? closest : null
 }
 
 export function highlightElement(element: HTMLElement) {
   const overlay = document.createElement('div')
   const boundingRect = element.getBoundingClientRect()
+  const styles = getComputedStyle(element)
 
   overlay.style.position = 'fixed'
   overlay.style.top = `${boundingRect.top}px`
@@ -39,7 +36,7 @@ export function highlightElement(element: HTMLElement) {
   overlay.style.border = '2px solid #00ff00'
   overlay.style.background = '#00ff0010'
   overlay.style.zIndex = '999999999'
-  overlay.style.borderRadius = '4px'
+  overlay.style.borderRadius = styles.borderRadius
 
   overlay.classList.add('vind-overlay')
   overlay.classList.add('vind-ignore')
@@ -101,7 +98,11 @@ export function waitForKeyDown(
 }
 
 export function isHighlightableElement(el: HTMLElement) {
-  return el.nodeName !== 'PLASMO-CSUI' && !el.classList.contains('vind-ignore')
+  return !(
+    el.nodeName === 'PLASMO-CSUI' ||
+    ['vind-ignore'].some((className) => el.classList.contains(className)) ||
+    el.id === '__plasmo'
+  )
 }
 
 export function isConfirmableElement(e: MouseEvent) {
@@ -112,4 +113,71 @@ export function isConfirmableElement(e: MouseEvent) {
 
 export function bindingOverlayId(binding: Binding) {
   return `overlay-${binding.id}`
+}
+
+function getStyle(element: HTMLElement, property: string) {
+  return getComputedStyle(element).getPropertyValue(property)
+}
+
+export function observeStylePropertyAndParents(
+  element: HTMLElement,
+  property: string,
+  callback: (args: {
+    element: HTMLElement
+    lastComputedStyle: string
+    newComputedStyle: string
+  }) => void,
+) {
+  const prevStyles: Map<HTMLElement, string> = new Map()
+
+  const observer = new MutationObserver((records) => {
+    const [record] = records
+    const element = record.target
+    if (!(element instanceof HTMLElement)) return
+
+    const newComputedStyle = getStyle(element, property)
+    const lastComputedStyle = prevStyles.get(element)
+
+    if (
+      lastComputedStyle !== undefined &&
+      lastComputedStyle !== newComputedStyle
+    ) {
+      prevStyles.set(element, newComputedStyle)
+      callback({ element, lastComputedStyle, newComputedStyle })
+    }
+  })
+
+  let currentElement = element as HTMLElement | null
+  while (currentElement) {
+    prevStyles.set(currentElement, getStyle(currentElement, property))
+
+    observer.observe(currentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'style'], // Watch for relevant attribute changes
+      childList: false,
+      subtree: false,
+    })
+
+    currentElement = currentElement.parentElement // Move to the parent element
+  }
+}
+
+export class StylePropertyAndParentsObserver extends Observable<{
+  element: HTMLElement
+  lastComputedStyle: string
+  newComputedStyle: string
+}> {
+  constructor(element: HTMLElement, property: string) {
+    super()
+    const sub = new Subject<{
+      element: HTMLElement
+      lastComputedStyle: string
+      newComputedStyle: string
+    }>()
+    observeStylePropertyAndParents(element, property, (args) => {
+      console.log('on trigger')
+      sub.next(args)
+    })
+    return sub.asObservable()
+  }
 }

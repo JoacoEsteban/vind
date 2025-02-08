@@ -1,8 +1,9 @@
-import { distinctUntilChanged, fromEvent, map, share } from 'rxjs'
+import { distinctUntilChanged, fromEvent, map, share, startWith } from 'rxjs'
 import { log } from './log'
 
-const documentVisiblity$ = fromEvent(document, 'visibilitychange').pipe(
+export const documentVisiblity$ = fromEvent(document, 'visibilitychange').pipe(
   map(() => document.hidden),
+  startWith(document.hidden), // Add the initial value of document.hidden
   distinctUntilChanged(),
   share(),
 )

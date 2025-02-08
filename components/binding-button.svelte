@@ -9,6 +9,7 @@
   export let binding: Binding
   export let opaque: boolean = false
   export let disabled: boolean = false
+  export let ping: boolean = false
   export let triggeredBinding$: Observable<string> | null = null
 
   const stack = Stack()
@@ -40,6 +41,7 @@
     {opaque}
     pressed={$pressed$}
     colorSeed={binding.key}
+    ping={ping && !disabled}
     on:click={() => dispatch('click')}
     on:mouseenter={() => dispatch('focus')}
     on:mouseleave={() => dispatch('blur')}

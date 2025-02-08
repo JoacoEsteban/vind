@@ -80,6 +80,16 @@ body.dialog-open
   &.bg-blur\:round
     border-radius: 100em !important
 
+.bg-theme, .bg-theme\:soft
+  &.bg-theme
+    background-color: var(--_blur-bg) !important
+  &.bg-theme\:soft
+    background-color: var(--_blur-bg-soft) !important
+  color: var(--_blur-text-color) !important
+
+.color-theme
+  color: var(--_blur-text-color) !important
+
 .debug *
   outline: 1px solid red
   outline-offset: -1px

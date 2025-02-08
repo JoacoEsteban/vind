@@ -3,7 +3,7 @@ import { Binding } from '../binding'
 import type { BindingDoc } from '~background/storage/db'
 import { log } from '../log'
 import { Domain, Path, urlFromParts } from '../url'
-import { filter } from 'rxjs'
+import { Observable, Subject, filter } from 'rxjs'
 import { throwOnResponseError } from '.'
 import { XPathObject } from '~lib/xpath'
 import { match } from 'ts-pattern'
@@ -17,6 +17,9 @@ export interface BindingChannel {
   upsertBinding: (binding: Binding) => void
   removeBinding: (id: string) => void
   deleteAllBindings: () => void
+  onBindingRemoved$: Observable<unknown>
+  onBindingAdded$: Observable<unknown>
+  onBindingUpdated$: Observable<unknown>
 }
 
 export function toBindingDoc(binding: Binding): BindingDoc {
@@ -101,5 +104,71 @@ export class BindingChannelImpl implements BindingChannel {
     return bindingsMessages.changeKey
       .ask({ id, key })
       .then(throwOnResponseError)
+  }
+}
+
+export class MemoryBindingChannelImpl implements BindingChannel {
+  private bindingRemoved$ = new Subject()
+  private bindingAdded$ = new Subject()
+  private bindingUpdated$ = new Subject()
+  public onBindingRemoved$ = this.bindingRemoved$.asObservable()
+  public onBindingAdded$ = this.bindingAdded$.asObservable()
+  public onBindingUpdated$ = this.bindingUpdated$.asObservable()
+
+  private bindings: Binding[] = []
+
+  async getAllBindings() {
+    return [...this.bindings]
+  }
+  async getBindingsForDomain(domain: string) {
+    // TODO
+    return this.getAllBindings()
+  }
+  async getBindingsForSite(url: URL) {
+    // TODO
+    return this.getAllBindings()
+  }
+  addBinding(binding: Binding) {
+    this.bindings.push(binding)
+    this.bindingAdded$.next(null)
+  }
+  updateBinding(binding: Binding) {
+    const { id } = binding
+    const index = this.bindings.findIndex((b) => b.id === id)
+    if (index === -1) return false
+    this.bindings.splice(index, 1, binding)
+    this.bindingUpdated$.next(null)
+  }
+  upsertBinding(binding: Binding) {
+    if (!this.updateBinding(binding)) {
+      this.addBinding(binding)
+    }
+  }
+  removeBinding(id: string) {
+    this.bindings = this.bindings.filter((b) => b.id === id)
+    this.bindingRemoved$.next(null)
+  }
+  moveBindings(domain: Domain, from: Path, to: Path) {
+    // TODO
+    throw new Error('Not implemented')
+  }
+  deleteAllBindings() {
+    this.bindings = []
+    this.bindingRemoved$.next(null)
+  }
+  changeKey(id: string, key: string) {
+    const binding = this.bindings.find((b) => b.id === id)
+    if (!binding) throw new Error('Binding does not exist')
+
+    this.updateBinding(
+      new Binding(
+        binding.domain,
+        binding.path,
+        key,
+        binding.selector,
+        binding.xpathObject,
+        binding.id,
+      ),
+    )
   }
 }

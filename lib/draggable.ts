@@ -1,14 +1,62 @@
-export function draggable(node: HTMLElement) {
+import { match } from 'ts-pattern'
+import { StylePropertyAndParentsObserver } from '~lib/element'
+import { map, startWith } from 'rxjs'
+import { expose } from './rxjs'
+
+function bounds(dragItem: HTMLElement) {
+  return dragItem.getBoundingClientRect()
+}
+
+function getComputedZoom(item: HTMLElement): number {
+  const zoom = parseFloat(getComputedStyle(item).getPropertyValue('zoom') ?? 0)
+  const { parentElement } = item
+  if (!parentElement) return zoom
+  return zoom * getComputedZoom(parentElement)
+}
+
+const [centerX, centerY] = [
+  (bounds: DOMRect) => (window.innerWidth - bounds.width) / 2,
+  (bounds: DOMRect) => (window.innerHeight - bounds.height) / 2,
+]
+
+export function draggable(
+  node: HTMLElement,
+  initialPosition: {
+    x: number | 'center'
+    y: number | 'center'
+  } = { x: 0, y: 0 },
+) {
   const friction = 0.85
   const dragItem = node
+  const getBounds = () => bounds(dragItem)
+  const itemBounds = getBounds()
+  dragItem.style.cursor = 'move'
+  const zoom$ = new StylePropertyAndParentsObserver(dragItem, 'zoom').pipe(
+    map(() => getComputedZoom(dragItem)),
+    startWith(getComputedZoom(dragItem)),
+  )
+  const zoom = expose(zoom$)
 
   let active = false
-  let currentX: number
-  let currentY: number
+  let currentX: number = 0
+  let currentY: number = 0
   let initialX: number
   let initialY: number
-  let xOffset = 0
-  let yOffset = 0
+  let [xOffset, yOffset] = [
+    {
+      value: initialPosition.x,
+      center: centerX.bind(null, itemBounds),
+    },
+    {
+      value: initialPosition.y,
+      center: centerY.bind(null, itemBounds),
+    },
+  ].map(({ value, center }) =>
+    match(value)
+      .with('center', center)
+      .otherwise((value) => value),
+  )
+
   let lastX: number
   let lastY: number
   let velocityX = 0
@@ -51,11 +99,9 @@ export function draggable(node: HTMLElement) {
   }
 
   function setOffset(x = xOffset, y = yOffset) {
-    xOffset = Math.min(Math.max(x, 0), window.innerWidth - dragItem.clientWidth)
-    yOffset = Math.min(
-      Math.max(y, 0),
-      window.innerHeight - dragItem.clientHeight,
-    )
+    const { width, height } = getBounds()
+    xOffset = Math.min(Math.max(x, 0), window.innerWidth - width)
+    yOffset = Math.min(Math.max(y, 0), window.innerHeight - height)
   }
 
   function drag(e: PointerEvent) {
@@ -76,7 +122,15 @@ export function draggable(node: HTMLElement) {
   }
 
   function setTranslate() {
-    dragItem.style.transform = `translate3d(${xOffset}px, ${yOffset}px, 0)`
+    const z = zoom()
+    dragItem.style.transform = `translate3d(${xOffset / z}px, ${
+      yOffset / z
+    }px, 0)`
+  }
+
+  function adjust() {
+    setOffset()
+    setTranslate()
   }
 
   function animate() {
@@ -96,7 +150,7 @@ export function draggable(node: HTMLElement) {
 
   const parent = (() => {
     let p = node.parentElement
-    while (p && p.style.position !== 'relative') {
+    while (p && getComputedStyle(p).position !== 'relative') {
       p = p.parentElement
     }
     return p
@@ -110,8 +164,7 @@ export function draggable(node: HTMLElement) {
   parent.addEventListener('pointerup', dragEnd, false)
   parent.addEventListener('pointermove', drag, false)
 
-  window.addEventListener('resize', () => {
-    setOffset()
-    setTranslate()
-  })
+  window.addEventListener('resize', adjust)
+  zoom$.forEach(adjust)
+  setTimeout(adjust)
 }

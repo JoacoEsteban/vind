@@ -14,6 +14,7 @@
   export let pressed: boolean = false
   export let highlight: boolean = false
   export let glassy: boolean = false
+  export let ping: boolean = false
   export let disabled: boolean = false
   export let icon: SymbolName | null = null
   export let iconPosition: 'left' | 'right' = 'left'
@@ -22,7 +23,7 @@
   export let as: string = 'button'
   export let role: string = 'button'
   export let tabindex: number = 0
-  export let type: string = 'button'
+  export let type: HTMLButtonElement['type'] = 'button'
 
   const opacity = 0.5
   $: topGradient = chroma(colorHash.hex(colorSeed)).alpha(opacity).hex()
@@ -39,7 +40,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="button-container">
+<div class="button-container vind-ignore">
   <svelte:element
     this={as}
     {role}
@@ -51,6 +52,7 @@
     class:pressed
     class:highlight
     class:glassy
+    class:ping
     {disabled}
     style:--gradient-top={topGradient}
     style:--gradient-bottom={bottomGradient}
@@ -65,7 +67,7 @@
     on:focus={() => dispatch('focus')}
     on:blur={() => dispatch('blur')}>
     <div
-      class="inner flex gap-2 items-center"
+      class="inner flex gap-2 items-center vind-ignore"
       class:flex-row-reverse={iconPosition === 'right'}>
       {#if icon}
         <Symbol name={icon} size={'1em'} />

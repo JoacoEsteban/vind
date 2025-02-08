@@ -87,3 +87,9 @@ export function* pairCombinations<T>(arr: T[]): Generator<[T, T]> {
     yield combination as [T, T]
   }
 }
+
+export function* repeat(times: number): Generator<number> {
+  for (let i = 0; i < times; i++) {
+    yield i
+  }
+}

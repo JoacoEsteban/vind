@@ -1,6 +1,7 @@
-import { interopTabs } from './runtime'
+import { interopRuntime, interopTabs } from './runtime'
 
 const tabs = interopTabs()
+const runtime = interopRuntime()
 
 export async function getActiveTab() {
   const [tab] = await tabs.query({ active: true, currentWindow: true })
@@ -33,4 +34,10 @@ export async function sendToActiveTab<T>(
   sender: (tabId: number) => Promise<T>,
 ) {
   return sender(await getAssertedActiveTabId())
+}
+
+export async function openTab(tab: string) {
+  return tabs.create({
+    url: runtime.getURL(`tabs/${tab}.html`),
+  })
 }

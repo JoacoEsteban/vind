@@ -3,6 +3,7 @@
   import { flip, shift } from 'svelte-floating-ui/dom'
   import { circIn, circOut } from 'svelte/easing'
   import { fade, scale, type TransitionConfig } from 'svelte/transition'
+  import { transitionIn, transitionOut } from '~lib/transitions'
 
   export let placement: 'top' | 'bottom' | 'left' | 'right' = 'top'
   export let bordered = false
@@ -36,24 +37,6 @@
   function hideTooltip() {
     hoverTarget = null
   }
-
-  function tooltipTransition(easing = circOut, duration = 200) {
-    return function (node: Element, { delay = 0 } = {}): TransitionConfig {
-      const anims: ((t: number, u: number) => string)[] = []
-      anims.push(fade(node, { duration, easing }).css!)
-      anims.push(scale(node, { start: 0.8, duration, easing }).css!)
-
-      return {
-        delay,
-        duration,
-        easing,
-        css: (t, u) => anims.map((a) => a(t, u)).join('; '),
-      }
-    }
-  }
-
-  const trIn = tooltipTransition()
-  const trOut = tooltipTransition(circIn, 100)
 </script>
 
 <div
@@ -77,8 +60,8 @@
     style:padding="8px"
     style:z-index="1000"
     class={bordered ? 'bg-blur bg-blur:soft bg-blur:round' : ''}
-    in:trIn
-    out:trOut>
+    in:transitionIn
+    out:transitionOut>
     <slot name="tooltip" />
   </div>
 {/if}
