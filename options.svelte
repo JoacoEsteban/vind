@@ -37,6 +37,7 @@
   import Migrator from '~options/migrator.svelte'
   import { BindingChannelImpl } from '~lib/messages/bindings'
   import { DisabledPathsChannelImpl } from '~lib/messages/disabled-paths'
+  import { openTab } from '~background/utils/tab'
 
   type orderedDomainMapOfOrderedPathMap = [
     string,
@@ -249,6 +250,9 @@
                 {getExtensionVersion()}
               </b>
             </code>
+            <button on:click={() => openTab('getting-started')}>
+              <code class="py-1 px-3">Open tutorial</code>
+            </button>
           </div>
           <div class="flex align-center gap-3">
             <Button
