@@ -29,3 +29,10 @@ jobs:
             build/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload and Publish to Chrome Web Store
+        run: bunx chrome-webstore-upload-cli@3 --source build/chrome-mv3-prod.zip
+        env:
+          EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
+          CLIENT_ID: ${{ secrets.CHROME_WEB_STORE_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CHROME_WEB_STORE_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CHROME_WEB_STORE_REFRESH_TOKEN }}
