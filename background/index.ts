@@ -1,5 +1,5 @@
 import { askForOptionsPageStream, newBinding } from '~/messages'
-import { getActiveTabId, sendToActiveTab } from './utils/tab'
+import { getActiveTabId, openTab, sendToActiveTab } from './utils/tab'
 import { showOverlay, wakeUp } from '~messages/tabs'
 import { VindDB } from './storage/db'
 import { BindingsStorageImpl } from './storage/bindings-storage'
@@ -21,6 +21,12 @@ new StorageHandlers(bindingsStorage, disabledBindingPathsStorage).init()
 const tabs = interopTabs()
 const runtime = interopRuntime()
 const action = interopAction()
+
+runtime.onInstalled.addListener(async ({ reason }) => {
+  if (reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    openTab('getting-started')
+  }
+})
 
 async function sendShowOverlay() {
   const tabId = await getActiveTabId()
