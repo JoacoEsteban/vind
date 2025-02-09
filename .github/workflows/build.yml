@@ -29,15 +29,50 @@ jobs:
             build/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Zip build
+        run: |
+          zip build.zip build/*.zip
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: build.zip
+    outputs:
+      chrome_zip: build/chrome-mv3-prod.zip
+      firefox_zip: build/firefox-mv2-prod.zip
+
+  publish-chrome:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+      - run: unzip build.zip
       - name: Upload and Publish to Chrome Web Store
-        run: bunx chrome-webstore-upload-cli@3 --source build/chrome-mv3-prod.zip
+        run: bunx chrome-webstore-upload-cli@3 --source ${{ needs.build.outputs.chrome_zip }}
         env:
           EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
           CLIENT_ID: ${{ secrets.CHROME_WEB_STORE_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CHROME_WEB_STORE_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.CHROME_WEB_STORE_REFRESH_TOKEN }}
+
+  publish-firefox:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+      - run: unzip build.zip
+      - run: unzip ${{ needs.build.outputs.firefox_zip }} -d build/extension
+      - run: git archive --output build/source.zip HEAD ":!test" ":!.github"
       - name: Upload and Publish to Firefox Web Store
-        run: bunx web-ext@8 sign --channel listed --upload-source-code build/firefox-mv2-prod.zip
+        run: bunx web-ext@8 sign --channel listed --upload-source-code ../source.zip
+        working-directory: build/extension
         env:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
