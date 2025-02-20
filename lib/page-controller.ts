@@ -51,15 +51,14 @@ class PageManager {
   public currentSite$ = this.currentUrlSubject.pipe(
     map((url) => url?.href || ''),
   )
-  public currentSiteSplitted$ = this.currentUrlSubject
-    .pipe(filter((url) => url !== null))
-    .pipe(
-      // TODO find a better name
-      map((url) => ({
-        domain: new Domain(url!.host),
-        path: new Path(url!.pathname),
-      })),
-    )
+  public currentSiteSplitted$ = this.currentUrlSubject.pipe(
+    filter((url): url is URL => url !== null),
+    // TODO find a better name
+    map((url) => ({
+      domain: new Domain(url.href),
+      path: new Path(url.pathname),
+    })),
+  )
   protected bindingsSubject: BehaviorSubject<Binding[]> = new BehaviorSubject<
     Binding[]
   >([])
