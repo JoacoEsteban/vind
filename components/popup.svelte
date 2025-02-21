@@ -6,6 +6,7 @@
   import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
   import { colorSeeds } from '~lib/definitions'
+  import { BindButtonId } from '~lib/test-id'
   import { draggable } from '~lib/draggable'
   import { generateId } from '~lib/id'
   import { MapToOrderedTuple } from '~lib/map'
@@ -167,6 +168,7 @@
       </main>
       <div class="flex flex-col justify-center sticky bottom-0">
         <Button
+          testId={BindButtonId}
           {disabled}
           ping={buttonPing && !disabled}
           on:click={() => registerNewBinding()}>Bind</Button>
