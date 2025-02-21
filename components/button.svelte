@@ -5,9 +5,11 @@
   import { generateId } from '~lib/id'
   import { type SymbolName } from '~lib/symbols'
   import Symbol from './symbol.svelte'
+  import { TestId } from '~lib/test-id'
 
   const colorHash = new ColorHash()
 
+  export let testId: TestId | undefined = undefined
   export let colorSeed: string = generateId()
   export let round: boolean = false
   export let opaque: boolean = false
@@ -43,6 +45,7 @@
 <div class="button-container vind-ignore">
   <svelte:element
     this={as}
+    data-testid={testId?.id}
     {role}
     {tabindex}
     {type}
