@@ -8,3 +8,5 @@ export class TestId {
 }
 
 export const BindButtonId = new TestId('bind-button')
+export const BindingButtonId = (key: string) =>
+  new TestId(`binding-button-key:${key}`)

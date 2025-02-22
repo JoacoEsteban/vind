@@ -5,6 +5,7 @@
   import { Stack } from '~lib/rxjs'
   import { bindingKeySymbolMap } from '~lib/ui'
   import Button from './button.svelte'
+  import { BindingButtonId } from '~lib/test-id'
 
   export let binding: Binding
   export let opaque: boolean = false
@@ -27,6 +28,8 @@
     )
     .subscribe()
 
+  $: testId = BindingButtonId(binding.key)
+
   const dispatch = createEventDispatcher()
 
   onDestroy(() => {
@@ -36,6 +39,7 @@
 
 <div class="binding-container">
   <Button
+    {testId}
     round={true}
     {disabled}
     {opaque}
