@@ -7,7 +7,7 @@
       "~*": ["./*"]
     },
     "baseUrl": ".",
-    "types": ["svelte"],
+    "types": ["svelte", "bun-types"],
     "strict": true
   }
 }
