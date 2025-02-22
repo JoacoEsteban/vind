@@ -27,3 +27,11 @@ test('create and trigger binding', async ({
     }),
   )
 })
+
+test('options page opens', async ({
+  page,
+  extensionContext: { extensionId },
+}) => {
+  await page.goto(`chrome-extension://${extensionId}/options.html`)
+  await expect(page.locator('body')).toContainText('Vind Options')
+})
