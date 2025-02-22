@@ -26,6 +26,9 @@ importers:
       '@thedutchcoder/postcss-rem-to-px':
         specifier: ^0.0.2
         version: 0.0.2(postcss@8.4.38)
+      '@types/bun':
+        specifier: ^1.2.2
+        version: 1.2.2
       '@types/chroma-js':
         specifier: ^2.4.4
         version: 2.4.4
@@ -44,6 +47,9 @@ importers:
       bulma:
         specifier: ^0.9.4
         version: 0.9.4
+      bun-types:
+        specifier: ^1.2.2
+        version: 1.2.2
       chroma-js:
         specifier: ^2.4.2
         version: 2.4.2
@@ -105,6 +111,9 @@ importers:
       '@ianvs/prettier-plugin-sort-imports':
         specifier: 4.1.0
         version: 4.1.0(@vue/compiler-sfc@3.3.4)(prettier@3.0.3)
+      '@playwright/test':
+        specifier: ^1.50.1
+        version: 1.50.1
       '@tailwindcss/typography':
         specifier: ^0.5.10
         version: 0.5.12(tailwindcss@3.4.3)
@@ -1333,6 +1342,11 @@ packages:
     resolution: {integrity: sha512-/3oVbajt+DRqtbM0RkKFtfyZR8DVjcsYpj1jHqPParGVBiXwgP0D/8Bj5p5/5Iqihs08gzasTcjKcwQKKdj0og==}
     engines: {parcel: '>= 2.7.0'}
 
+  '@playwright/test@1.50.1':
+    resolution: {integrity: sha512-Jii3aBg+CEDpgnuDxEp/h7BimHcUTDlpEtce89xEumlJ5ef2hqepZ+PWp1DDpYC/VO9fmWVI1IlEaoI5fK9FXQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   '@pnpm/config.env-replace@1.1.0':
     resolution: {integrity: sha512-htyl8TWnKL7K/ESFa1oW2UB5lVDxuF5DpM7tBi6Hu2LNL3mWkIzNLG6N4zoCUP1lCKNxWy/3iu8mS8MvToGd6w==}
     engines: {node: '>=12.22.0'}
@@ -1602,6 +1616,9 @@ packages:
   '@types/assert@1.5.10':
     resolution: {integrity: sha512-qEO+AUgYab7GVbeDDgUNCU3o0aZUoIMpNAe+w5LDbRxfxQX7vQAdDgwj1AroX+i8KaV56FWg0srXlSZROnsrIQ==}
 
+  '@types/bun@1.2.2':
+    resolution: {integrity: sha512-tr74gdku+AEDN5ergNiBnplr7hpDp3V1h7fqI2GcR/rsUaM39jpSeKH0TFibRvU0KwniRx5POgaYnaXbk0hU+w==}
+
   '@types/chroma-js@2.4.4':
     resolution: {integrity: sha512-/DTccpHTaKomqussrn+ciEvfW4k6NAHzNzs/sts1TCqg333qNxOhy8TNIoQCmbGG3Tl8KdEhkGAssb1n3mTXiQ==}
 
@@ -1646,6 +1663,9 @@ packages:
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
+
+  '@types/ws@8.5.14':
+    resolution: {integrity: sha512-bd/YFLW+URhBzMXurx7lWByOu+xzU9+kb3RboOteXYDfW+tr+JZa99OyNmPINEGB/ahzKrEuc8rcv4gnpJmxTw==}
 
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
@@ -1856,6 +1876,9 @@ packages:
 
   bulma@0.9.4:
     resolution: {integrity: sha512-86FlT5+1GrsgKbPLRRY7cGDg8fsJiP/jzTqXXVqiUZZ2aZT8uemEOHlU1CDU+TxklPEZ11HZNNWclRBBecP4CQ==}
+
+  bun-types@1.2.2:
+    resolution: {integrity: sha512-RCbMH5elr9gjgDGDhkTTugA21XtJAy/9jkKe/G3WR2q17VPGhcquf9Sir6uay9iW+7P/BV0CAHA1XlHXMAVKHg==}
 
   bundle-require@4.0.3:
     resolution: {integrity: sha512-2iscZ3fcthP2vka4Y7j277YJevwmsby/FpFDwjgw34Nl7dtCpt7zz/4TexmHMzY6KZEih7En9ImlbbgUNNQGtA==}
@@ -2335,6 +2358,11 @@ packages:
 
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
+
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -3193,6 +3221,16 @@ packages:
 
   plasmo@0.86.1:
     resolution: {integrity: sha512-6qDWnQ8TVGLmGIWWOoXR0upCuNW6LnlrLEQ0b0EMRoApomps9q77908hNKJWbDlz5rqXOhcpecaVTQ0mx8lzCw==}
+    hasBin: true
+
+  playwright-core@1.50.1:
+    resolution: {integrity: sha512-ra9fsNWayuYumt+NiM069M6OkcRb1FZSK8bgi66AtpFoWkg2+y0bJSNmkFrWhMbEBbVKC/EruAHH3g0zmtwGmQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.50.1:
+    resolution: {integrity: sha512-G8rwsOQJ63XG6BbKj2w5rHeavFjy5zynBA9zsJMMtBoe/Uf757oG12NXz6e6OirF7RCrTVAKFXbLmn1RbL7Qaw==}
+    engines: {node: '>=18'}
     hasBin: true
 
   possible-typed-array-names@1.0.0:
@@ -5395,6 +5433,10 @@ snapshots:
       - walrus
       - whiskers
 
+  '@playwright/test@1.50.1':
+    dependencies:
+      playwright: 1.50.1
+
   '@pnpm/config.env-replace@1.1.0': {}
 
   '@pnpm/network.ca-file@1.0.2':
@@ -5617,6 +5659,10 @@ snapshots:
 
   '@types/assert@1.5.10': {}
 
+  '@types/bun@1.2.2':
+    dependencies:
+      bun-types: 1.2.2
+
   '@types/chroma-js@2.4.4': {}
 
   '@types/chrome@0.0.245':
@@ -5655,6 +5701,10 @@ snapshots:
   '@types/pug@2.0.10': {}
 
   '@types/semver@7.5.8': {}
+
+  '@types/ws@8.5.14':
+    dependencies:
+      '@types/node': 20.12.7
 
   '@ungap/structured-clone@1.2.0': {}
 
@@ -5926,6 +5976,11 @@ snapshots:
       ieee754: 1.2.1
 
   bulma@0.9.4: {}
+
+  bun-types@1.2.2:
+    dependencies:
+      '@types/node': 20.12.7
+      '@types/ws': 8.5.14
 
   bundle-require@4.0.3(esbuild@0.18.20):
     dependencies:
@@ -6437,6 +6492,9 @@ snapshots:
       universalify: 2.0.1
 
   fs.realpath@1.0.0: {}
+
+  fsevents@2.3.2:
+    optional: true
 
   fsevents@2.3.3:
     optional: true
@@ -7318,6 +7376,14 @@ snapshots:
       - velocityjs
       - walrus
       - whiskers
+
+  playwright-core@1.50.1: {}
+
+  playwright@1.50.1:
+    dependencies:
+      playwright-core: 1.50.1
+    optionalDependencies:
+      fsevents: 2.3.2
 
   possible-typed-array-names@1.0.0: {}
 
