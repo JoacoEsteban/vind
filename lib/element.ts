@@ -173,7 +173,6 @@ export class StylePropertyAndParentsObserver extends Observable<{
       newComputedStyle: string
     }>()
     observeStylePropertyAndParents(element, property, (args) => {
-      console.log('on trigger')
       sub.next(args)
     })
     return sub.asObservable()
