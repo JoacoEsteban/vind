@@ -94,7 +94,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - uses: actions/download-artifact@v4
         with:
-          name: build
+          name: build-zip
       - run: unzip build.zip
       - name: Upload and Publish to Chrome Web Store
         run: bunx chrome-webstore-upload-cli@3 --source ${{ needs.build.outputs.chrome_zip }}
@@ -113,7 +113,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - uses: actions/download-artifact@v4
         with:
-          name: build
+          name: build-zip
       - run: unzip build.zip
       - run: unzip ${{ needs.build.outputs.firefox_zip }} -d build/extension
       - run: git archive --output build/source.zip HEAD ":!test" ":!.github"
