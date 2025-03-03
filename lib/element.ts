@@ -22,10 +22,10 @@ export function getClosestBindableElement(
   return closest && isHighlightableElement(closest) ? closest : null
 }
 
-export function highlightElement(element: HTMLElement) {
+export function addClickTargetToElement(element: HTMLElement) {
   const overlay = document.createElement('div')
+
   const boundingRect = element.getBoundingClientRect()
-  const styles = getComputedStyle(element)
 
   overlay.style.position = 'fixed'
   overlay.style.top = `${boundingRect.top}px`
@@ -33,10 +33,8 @@ export function highlightElement(element: HTMLElement) {
   overlay.style.width = `${boundingRect.width}px`
   overlay.style.height = `${boundingRect.height}px`
 
-  overlay.style.border = '2px solid #00ff00'
-  overlay.style.background = '#00ff0010'
   overlay.style.zIndex = '999999999'
-  overlay.style.borderRadius = styles.borderRadius
+  overlay.style.borderRadius = getComputedStyle(element).borderRadius
 
   overlay.classList.add('vind-overlay')
   overlay.classList.add('vind-ignore')

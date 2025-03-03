@@ -4,18 +4,14 @@ import {
   BehaviorSubject,
   Subject,
   combineLatest,
+  distinctUntilChanged,
   filter,
   map,
   merge,
-  share,
 } from 'rxjs'
 import { Domain, Path } from './url'
 import { BindingChannelImpl, type BindingChannel } from './messages/bindings'
-import {
-  bindingOverlayId,
-  highlightElement,
-  isBindableKeydownEvent,
-} from './element'
+import { isBindableKeydownEvent } from './element'
 import {
   DisabledPathsChannelImpl,
   type DisabledPathsChannel,
@@ -265,6 +261,12 @@ export class PageController extends PageManager {
 
   public enabledBindings = expose(this.enabledBindings$)
 
+  private focusedBindingElementSubject =
+    new BehaviorSubject<HTMLElement | null>(null)
+
+  public focusedBindingElement$ = this.focusedBindingElementSubject
+    .asObservable()
+    .pipe(distinctUntilChanged())
   // ------------------------------------------
   getMatchingKey(event: KeyboardEvent): string | null {
     if (!isBindableKeydownEvent(event)) {
@@ -325,15 +327,12 @@ export class PageController extends PageManager {
   async focusBinding(binding: Binding) {
     const element = await binding.getElement()
     if (element) {
-      const overlay = highlightElement(element)
-      overlay.id = bindingOverlayId(binding)
+      this.focusedBindingElementSubject.next(element)
     }
   }
 
   async blurBinding(binding: Binding) {
-    document
-      .querySelectorAll('#' + bindingOverlayId(binding))
-      .forEach((el) => el.remove())
+    this.focusedBindingElementSubject.next(null)
   }
 
   async onKeyPress(e: KeyboardEvent) {
