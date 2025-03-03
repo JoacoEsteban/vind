@@ -88,7 +88,6 @@ export class BindingsStorageImpl implements BindingsStorage {
   }
 
   async query(domain: string, site: string): Promise<BindingDoc[]> {
-    console.log({ domain, site })
     return this.collection
       .where(['domain', 'path'])
       .equals([domain, site])
