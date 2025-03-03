@@ -19,6 +19,7 @@
   import { RegistrationState } from '~lib/registration-controller'
   import { wrapIterable } from '~lib/svelte'
   import { generateId } from '~lib/id'
+  import OverlayTarget from '~components/overlay-target.svelte'
 
   const style = document.createElement('style')
   style.textContent = styleText
@@ -253,6 +254,9 @@
 
     <div class="absolute" style="z-index: 9999999999;">
       <Toaster />
+      <OverlayTarget
+        {registrationControllerInstance}
+        {pageControllerInstance} />
     </div>
   </div>
 </div>

@@ -1,35 +1,30 @@
 import {
   BehaviorSubject,
-  Subject,
-  combineLatest,
+  Observable,
+  distinctUntilChanged,
   filter,
   fromEvent,
-  last,
   map,
+  of,
   pairwise,
   share,
-  takeUntil,
+  switchMap,
   tap,
   throttleTime,
+  withLatestFrom,
 } from 'rxjs'
 import type { PageController } from './page-controller'
 import { log } from './log'
 import { PromiseWithResolvers } from './polyfills'
 import {
   getClosestBindableElement,
-  highlightElement,
-  isConfirmableElement,
+  addClickTargetToElement,
   recordInputKey,
   waitForKeyDown,
 } from './element'
 import { Binding } from './binding'
-import { exposeSubject, PromiseStopper, unwrapPromise } from './rxjs'
-import {
-  RegistrationAbortedError,
-  UnbindableElementError,
-  UnkownError,
-  VindError,
-} from './error'
+import { exposeSubject } from './rxjs'
+import { RegistrationAbortedError, UnkownError, VindError } from './error'
 import { buildXPathAndResolveToUniqueElement, XPathObject } from './xpath'
 import { match } from 'ts-pattern'
 import type { Domain, Path } from './url'
@@ -61,7 +56,6 @@ export class RegistrationController {
     map(
       (e) => document.elementsFromPoint(e.clientX, e.clientY) as HTMLElement[],
     ),
-    share(),
   )
 
   private targetedElement$ = this.mouseOverElements$.pipe(
@@ -72,10 +66,40 @@ export class RegistrationController {
       }
       return null
     }),
-    pairwise(),
-    filter(([prev, next]) => prev !== next), // only emit when element changes
-    map(([_, next]) => next),
+    distinctUntilChanged(),
     share(),
+  )
+
+  private elementSelectionTarget$ = new Observable<null | {
+    target: HTMLElement
+    el: HTMLElement
+  }>((sub) => {
+    const target$ = this.targetedElement$.pipe(
+      map(
+        (target) =>
+          target && {
+            target: addClickTargetToElement(target) as HTMLElement,
+            el: target,
+          },
+      ),
+    )
+
+    const filteredTarget$ = this.registrationState$.pipe(
+      map((state) => state === RegistrationState.SelectingElement),
+      switchMap((enabled) => (enabled ? target$ : of(null))),
+      tap((el) => sub.next(el)),
+    )
+
+    filteredTarget$
+      .pipe(
+        pairwise(),
+        tap(([prev]) => prev && document.body.removeChild(prev.target)),
+      )
+      .subscribe()
+  }).pipe(share())
+
+  public currentElementSelectionTarget$ = this.elementSelectionTarget$.pipe(
+    map((el) => el && el.el),
   )
 
   constructor(private pageControllerInstance: PageController) {}
@@ -115,9 +139,8 @@ export class RegistrationController {
     path: Path,
   ) {
     this.setRegistrationState(RegistrationState.SelectingElement)
-    const onElement = this.selectElement(abortSignal)
-    this.highlightCurrentElement(PromiseStopper(onElement).stopper)
-    const [selectedElement, xpathObject, selector] = await onElement
+    const [selectedElement, xpathObject, selector] =
+      await this.selectElement(abortSignal)
     // ----------------------------------------------
     this.setRegistrationState(RegistrationState.SelectingKey)
     const key = await this.selectKey(abortSignal)
@@ -144,26 +167,34 @@ export class RegistrationController {
     } = PromiseWithResolvers<[HTMLElement, XPathObject, string]>()
     abortSignal.addEventListener('abort', () => cancel(abortSignal.reason))
 
-    const sub = combineLatest([
-      this.targetedElement$.pipe(filter(Boolean)),
-      fromEvent<MouseEvent>(document, 'click').pipe(
-        filter(isConfirmableElement),
-      ),
-    ]).subscribe(async (val) => {
-      const [element] = val
-      const result = await buildXPathAndResolveToUniqueElement(element)
+    const sub = fromEvent<MouseEvent>(document, 'click')
+      .pipe(
+        withLatestFrom(this.elementSelectionTarget$),
+        filter(([click, target]) =>
+          Boolean(
+            target &&
+              document
+                .elementsFromPoint(click.clientX, click.clientY)
+                .includes(target.target),
+          ),
+        ),
+        map(([, target]) => target!),
+      )
+      .subscribe(async (val) => {
+        const { el } = val
+        const result = await buildXPathAndResolveToUniqueElement(el)
 
-      match(result.ok)
-        .with(true, () => {
-          log.info('XPATH', result.val)
-          const [xpathObject, selector] = result.val as [XPathObject, string]
-          confirmElement([element, xpathObject, selector])
-        })
-        .with(false, () => {
-          const err = result.val as Error
-          cancel(err instanceof VindError ? err : new UnkownError())
-        })
-    })
+        match(result.ok)
+          .with(true, () => {
+            log.info('XPATH', result.val)
+            const [xpathObject, selector] = result.val as [XPathObject, string]
+            confirmElement([el, xpathObject, selector])
+          })
+          .with(false, () => {
+            const err = result.val as Error
+            cancel(err instanceof VindError ? err : new UnkownError())
+          })
+      })
 
     await selectedElement
       .catch((err) => {
@@ -193,29 +224,6 @@ export class RegistrationController {
 
     log.info('selected key', key)
     return key
-  }
-
-  // ----------------------------------------------
-  private highlightCurrentElement(stopper: Subject<any>) {
-    // let toastId = ''
-    const element$ = this.targetedElement$.pipe(
-      takeUntil(stopper),
-      map((el) => el && (highlightElement(el) as HTMLElement)),
-      share(),
-    )
-
-    element$
-      .pipe(
-        pairwise(),
-        tap(([prev, _]) => {
-          prev && document.body.removeChild(prev)
-        }),
-      )
-      .subscribe()
-
-    element$.pipe(last()).forEach((last) => {
-      last && document.body.removeChild(last)
-    })
   }
 }
 

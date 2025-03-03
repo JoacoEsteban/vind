@@ -24,6 +24,7 @@
   import { newBinding } from '~messages/index'
   import { showOverlayStream } from '~messages/tabs'
   import { DocumentClient } from './document-client'
+  import OverlayTarget from '../components/overlay-target.svelte'
 
   const client = new DocumentClient()
   const { pageControllerInstance, registrationControllerInstance } = client
@@ -56,4 +57,5 @@
     on:registerNewBinding={(e) => registerNewBinding(e.detail.path)} />
   <Filters />
   <Toaster />
+  <OverlayTarget {registrationControllerInstance} {pageControllerInstance} />
 </div>
