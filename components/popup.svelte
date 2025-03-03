@@ -64,6 +64,7 @@
 {#if $bindingsMap}
   <div
     class="popup-wrapper vind-ignore"
+    inert={!visible}
     class:visible
     class:shrink={disabled}
     use:draggable={position}>
