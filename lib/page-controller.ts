@@ -11,13 +11,18 @@ import {
 } from 'rxjs'
 import { Domain, Path } from './url'
 import { BindingChannelImpl, type BindingChannel } from './messages/bindings'
-import { isBindableKeydownEvent } from './element'
+import {
+  clickEvent,
+  isBindableKeydownEvent,
+  mousedownEvent,
+  mouseupEvent,
+} from './element'
 import {
   DisabledPathsChannelImpl,
   type DisabledPathsChannel,
 } from './messages/disabled-paths'
 import { expose } from './rxjs'
-import { sleep } from './control-flow'
+import { concur, sleep } from './control-flow'
 import { InexistentElementError } from './error'
 
 class PageManager {
@@ -296,15 +301,10 @@ export class PageController extends PageManager {
   }
 
   async click(element: HTMLElement) {
-    // TODO do workaround
-    await new Promise<void>((resolve) => {
-      element.addEventListener('click', function onClick(e) {
-        element.removeEventListener('click', onClick)
-        if (e.defaultPrevented) element.click()
-
-        resolve()
-      })
-      element.click()
+    return concur(() => {
+      element.dispatchEvent(mousedownEvent)
+      element.dispatchEvent(mouseupEvent)
+      element.dispatchEvent(clickEvent)
     })
   }
 
