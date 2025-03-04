@@ -13,6 +13,24 @@ export const unBindableKeys = new Set([
   'META',
 ])
 
+export const mousedownEvent = new MouseEvent('mousedown', {
+  bubbles: true,
+  cancelable: false,
+  composed: true,
+})
+
+export const mouseupEvent = new MouseEvent('mouseup', {
+  bubbles: true,
+  cancelable: false,
+  composed: true,
+})
+
+export const clickEvent = new MouseEvent('click', {
+  bubbles: true,
+  cancelable: false,
+  composed: true,
+})
+
 export function getClosestBindableElement(
   element: HTMLElement,
 ): HTMLElement | null {
