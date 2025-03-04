@@ -21,3 +21,7 @@ export async function wrapResultAsync<T>(
 export function sleep(ms?: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+export function concur<T>(fn: () => T): Promise<T> {
+  return new Promise((resolve) => setTimeout(() => resolve(fn())))
+}
