@@ -444,6 +444,7 @@ export function getAttributes(targetElement: Element) {
     'title',
     'aria-labelledby',
     'aria-label',
+    'aria-expanded',
     'href',
     'alt',
     // TODO position?
