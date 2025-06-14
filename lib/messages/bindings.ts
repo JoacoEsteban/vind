@@ -17,6 +17,8 @@ export interface BindingChannel {
   upsertBinding: (binding: Binding) => void
   removeBinding: (id: string) => void
   deleteAllBindings: () => void
+  moveBindings: (domain: Domain, from: Path, to: Path) => Promise<void>
+  changeKey: (id: string, key: string) => Promise<void>
   onBindingRemoved$: Observable<unknown>
   onBindingAdded$: Observable<unknown>
   onBindingUpdated$: Observable<unknown>
@@ -148,7 +150,7 @@ export class MemoryBindingChannelImpl implements BindingChannel {
     this.bindings = this.bindings.filter((b) => b.id === id)
     this.bindingRemoved$.next(null)
   }
-  moveBindings(domain: Domain, from: Path, to: Path) {
+  async moveBindings(domain: Domain, from: Path, to: Path) {
     // TODO
     throw new Error('Not implemented')
   }
@@ -156,7 +158,7 @@ export class MemoryBindingChannelImpl implements BindingChannel {
     this.bindings = []
     this.bindingRemoved$.next(null)
   }
-  changeKey(id: string, key: string) {
+  async changeKey(id: string, key: string) {
     const binding = this.bindings.find((b) => b.id === id)
     if (!binding) throw new Error('Binding does not exist')
 
