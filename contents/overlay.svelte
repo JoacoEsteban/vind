@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
   import '~lib/fonts-importer'
-  import styleText from 'data-text:~/style.sass'
+  import styleText from 'data-text:~/style.scss'
   import type { PlasmoCSConfig, PlasmoGetStyle } from 'plasmo'
 
   export const config: PlasmoCSConfig = {

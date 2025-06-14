@@ -1,5 +1,5 @@
 <script lang="ts">
-  import '~/style.sass'
+  import '~/style.scss'
   import '~/lib/fonts-importer'
   import chroma from 'chroma-js'
   import githubMark from 'data-text:~assets/svg/github-mark.svg'
@@ -301,84 +301,124 @@
   <Dialog />
 </div>
 
-<style lang="sass">
-main :global, footer :global
-  h1, h2, h3, h4, h5, h6, .blend
-    font-weight: 700
-  h1, h2, h3, h4, h5, h6, p, a, ul, ol, li, blockquote, pre, code, hr, .blend
-    mix-blend-mode: color-dodge
-    color: var(--options-blended-text-color)
-  p
-    font-size: 1.25em
-    font-weight: 500
+<style lang="scss">
+  main :global,
+  footer :global {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .blend {
+      font-weight: 700;
+    }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    a,
+    ul,
+    ol,
+    li,
+    blockquote,
+    pre,
+    code,
+    hr,
+    .blend {
+      mix-blend-mode: color-dodge;
+      color: var(--options-blended-text-color);
+    }
+    p {
+      font-size: 1.25em;
+      font-weight: 500;
+    }
+  }
+  .backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
 
+    background: linear-gradient(
+      180deg,
+      var(--_bg-1, #1e3a8a) 0%,
+      var(--_bg-2, #f544f5) 100%
+    );
+    animation: hue-rotate 10s infinite;
+    @keyframes hue-rotate {
+      0% {
+        filter: hue-rotate(0deg);
+      }
+      100% {
+        filter: hue-rotate(360deg);
+      }
+    }
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--fallback-b1, oklch(var(--b1) / 1));
+      opacity: 0.4;
+      z-index: 1;
+    }
+  }
+  .backdrop {
+    transition: transform 0.5s var(--bezier-symmetric);
+  }
+  .dialog-open {
+    .backdrop {
+      transform: scale(1.15);
+    }
+    .mosaic {
+      animation-play-state: paused;
+    }
+  }
+  ._container {
+    width: min(80em, 100%);
+  }
+  .mosaic {
+    --mosaic-size-from: 200px;
+    --mosaic-size-to: 210px;
+    // --x: calc(var(--mouse-x) * calc(var(--mouse-x)/50))
+    --x: var(--mouse-x);
+    // --y: calc(var(--mouse-y) * calc(var(--mouse-y)/50))
+    --y: var(--mouse-y);
 
-.backdrop
-  position: fixed
-  top: 0
-  left: 0
-  width: 100%
-  height: 100%
-  z-index: -1
+    width: 100%;
+    height: 100%;
+    opacity: 0.3;
 
-  background: linear-gradient(180deg, var(--_bg-1, #1e3a8a) 0%, var(--_bg-2, #f544f5) 100%)
-  animation: hue-rotate 10s infinite
-  @keyframes hue-rotate
-    0%
-      filter: hue-rotate(0deg)
-    100%
-      filter: hue-rotate(360deg)
-  &::after
-    content: ''
-    position: absolute
-    top: 0
-    left: 0
-    width: 100%
-    height: 100%
-    background: var(--fallback-b1, oklch(var(--b1) / 1))
-    opacity: 0.4
-    z-index: 1
+    transition: background-position 0.01s;
 
-.backdrop
-  transition: transform .5s var(--bezier-symmetric)
-.dialog-open
-  .backdrop
-    transform: scale(1.15)
-  .mosaic
-    animation-play-state: paused
+    background-position: var(--x) var(--y);
+    background-repeat: repeat;
 
-._container
-  width: min(80em, 100%)
+    animation: 5s infinite size var(--bezier-symmetric);
 
-.mosaic
-  --mosaic-size-from: 200px
-  --mosaic-size-to: 210px
-  // --x: calc(var(--mouse-x) * calc(var(--mouse-x)/50))
-  --x: var(--mouse-x)
-  // --y: calc(var(--mouse-y) * calc(var(--mouse-y)/50))
-  --y: var(--mouse-y)
-  
-  width: 100%
-  height: 100%
-  opacity: 0.3
+    animation-fill-mode: backwards;
 
-  transition: background-position .01s
-
-  background-position: var(--x) var(--y)
-  background-repeat: repeat
-
-  animation: 5s infinite size var(--bezier-symmetric)
-
-  animation-fill-mode: backwards
-
-  @keyframes size
-    0%
-      background-size: var(--mosaic-size-from)
-      filter: blur(23px)
-    50%
-      background-size: var(--mosaic-size-to)
-      filter: blur(3px)
-    100%
-      background-size: var(--mosaic-size-from)
-      filter: blur(23px)
+    @keyframes size {
+      0% {
+        background-size: var(--mosaic-size-from);
+        filter: blur(23px);
+      }
+      50% {
+        background-size: var(--mosaic-size-to);
+        filter: blur(3px);
+      }
+      100% {
+        background-size: var(--mosaic-size-from);
+        filter: blur(23px);
+      }
+    }
+  }
 </style>

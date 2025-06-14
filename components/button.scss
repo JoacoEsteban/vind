@@ -1,0 +1,174 @@
+@mixin f-center() {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+@mixin round($size) {
+  @include f-center;
+  /* @include transformable */
+  border-radius: 100%;
+  width: $size;
+  height: $size;
+  min-width: $size;
+  min-height: $size;
+  max-width: $size;
+  max-height: $size;
+  padding: var(--_round-padding_, 0);
+}
+@mixin transformable($transition-properties: '') {
+  transition-timing-function: var(--bezier-chill);
+  transition-duration: 0.3s;
+  transition-property: transform, opacity, $transition-properties;
+
+  &,
+  * {
+    will-change: transform, opacity;
+  }
+}
+@mixin desaturate() {
+  --_forced-gradient-top: #555;
+  --_forced-gradient-bottom: #ccc;
+  --_forced-focus-color: #ccc;
+  --_forced-inset-shadow-color: #ddd;
+}
+.button-container {
+  @include f-center;
+  user-select: none;
+  .outer {
+    @include f-center;
+    @include transformable(outline);
+
+    --_gradient-top: var(--_forced-gradient-top, var(--gradient-top, #329ecc));
+    --_gradient-bottom: var(
+      --_forced-gradient-bottom,
+      var(--gradient-bottom, #ff00ff)
+    );
+    --_focus-color: var(--_forced-focus-color, var(--focus-color, #329ecc));
+    --_inset-shadow-color: var(
+      --_forced-inset-shadow-color,
+      var(--inset-shadow-color, #0005)
+    );
+
+    &.opaque {
+      backdrop-filter: blur(6px);
+    }
+    &:focus,
+    &:active,
+    &.pressed,
+    &.highlight {
+      outline: 3px solid var(--_focus-color, var(--_gradient-top, #329ecc));
+    }
+    &.highlight {
+      filter: brightness(1);
+    }
+    &.round {
+      @include round(var(--_button-size_, 70px));
+    }
+    &.ping {
+      @keyframes button-ping {
+        75%,
+        100% {
+          transform: scale(1.5);
+          opacity: 0;
+        }
+      }
+      &::before {
+        pointer-events: none;
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 100em;
+        background-color: var(--_focus-color);
+        animation: button-ping 2s linear infinite;
+      }
+    }
+    border-radius: 100em;
+    background: linear-gradient(
+      180deg,
+      var(--_gradient-top) -13.04%,
+      var(--_gradient-bottom) 136.96%
+    );
+    box-shadow: 0px 4px 5 px rgba(0, 0, 0, 0.25);
+
+    cursor: pointer;
+    &:hover {
+      transform: scale(1.04);
+    }
+    &:active,
+    &.pressed {
+      transform: scale(0.95);
+      opacity: 0.5;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      @include desaturate;
+    }
+    &.glassy {
+      --_forced-gradient-top: var(--_glassy-gradient-top);
+      --_forced-gradient-bottom: var(--_glassy-gradient-bottom);
+      --_forced-inset-shadow-color: var(--_glassy-inset-shadow-color);
+    }
+  }
+  .inner {
+    mix-blend-mode: overlay;
+    color: white;
+    font-family: made_tommy, sans-serif;
+    font-weight: 500;
+    font-size: 1.5em;
+    font-weight: bold;
+    /* filter: drop-shadow(0px 0px 3px var(--_gradient-bottom)) */
+  }
+  .btn {
+    color: unset;
+    /* border: 1px solid var(--border-color) */
+    border: none;
+    box-shadow: inset 0px 10px 25px var(--_inset-shadow-color);
+    font-size: unset;
+  }
+}
+.toggle-container {
+  $gold: 1.61803398875;
+  $goldx3q: 2.32127448025; /* gold * 1.75 */
+  $gold-sqrt: 0.809015;
+  $circle-size: var(--circle-size, 35px);
+  $toggle-size: var(--toggle-size);
+  $offset: var(--offset);
+  --toggle-size: calc(#{$circle-size} * #{$goldx3q});
+  --padding: calc(var(--toggle-size) * #{calc($gold-sqrt / 10)});
+  --offset: calc(#{$gold} * 10 * 1%);
+
+  &:not(.checked) .button-container {
+    @include desaturate;
+  }
+  .inner {
+    width: 100%;
+  }
+  .outer {
+    padding: var(--padding) 0;
+    width: $toggle-size;
+    height: fit-content;
+    min-height: fit-content;
+  }
+
+  .circle {
+    width: $circle-size;
+    height: $circle-size;
+    min-width: $circle-size;
+    max-width: $circle-size;
+    min-height: $circle-size;
+    max-height: $circle-size;
+    box-shadow: inset var(--inner-shadow-x-offset, -1px) -4px 5px var(--_gradient--top, #0005);
+
+    transition: transform 0.3s var(--bezier-chill);
+
+    border-radius: 50%;
+    background-color: white;
+    transform: translateX($offset);
+    &.checked {
+      --inner-shadow-x-offset: 1px;
+      transform: translateX(#{calc($toggle-size - 100% - $offset)});
+    }
+  }
+}
