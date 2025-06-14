@@ -15,7 +15,7 @@
   import Toaster from '~components/toaster.svelte'
   import { handleAnimationState } from '~lib/animation-state'
   import { Binding } from '~lib/binding'
-  import { cursorPosition, mouse$ } from '~lib/cursor-position'
+  import { cursorPosition } from '~lib/cursor-position'
   import { Messages, registrationStateToastOptions } from '~lib/definitions'
   import { isPromptOpen$ } from '~lib/dialog'
   import { RegistrationAbortedError, UnkownError } from '~lib/error'
@@ -79,7 +79,6 @@
   ]
   let activeKey = options[0].key
 
-  const onMouse = mouse$.pipe(first())
   const bindingsMap = combineLatest([
     pageController.bindingsByPathMap$,
     pageController.disabledDomainPaths$,
@@ -221,7 +220,7 @@
   })
 </script>
 
-<div use:themeController use:cursorPosition class:dialog-open={$isPromptOpen$}>
+<div use:themeController class:dialog-open={$isPromptOpen$}>
   <div
     class="options-container p-5 min-h-screen flex flex-col justify-between"
     inert={$isPromptOpen$ ? true : undefined}>
@@ -230,10 +229,10 @@
       class="backdrop"
       style:--_bg-1={bg1.hex()}
       style:--_bg-2={bg2.hex()}>
-      <div class="v_toggle-visibility w-full h-full" class:enabled={$onMouse}>
+      <div class="v_toggle-visibility w-full h-full enabled">
         <div
           use:handleAnimationState
-          class="mosaic"
+          class="mosaic mosaic-center"
           style:background-image={`url(${logo})`}>
         </div>
       </div>
@@ -400,6 +399,10 @@
     transition: background-position 0.01s;
 
     background-position: var(--x) var(--y);
+    &.mosaic-center {
+      background-position: center;
+    }
+
     background-repeat: repeat;
 
     animation: 5s infinite size var(--bezier-symmetric);
