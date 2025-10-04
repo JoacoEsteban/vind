@@ -8,6 +8,7 @@ import {
   mergeMap,
   from,
   isObservable,
+  throttleTime,
 } from 'rxjs'
 
 export function expose<T>(observable: Observable<T>) {
@@ -86,4 +87,8 @@ export function svelteCompat<T = unknown>(
   return Object.assign(subject, {
     set: subject.next.bind(subject),
   })
+}
+
+export function throttleTimeLeadTrail<T>(ms: number) {
+  return throttleTime<T>(ms, undefined, { leading: true, trailing: true })
 }

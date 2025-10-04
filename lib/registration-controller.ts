@@ -10,7 +10,6 @@ import {
   share,
   switchMap,
   tap,
-  throttleTime,
   withLatestFrom,
 } from 'rxjs'
 import type { PageController } from './page-controller'
@@ -23,7 +22,7 @@ import {
   waitForKeyDown,
 } from './element'
 import { Binding } from './binding'
-import { exposeSubject } from './rxjs'
+import { exposeSubject, throttleTimeLeadTrail } from './rxjs'
 import { RegistrationAbortedError, UnkownError, VindError } from './error'
 import { buildXPathAndResolveToUniqueElement, XPathObject } from './xpath'
 import { match } from 'ts-pattern'
@@ -52,7 +51,7 @@ export class RegistrationController {
     document,
     'mousemove',
   ).pipe(
-    throttleTime(20),
+    throttleTimeLeadTrail(20),
     map(
       (e) => document.elementsFromPoint(e.clientX, e.clientY) as HTMLElement[],
     ),

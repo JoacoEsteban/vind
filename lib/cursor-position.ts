@@ -1,7 +1,8 @@
-import { fromEvent, share, throttleTime } from 'rxjs'
+import { fromEvent, share } from 'rxjs'
+import { throttleTimeLeadTrail } from './rxjs'
 
 export const mouse$ = fromEvent<MouseEvent>(document, 'mousemove').pipe(
-  throttleTime(20),
+  throttleTimeLeadTrail(20),
   share(),
 )
 
