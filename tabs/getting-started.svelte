@@ -122,18 +122,23 @@
   colorSeed={$colorSeed$}
   onColorChange={(color) => color$.next(color)} />
 <div use:themeController>
-  <div class="vind-ignore bg-theme:soft fixed top-0 left-0 right-0 bottom-0">
+  <div
+    class="vind-ignore-self bg-theme:soft fixed top-0 left-0 right-0 bottom-0">
   </div>
 </div>
 
-<div use:themeController class="vind-ignore" style:--dodge-color={$dodgeColor$}>
-  <div class="relative space-y-6 made-tommy p-8 h-screen vind-ignore">
+<div
+  use:themeController
+  class="vind-ignore-self"
+  style:--dodge-color={$dodgeColor$}>
+  <div class="relative space-y-6 made-tommy p-8 h-screen vind-ignore-self">
     {#if showUI}
       {@const layout = (classes = '') =>
         'flex flex-col gap-4 xl:[&_h2]:text-[4rem] md:[&_h2]:text-[3rem] [&_h2]:text-[2rem] [&_h2]:leading-[1] [&_h2]:font-medium max-xl:items-end max-xl:text-right' +
         ' ' +
         classes}
-      <div class="w-full space-y-3 xl:grid grid-cols-3 !text-white">
+      <div
+        class="w-full space-y-3 xl:grid grid-cols-3 !text-white vind-ignore-*">
         <div
           class={layout('items-end text-right origin-top-right col-start-3')}>
           <h1
@@ -196,7 +201,8 @@
         out:transitionOut
         class="xl:fixed xl:w-screen xl:h-screen max-xl:!mt-24 top-0 left-0 flex items-center justify-center v_toggle-visibility pointer-events-none"
         class:enabled={!visible}>
-        <div class="relative xl:zoom-200 sm:zoom-150 pointer-events-auto">
+        <div
+          class="relative xl:zoom-200 sm:zoom-150 pointer-events-auto vind-ignore-self">
           <Button on:click={() => (visible = true)} colorSeed={$colorSeed$} ping
             >Open</Button>
         </div>
@@ -208,12 +214,12 @@
         in:transitionIn={{ delay: getDelay(4 + states.length) }}
         out:transitionOut
         class:highlight={highlightLaunchpad}
-        class="fixed bottom-0 origin-bottom-left left-0 w-screen vind-ignore vind-ignore actions-container">
+        class="fixed bottom-0 origin-bottom-left left-0 w-screen vind-ignore-self actions-container">
         <div
-          class="flex flex-col gap-3 justify-center items-center w-fit m-auto ml-[20px] my-6 py-4 px-5 bg-blur vind-ignore">
+          class="flex flex-col gap-3 justify-center items-center w-fit m-auto ml-[20px] my-6 py-4 px-5 bg-blur vind-ignore-self">
           <h4 class="text-2xl font-medium">Launchpad</h4>
 
-          <div class="flex gap-3 justify-center items-center vind-ignore">
+          <div class="flex gap-3 justify-center items-center vind-ignore-self">
             <Button
               icon="arrowClockwise"
               on:click={() => spin$.next()}
@@ -230,7 +236,8 @@
     {/if}
 
     {#if showingMask}
-      <div class="mask-overlay !m-0 vind-ignore" in:maskIn out:maskOut></div>
+      <div class="mask-overlay !m-0 vind-ignore-self" in:maskIn out:maskOut>
+      </div>
     {/if}
 
     <div

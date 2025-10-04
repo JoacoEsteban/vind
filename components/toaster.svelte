@@ -4,4 +4,4 @@
 
 <Toaster
   containerClassName={'made-tommy font-regular'}
-  toastOptions={{ className: 'bg-blur ghost vind-ignore' }} />
+  toastOptions={{ className: 'bg-blur ghost vind-ignore-*' }} />

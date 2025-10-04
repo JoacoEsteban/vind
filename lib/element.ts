@@ -55,7 +55,7 @@ export function addClickTargetToElement(element: HTMLElement) {
   overlay.style.borderRadius = getComputedStyle(element).borderRadius
 
   overlay.classList.add('vind-overlay')
-  overlay.classList.add('vind-ignore')
+  overlay.classList.add('vind-ignore-*')
 
   document.body.appendChild(overlay)
   return overlay
@@ -116,7 +116,10 @@ export function waitForKeyDown(
 export function isHighlightableElement(el: HTMLElement) {
   return !(
     el.nodeName === 'PLASMO-CSUI' ||
-    ['vind-ignore'].some((className) => el.classList.contains(className)) ||
+    ['vind-ignore-self'].some((className) =>
+      el.classList.contains(className),
+    ) ||
+    el.closest('.vind-ignore-\\*') !== null ||
     el.id === '__plasmo'
   )
 }
