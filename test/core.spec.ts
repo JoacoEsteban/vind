@@ -1,5 +1,7 @@
+import { BindButtonId, TestId } from '~lib/test-id'
 import { test, expect } from './fixtures'
 import { expectBindingTriggerToSucceed, createBinding } from './lib/binding'
+import { LocatorTextContentChangeValidator } from './lib/cases'
 
 test('create and trigger binding', async ({
   page,
@@ -25,6 +27,35 @@ test('create and trigger binding', async ({
     expect(speechDialog).toHaveAttribute('open', {
       timeout: 100,
     }),
+  )
+})
+
+test('getting-started page behavior', async ({
+  page,
+  extensionContext: { openOverlay, extensionId },
+}) => {
+  await page.goto(`chrome-extension://${extensionId}/tabs/getting-started.html`)
+  page.bringToFront()
+
+  const popupButtonTestId = new TestId('getting-started:open-popup-button')
+  const colorButtonTestId = new TestId('getting-started:color-button')
+  const colorLabelTester = await new LocatorTextContentChangeValidator(
+    page,
+    new TestId('getting-started:color-label'),
+    (color) => expect(color).toMatch(/^\#[\d\w]{6}$/),
+  ).init()
+
+  await page.getByTestId(popupButtonTestId.id).click()
+  await expect(page.getByTestId(BindButtonId.id)).toBeEnabled()
+
+  const binding = await createBinding({
+    page,
+    key: 'c',
+    target: page.getByTestId(colorButtonTestId.id).first(),
+  })
+
+  await expectBindingTriggerToSucceed(binding, () =>
+    colorLabelTester.expectChange(),
   )
 })
 

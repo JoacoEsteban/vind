@@ -20,6 +20,7 @@
   import { wrapIterable } from '~lib/svelte'
   import { generateId } from '~lib/id'
   import OverlayTarget from '~components/overlay-target.svelte'
+  import { TestId } from '~lib/test-id'
 
   const style = document.createElement('style')
   style.textContent = styleText
@@ -115,6 +116,8 @@
   $: {
     bindingCompleted = !visible
   }
+
+  const colorLabelTestId = new TestId('getting-started:color-label')
 </script>
 
 <CrabsScene
@@ -151,6 +154,7 @@
 
           <span
             in:transitionIn={{ delay: getDelay(1) }}
+            data-testid={colorLabelTestId.id}
             class="text-[2rem] leading-[1] opacity-50 font-medium dodge">
             {$color$}
           </span>
@@ -203,7 +207,11 @@
         class:enabled={!visible}>
         <div
           class="relative xl:zoom-200 sm:zoom-150 pointer-events-auto vind-ignore-self">
-          <Button on:click={() => (visible = true)} colorSeed={$colorSeed$} ping
+          <Button
+            on:click={() => (visible = true)}
+            colorSeed={$colorSeed$}
+            ping
+            testId={new TestId('getting-started:open-popup-button')}
             >Open</Button>
         </div>
       </div>
@@ -223,12 +231,14 @@
             <Button
               icon="arrowClockwise"
               on:click={() => spin$.next()}
+              testId={new TestId('getting-started:spin-button')}
               ping={highlightLaunchpad}>Spin</Button>
 
             <Button
               icon="paintPalette"
               on:click={() => changeColor$.next()}
               disabled={$bloom$}
+              testId={new TestId('getting-started:color-button')}
               ping={highlightLaunchpad}>Color</Button>
           </div>
         </div>
