@@ -3,13 +3,19 @@ import {
   Subject,
   type Observable,
   map,
-  queue,
-  type OperatorFunction,
   mergeMap,
   from,
-  isObservable,
   throttleTime,
+  withLatestFrom,
+  of,
+  tap,
+  type MonoTypeOperatorFunction,
+  share,
+  ReplaySubject,
+  filter,
 } from 'rxjs'
+import { log } from './log'
+import { noop, type Constructor } from './misc'
 
 export function expose<T>(observable: Observable<T>) {
   const subject = new BehaviorSubject<T | null>(null)
@@ -91,4 +97,38 @@ export function svelteCompat<T = unknown>(
 
 export function throttleTimeLeadTrail<T>(ms: number) {
   return throttleTime<T>(ms, undefined, { leading: true, trailing: true })
+}
+
+export function withStatic<T, K>(staticValue: T) {
+  return withLatestFrom<K, [T]>(of(staticValue))
+}
+
+export function asVoid() {
+  return map(noop)
+}
+
+export function debug<T>(message?: string, logFn = log.debug) {
+  return tap((value: T) => {
+    logFn(message || 'Log:', value)
+  })
+}
+
+export function makeDebug(logFn = log.debug) {
+  return <T>(message: string) => debug<T>(message, logFn)
+}
+
+export const shareLatest = <T>(
+  resetOnRefCountZero = true,
+): MonoTypeOperatorFunction<T> =>
+  share<T>({
+    connector: () => new ReplaySubject<T>(1),
+    resetOnError: true,
+    resetOnComplete: true,
+    resetOnRefCountZero,
+  })
+
+export function instanceOfFilter<T>(ctor: Constructor<T>) {
+  return filter(function (target): target is T {
+    return target instanceof ctor
+  })
 }
