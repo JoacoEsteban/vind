@@ -1,7 +1,9 @@
 import { match } from 'ts-pattern'
 import { StylePropertyAndParentsObserver } from '~lib/element'
-import { map, startWith } from 'rxjs'
-import { expose } from './rxjs'
+import { EMPTY, Observable, fromEvent, map, merge, switchMap, tap } from 'rxjs'
+import { expose, instanceOfFilter } from './rxjs'
+import { DisposeBag } from './dispose-bag'
+import { call } from './misc'
 
 function bounds(dragItem: HTMLElement) {
   return dragItem.getBoundingClientRect()
@@ -21,21 +23,22 @@ const [centerX, centerY] = [
 
 export function draggable(
   node: HTMLElement,
-  initialPosition: {
-    x: number | 'center'
-    y: number | 'center'
-  } = { x: 0, y: 0 },
+  [initialPosition = { x: 0, y: 0 }, enabled$]: [
+    initialPosition: {
+      x: number | 'center'
+      y: number | 'center'
+    },
+    enabled$: Observable<boolean>,
+  ],
 ) {
   const friction = 0.85
   const dragItem = node
   const getBounds = () => bounds(dragItem)
   const itemBounds = getBounds()
-  dragItem.style.cursor = 'move'
   const zoom$ = new StylePropertyAndParentsObserver(dragItem, 'zoom').pipe(
     map(() => getComputedZoom(dragItem)),
-    startWith(getComputedZoom(dragItem)),
   )
-  const zoom = expose(zoom$)
+  const zoom = expose(zoom$, getComputedZoom(dragItem))
 
   let active = false
   let currentX: number = 0
@@ -122,7 +125,7 @@ export function draggable(
   }
 
   function setTranslate() {
-    const z = zoom()
+    const z = zoom() ?? 1
     dragItem.style.transform = `translate3d(${xOffset / z}px, ${
       yOffset / z
     }px, 0)`
@@ -160,11 +163,47 @@ export function draggable(
     throw new Error('No relative parent found')
   }
 
-  parent.addEventListener('pointerdown', dragStart, false)
-  parent.addEventListener('pointerup', dragEnd, false)
-  parent.addEventListener('pointermove', drag, false)
+  const { sink, dispose } = new DisposeBag()
 
-  window.addEventListener('resize', adjust)
-  zoom$.forEach(adjust)
+  const listeners = [
+    ['pointerdown', dragStart],
+    ['pointerup', dragEnd],
+    ['pointermove', drag],
+  ] as const
+
+  const handlers = listeners.map(
+    ([eventType, handler]) =>
+      () =>
+        fromEvent(parent, eventType, { capture: false }).pipe(
+          instanceOfFilter(PointerEvent),
+          tap(handler),
+        ),
+  )
+  const buildHandlers = () => merge(...handlers.map(call))
+
+  enabled$
+    .pipe(
+      switchMap((enabled) =>
+        match(enabled)
+          .with(true, buildHandlers)
+          .otherwise(() => EMPTY),
+      ),
+      sink(),
+    )
+    .subscribe()
+
+  enabled$
+    .pipe(
+      map((val) => (val ? 'move' : '')),
+      sink(),
+    )
+    .subscribe((cursor) => (dragItem.style.cursor = cursor))
+
+  merge(zoom$, fromEvent(window, 'resize')).pipe(sink()).subscribe(adjust)
+
   setTimeout(adjust)
+
+  return {
+    destroy: dispose,
+  }
 }

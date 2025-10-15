@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { combineLatest, filter, interval, map, Observable, pipe } from 'rxjs'
+  import { BehaviorSubject, combineLatest, map } from 'rxjs'
   import { createEventDispatcher } from 'svelte'
   import { askForOptionsPage } from '~/messages'
   import BindingButton from '~components/binding-button.svelte'
@@ -22,6 +22,11 @@
   export let position: Record<'x' | 'y', number | 'center'> = { x: 0, y: 0 }
   export let buttonPing: boolean = false
   export let bindingsPing: boolean = false
+  const dragEnabled$ = new BehaviorSubject<boolean>(!disabled)
+
+  $: {
+    dragEnabled$.next(!disabled)
+  }
 
   const dispatch = createEventDispatcher<{
     registerNewBinding: { path?: Path }
@@ -67,7 +72,7 @@
     inert={!visible}
     class:visible
     class:shrink={disabled}
-    use:draggable={position}>
+    use:draggable={[position, dragEnabled$]}>
     <div class="popup-container bg-blur" class:ghost={disabled}>
       <div class="flex justify-between sticky top-0 z-10">
         <h2 class="font-black m-0 opacity-25">Vind</h2>

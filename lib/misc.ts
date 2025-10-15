@@ -1,5 +1,7 @@
 import { interopRuntime } from '~background/utils/runtime'
 
+export type Constructor<T> = new (...args: any[]) => T
+
 export function getExtensionVersion() {
   return interopRuntime().getManifest().version
 }
@@ -33,4 +35,8 @@ export function promiseToSignal<T>(promise: Promise<T>): AbortSignal {
 export function time(label: string) {
   console.time(label)
   return () => console.timeEnd(label)
+}
+
+export function call<T>(fn: () => T): T {
+  return fn()
 }
