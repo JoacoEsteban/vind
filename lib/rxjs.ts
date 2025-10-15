@@ -1,7 +1,7 @@
 import {
   BehaviorSubject,
   Subject,
-  type Observable,
+  Observable,
   map,
   mergeMap,
   from,
@@ -132,5 +132,13 @@ export const shareLatest = <T>(
 export function instanceOfFilter<T>(ctor: Constructor<T>) {
   return filter(function (target): target is T {
     return target instanceof ctor
+  })
+}
+
+export function abortSignal$(signal: AbortSignal) {
+  return new Observable<void>((subscriber) => {
+    signal.addEventListener('abort', () => {
+      subscriber.complete()
+    })
   })
 }

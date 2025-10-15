@@ -1,7 +1,9 @@
-import { pEvent, type CancelablePromise } from 'p-event'
+import { pEvent, type CancelablePromise, type Emitter } from 'p-event'
 import { noop } from './misc'
 import type { Binding } from './binding'
 import { Observable, Subject } from 'rxjs'
+
+export type KeyDownEmitter = Emitter<string, [KeyboardEvent]>
 
 export const unBindableKeys = new Set([
   'TAB',
@@ -84,6 +86,10 @@ export function recordInputKey(signal?: AbortSignal): Promise<string> {
   })
 }
 
+export function isBindableKeyboardEvent(event: KeyboardEvent): boolean {
+  return event.type === 'keydown' && isBindableKeydownEvent(event)
+}
+
 export function isBindableKeydownEvent(event: KeyboardEvent): boolean {
   return !(isProtectedKeydownEvent(event.target) || isUnBindableKey(event.key))
 }
@@ -106,8 +112,9 @@ export function isUnBindableKey(key: string): boolean {
 export function waitForKeyDown(
   key: string,
   signal?: AbortSignal,
+  emitter: KeyDownEmitter = document,
 ): CancelablePromise<KeyboardEvent> {
-  return pEvent<string, KeyboardEvent>(document, 'keydown', {
+  return pEvent<'keydown', KeyboardEvent>(emitter, 'keydown', {
     signal,
     filter: (e) => e.key === key,
   })

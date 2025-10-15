@@ -9,6 +9,7 @@ import { log } from '~lib/log'
 import { StorageHandlers } from './handlers'
 import { match } from 'ts-pattern'
 import { interopAction, interopRuntime, interopTabs } from './utils/runtime'
+import { EventHandlers } from './handlers/events'
 
 const db = new VindDB()
 export const bindingsStorage = new BindingsStorageImpl(db)
@@ -17,6 +18,7 @@ export const disabledBindingPathsStorage = new DisabledBindingPathsStorageImpl(
 )
 
 new StorageHandlers(bindingsStorage, disabledBindingPathsStorage).init()
+new EventHandlers().init()
 
 const tabs = interopTabs()
 const runtime = interopRuntime()
