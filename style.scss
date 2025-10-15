@@ -129,12 +129,17 @@ body.dialog-open {
   outline: 1px solid red;
   outline-offset: -1px;
 }
-.ghost {
+
+.ghost,
+.force-ghost {
   // transition: opacity 0.3s var(--bezier-chill) !important
-  * {
+  *,
+  &.force-ghost {
     pointer-events: none !important;
   }
-  &:hover {
+
+  &:hover,
+  &.force-ghost {
     opacity: 0.1 !important;
   }
 }
