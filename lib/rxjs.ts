@@ -17,8 +17,10 @@ import {
 import { log } from './log'
 import { noop, type Constructor } from './misc'
 
-export function expose<T>(observable: Observable<T>) {
-  const subject = new BehaviorSubject<T | null>(null)
+export function expose<T>(observable: Observable<T>): () => T | null
+export function expose<T>(observable: Observable<T>, startWith: T): () => T
+export function expose<T>(observable: Observable<T>, startWith?: T) {
+  const subject = new BehaviorSubject<T | null>(startWith ?? null)
   observable.subscribe(subject)
   return subject.getValue.bind(subject)
 }
