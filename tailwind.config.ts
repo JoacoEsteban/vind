@@ -5,7 +5,7 @@ import plugin from 'tailwindcss/plugin'
 
 const config = {
   // 2. Opt for dark mode to be handled via the class method
-  darkMode: 'class',
+  darkMode: 'media',
   content: ['!./node_modules/**/*', './**/*.svelte'],
   theme: {
     extend: {
