@@ -34,7 +34,9 @@ test('getting-started page behavior', async ({
   page,
   extensionContext: { openOverlay, extensionId },
 }) => {
-  await page.goto(`chrome-extension://${extensionId}/tabs/getting-started.html`)
+  await page.goto(
+    `chrome-extension://${extensionId}/tabs/getting-started.html?framerate=0`,
+  )
   page.bringToFront()
 
   const popupButtonTestId = new TestId('getting-started:open-popup-button')
