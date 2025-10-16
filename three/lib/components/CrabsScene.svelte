@@ -2,13 +2,13 @@
   import * as T from 'three'
   import {
     Subject,
-    combineLatestWith,
     fromEvent,
     filter,
     map,
     startWith,
     combineLatest,
     BehaviorSubject,
+    withLatestFrom,
   } from 'rxjs'
   import { getCurrentViewport, type Viewport } from '../three'
   import { repeat } from '~lib/generator'
@@ -332,7 +332,7 @@
   // ------------------------------------------------------------------------
 
   fromEvent(window, 'resize')
-    .pipe(combineLatestWith(frame$))
+    .pipe(withLatestFrom(frame$))
     .subscribe(([, context]) => setRatio(context))
 
   meshes$.subscribe((meshes) => meshes.forEach((box) => scene.add(box.mesh)))
@@ -394,7 +394,7 @@
 
   frame$
     .pipe(
-      combineLatestWith(
+      withLatestFrom(
         meshes$,
         paused$,
         spinFrom$,
