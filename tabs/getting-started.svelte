@@ -208,7 +208,7 @@
         class="xl:fixed xl:w-screen xl:h-screen max-xl:!mt-24 top-0 left-0 flex items-center justify-center v_toggle-visibility pointer-events-none"
         class:enabled={!visible}>
         <div
-          class="relative xl:zoom-200 sm:zoom-150 pointer-events-auto vind-ignore-self">
+          class="relative xl:zoom-200 sm:zoom-150 pointer-events-auto vind-ignore-*">
           <Button
             on:click={() => (visible = true)}
             colorSeed={$colorSeed$}
