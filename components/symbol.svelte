@@ -16,7 +16,9 @@
   xmlns="http://www.w3.org/2000/svg"
   style:margin="auto"
   height={getComputedSize(symbol.geometry.hRatio)}
-  width={getComputedSize(symbol.geometry.wRatio)}>
+  width={getComputedSize(symbol.geometry.wRatio)}
+  style:max-width={size}
+  style:min-width={size}>
   <path
     fill="currentColor"
     d={symbol.path}

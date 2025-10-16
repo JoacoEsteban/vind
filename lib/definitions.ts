@@ -3,7 +3,7 @@ import { RegistrationState } from './registration-controller'
 import { SymbolComponent, type SymbolName } from './symbols'
 import type { Renderable } from 'svelte-french-toast'
 
-const iconSize = '4em'
+const iconSize = '2.5em'
 
 export const registrationStateToastOptions: {
   [key in RegistrationState]: {
