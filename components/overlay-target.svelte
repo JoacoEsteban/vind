@@ -1,18 +1,19 @@
 <script lang="ts">
   import { RegistrationController } from '~/lib/registration-controller'
   import { transitionIn, transitionOut } from '~lib/transitions'
-  import { combineLatest, map } from 'rxjs'
+  import { map, switchMap } from 'rxjs'
   import type { PageController } from '~lib/page-controller'
 
   export let registrationControllerInstance: RegistrationController
   export let pageControllerInstance: PageController
 
-  const styles$ = combineLatest([
-    registrationControllerInstance.currentElementSelectionTarget$,
-    pageControllerInstance.focusedBindingElement$,
-  ]).pipe(
-    map(([selectionTarget, focusedBinding]) => {
-      const target = selectionTarget || focusedBinding
+  const styles$ = registrationControllerInstance.registrationInProgress$.pipe(
+    switchMap((registering) =>
+      registering
+        ? registrationControllerInstance.currentElementSelectionTarget$
+        : pageControllerInstance.focusedBindingElement$,
+    ),
+    map((target) => {
       return (
         target && {
           style: getComputedStyle(target),
