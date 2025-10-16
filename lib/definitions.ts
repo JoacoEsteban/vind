@@ -1,3 +1,4 @@
+import SelectingElement from '~components/messages/selecting-element.svelte'
 import { RegistrationState } from './registration-controller'
 import { SymbolComponent, type SymbolName } from './symbols'
 import type { Renderable } from 'svelte-french-toast'
@@ -13,7 +14,7 @@ export const registrationStateToastOptions: {
   [RegistrationState.Idle]: null,
   [RegistrationState.SavingBinding]: null,
   [RegistrationState.SelectingElement]: {
-    text: 'Click the button you want to bind\n\nYou can press Alt to disable the highlight and keep navigating the page',
+    text: SelectingElement,
     icon: SymbolComponent('cursorArrowClick', iconSize),
   },
   [RegistrationState.SelectingKey]: {

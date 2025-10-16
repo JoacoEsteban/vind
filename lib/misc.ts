@@ -1,3 +1,4 @@
+import { match } from 'ts-pattern'
 import { interopRuntime } from '~background/utils/runtime'
 
 export type Constructor<T> = new (...args: any[]) => T
@@ -43,4 +44,23 @@ export function call<T>(fn: () => T): T {
 
 export function not(val: boolean) {
   return !val
+}
+
+export function getPlatform(): 'windows' | 'mac' | 'linux' | 'unknown' {
+  const platform = match(navigator.platform.toLowerCase())
+    .when(
+      (p) => p.includes('win'),
+      () => 'windows' as const,
+    )
+    .when(
+      (p) => p.includes('mac'),
+      () => 'mac' as const,
+    )
+    .when(
+      (p) => p.includes('linux'),
+      () => 'linux' as const,
+    )
+    .otherwise(() => 'unknown' as const)
+
+  return platform
 }
