@@ -5,10 +5,8 @@
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
-  import { colorSeeds } from '~lib/definitions'
   import { BindButtonId } from '~lib/test-id'
   import { draggable } from '~lib/draggable'
-  import { generateId } from '~lib/id'
   import { MapToOrderedTuple } from '~lib/map'
   import type { PageController } from '~lib/page-controller'
   import { Path } from '~lib/url'
@@ -16,16 +14,17 @@
   import Toggle from './toggle.svelte'
 
   export let visible: boolean = false
+  export let ghost: boolean = false
   export let disabled: boolean = false
   export let pageControllerInstance: PageController
   export let close: () => void
   export let position: Record<'x' | 'y', number | 'center'> = { x: 0, y: 0 }
   export let buttonPing: boolean = false
   export let bindingsPing: boolean = false
-  const dragEnabled$ = new BehaviorSubject<boolean>(!disabled)
+  const dragEnabled$ = new BehaviorSubject<boolean>(!ghost)
 
   $: {
-    dragEnabled$.next(!disabled)
+    dragEnabled$.next(!ghost)
   }
 
   const dispatch = createEventDispatcher<{
@@ -71,21 +70,25 @@
     class="popup-wrapper vind-ignore-*"
     inert={!visible}
     class:visible
-    class:shrink={disabled}
+    class:shrink={ghost}
+    class:pointer-events-none={disabled}
     use:draggable={[position, dragEnabled$]}>
-    <div class="popup-container bg-blur" class:ghost={disabled}>
+    <div
+      class="popup-container bg-blur"
+      class:ghost
+      class:force-ghost={disabled}>
       <div class="flex justify-between sticky top-0 z-10">
         <h2 class="font-black m-0 opacity-25">Vind</h2>
         <div class="flex">
           <SymbolButton
-            {disabled}
+            disabled={ghost}
             opaque={true}
             name="gear"
             on:click={openOptions}
             size={'40px'} />
           <div class="w-2" />
           <SymbolButton
-            {disabled}
+            disabled={ghost}
             opaque={true}
             name="xMark"
             size={'40px'}
@@ -134,7 +137,7 @@
                       </span>
                       {#if bmap.overlapping}
                         <Toggle
-                          {disabled}
+                          disabled={ghost}
                           checked={$includedPaths.has(path)}
                           on:click={() =>
                             pageControllerInstance.togglePath(path)} />
@@ -147,7 +150,7 @@
                         <BindingButton
                           ping={bindingsPing}
                           triggeredBinding$={pageControllerInstance.triggeredBinding$}
-                          disabled={disabled || !$includedPaths.has(path)}
+                          disabled={ghost || !$includedPaths.has(path)}
                           {binding}
                           on:click={() =>
                             pageControllerInstance.clickBinding(binding)}
@@ -175,8 +178,8 @@
       <div class="flex flex-col justify-center sticky bottom-0">
         <Button
           testId={BindButtonId}
-          {disabled}
-          ping={buttonPing && !disabled}
+          disabled={ghost}
+          ping={buttonPing && !ghost}
           on:click={() => registerNewBinding()}>Bind</Button>
 
         {#if !$bindsToPattern.is($currentSite.path)}

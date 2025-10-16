@@ -13,9 +13,12 @@ import {
   share,
   ReplaySubject,
   filter,
+  merge,
+  startWith,
 } from 'rxjs'
 import { log } from './log'
 import { noop, type Constructor } from './misc'
+import type { VindKeyboardEvent } from './cross-frame-keyboard-events'
 
 export function expose<T>(observable: Observable<T>): () => T | null
 export function expose<T>(observable: Observable<T>, startWith: T): () => T
@@ -141,4 +144,27 @@ export function abortSignal$(signal: AbortSignal) {
       subscriber.complete()
     })
   })
+}
+
+export function isPressingKey$(
+  channel$: Observable<VindKeyboardEvent>,
+  key: string,
+  initial: boolean = false,
+) {
+  const doFilter = (event: VindKeyboardEvent) => event.key === key
+
+  return merge(
+    channel$.pipe(
+      filter((e) => e.type === 'keydown'),
+      filter(doFilter),
+      debug('keydown'),
+      map(() => true),
+    ),
+    channel$.pipe(
+      filter((e) => e.type === 'keyup'),
+      filter(doFilter),
+      debug('keyup'),
+      map(() => false),
+    ),
+  ).pipe(startWith(initial))
 }

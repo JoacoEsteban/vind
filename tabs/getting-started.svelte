@@ -21,6 +21,7 @@
   import { generateId } from '~lib/id'
   import OverlayTarget from '~components/overlay-target.svelte'
   import { TestId } from '~lib/test-id'
+  import { CrossFrameEventsController } from '~lib/cross-frame-keyboard-events'
 
   const style = document.createElement('style')
   style.textContent = styleText
@@ -63,6 +64,7 @@
   })
 
   const client = new DocumentClient(
+    new CrossFrameEventsController(false),
     new PageController(
       new MemoryBindingChannelImpl(),
       new MemoryDisabledPathsChannelImpl(),
@@ -255,7 +257,7 @@
       class:highlight={$registrationState$ === RegistrationState.Idle}>
       <Popup
         {visible}
-        disabled={$registering$}
+        ghost={$registering$}
         {pageControllerInstance}
         on:registerNewBinding={register}
         position={{

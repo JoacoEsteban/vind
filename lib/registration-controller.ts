@@ -1,6 +1,8 @@
 import {
   BehaviorSubject,
+  EMPTY,
   Observable,
+  defer,
   distinctUntilChanged,
   filter,
   fromEvent,
@@ -20,20 +22,35 @@ import {
   addClickTargetToElement,
   recordInputKey,
   waitForKeyDown,
+  type KeyDownEmitter,
 } from './element'
 import { Binding } from './binding'
-import { exposeSubject, throttleTimeLeadTrail } from './rxjs'
+import {
+  debug,
+  exposeSubject,
+  isPressingKey$,
+  shareLatest,
+  throttleTimeLeadTrail,
+} from './rxjs'
 import { RegistrationAbortedError, UnkownError, VindError } from './error'
 import { buildXPathAndResolveToUniqueElement, XPathObject } from './xpath'
 import { match } from 'ts-pattern'
 import type { Domain, Path } from './url'
 import { RegistrationSuccess, Success } from './Event'
+import type { CrossFrameEventsController } from './cross-frame-keyboard-events'
+import { not } from './misc'
 
 export enum RegistrationState {
   Idle,
   SelectingElement,
   SelectingKey,
   SavingBinding,
+}
+
+export enum ElementSelectionState {
+  Idle,
+  Selecting,
+  Paused,
 }
 
 export class RegistrationController {
@@ -83,9 +100,12 @@ export class RegistrationController {
       ),
     )
 
-    const filteredTarget$ = this.registrationState$.pipe(
-      map((state) => state === RegistrationState.SelectingElement),
-      switchMap((enabled) => (enabled ? target$ : of(null))),
+    const filteredTarget$ = this.elementSelectionState$.pipe(
+      switchMap((state) =>
+        match(state)
+          .with(ElementSelectionState.Selecting, () => target$)
+          .otherwise(() => of(null)),
+      ),
       tap((el) => sub.next(el)),
     )
 
@@ -95,13 +115,37 @@ export class RegistrationController {
         tap(([prev]) => prev && document.body.removeChild(prev.target)),
       )
       .subscribe()
-  }).pipe(share())
+  }).pipe(shareLatest())
 
   public currentElementSelectionTarget$ = this.elementSelectionTarget$.pipe(
     map((el) => el && el.el),
   )
 
-  constructor(private pageControllerInstance: PageController) {}
+  public elementSelectionEnabled$ = defer(() =>
+    isPressingKey$(this.keyboardController.channel$, 'Alt'),
+  ).pipe(map(not), shareLatest())
+
+  public elementSelectionState$ = this.registrationState$$.pipe(
+    switchMap((state) =>
+      match(state)
+        .with(RegistrationState.SelectingElement, () =>
+          this.elementSelectionEnabled$.pipe(
+            map((enabled) =>
+              enabled
+                ? ElementSelectionState.Selecting
+                : ElementSelectionState.Paused,
+            ),
+          ),
+        )
+        .otherwise(() => of(ElementSelectionState.Idle)),
+    ),
+    shareLatest(),
+  )
+
+  constructor(
+    private pageControllerInstance: PageController,
+    private keyboardController: CrossFrameEventsController,
+  ) {}
 
   async register(domain: Domain, path: Path) {
     if (this.registrationInProgress$$.value) {
@@ -109,7 +153,7 @@ export class RegistrationController {
     }
     this.registrationInProgress$$.next(true)
 
-    const aborter = escapeKeyAborter()
+    const aborter = escapeKeyAborter(this.keyboardController as KeyDownEmitter)
 
     return this.startRegistrationFlow(aborter.signal, domain, path).finally(
       () => {
@@ -166,8 +210,8 @@ export class RegistrationController {
     } = PromiseWithResolvers<[HTMLElement, XPathObject, string]>()
     abortSignal.addEventListener('abort', () => cancel(abortSignal.reason))
 
-    const sub = fromEvent<MouseEvent>(document, 'click')
-      .pipe(
+    const clickToElements = () =>
+      fromEvent<MouseEvent>(document, 'click').pipe(
         withLatestFrom(this.elementSelectionTarget$),
         filter(([click, target]) =>
           Boolean(
@@ -178,6 +222,15 @@ export class RegistrationController {
           ),
         ),
         map(([, target]) => target!),
+      )
+
+    const sub = this.elementSelectionState$
+      .pipe(
+        switchMap((state) =>
+          match(state)
+            .with(ElementSelectionState.Selecting, clickToElements)
+            .otherwise(() => EMPTY),
+        ),
       )
       .subscribe(async (val) => {
         const { el } = val
@@ -226,9 +279,9 @@ export class RegistrationController {
   }
 }
 
-export function escapeKeyAborter() {
+export function escapeKeyAborter(emitter: KeyDownEmitter = document) {
   const aborter = new AbortController()
-  waitForKeyDown('Escape', aborter.signal)
+  waitForKeyDown('Escape', aborter.signal, emitter)
     .then(() => {
       log.warn('Registration aborted')
       aborter.abort(new RegistrationAbortedError())

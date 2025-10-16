@@ -5,6 +5,7 @@
 
   export const config: PlasmoCSConfig = {
     matches: ['<all_urls>'],
+    all_frames: true,
   }
 
   export const getStyle: PlasmoGetStyle = () => {
@@ -25,11 +26,24 @@
   import { showOverlayStream } from '~messages/tabs'
   import { DocumentClient } from './document-client'
   import OverlayTarget from '../components/overlay-target.svelte'
+  import { map, of, switchMap } from 'rxjs'
+  import {
+    ElementSelectionState,
+    RegistrationState,
+  } from '~lib/registration-controller'
+  import { match } from 'ts-pattern'
 
   const client = new DocumentClient()
   const { pageControllerInstance, registrationControllerInstance } = client
   let showingOverlay = false
   const registering$ = registrationControllerInstance.registrationInProgress$
+  const disableUi$ = registrationControllerInstance.elementSelectionState$.pipe(
+    map((state) =>
+      match(state)
+        .with(ElementSelectionState.Paused, () => true)
+        .otherwise(() => false),
+    ),
+  )
 
   function toggleVisibility() {
     log.info('on toggle visibility')
@@ -51,11 +65,12 @@
 <div use:themeController>
   <Popup
     visible={showingOverlay}
-    disabled={$registering$}
+    ghost={$registering$}
+    disabled={$disableUi$}
     {pageControllerInstance}
     close={closePopup}
     on:registerNewBinding={(e) => registerNewBinding(e.detail.path)} />
   <Filters />
-  <Toaster />
+  <Toaster disabled={$disableUi$} />
   <OverlayTarget {registrationControllerInstance} {pageControllerInstance} />
 </div>

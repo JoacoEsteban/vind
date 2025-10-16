@@ -40,3 +40,7 @@ export function time(label: string) {
 export function call<T>(fn: () => T): T {
   return fn()
 }
+
+export function not(val: boolean) {
+  return !val
+}

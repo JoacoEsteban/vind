@@ -24,9 +24,17 @@ import { PageController } from '~lib/page-controller'
 import { RegistrationController } from '~lib/registration-controller'
 import { Path, getSanitizedCurrentUrl } from '~lib/url'
 import { wakeUp } from '~messages/tabs'
+import {
+  CrossFrameEventsController,
+  VindKeyboardEvent,
+} from '~lib/cross-frame-keyboard-events'
+const isIframe = window.self !== window.top
 
 export class DocumentClient {
   constructor(
+    private readonly keyboardEventsControllerInstance = new CrossFrameEventsController(
+      isIframe,
+    ),
     public readonly pageControllerInstance = new PageController(
       new BindingChannelImpl(),
       new DisabledPathsChannelImpl(),
@@ -35,11 +43,16 @@ export class DocumentClient {
     ),
     public readonly registrationControllerInstance = new RegistrationController(
       pageControllerInstance,
+      keyboardEventsControllerInstance,
     ),
     public readonly onPageControllerReady = pageControllerInstance
       .refreshResources()
       .then(() => pageControllerInstance),
   ) {
+    if (isIframe) {
+      return
+    }
+
     const registrationStateToastSubject = new Subject<string | null>()
     registrationStateToastSubject
       .pipe(startWith(''), pairwise())
@@ -79,8 +92,14 @@ export class DocumentClient {
       })
 
       merge(
-        fromEvent<KeyboardEvent>(document, 'keypress'),
-        fromEvent<KeyboardEvent>(document, 'keydown'),
+        fromEvent<VindKeyboardEvent>(
+          this.keyboardEventsControllerInstance,
+          'keypress',
+        ),
+        fromEvent<VindKeyboardEvent>(
+          this.keyboardEventsControllerInstance,
+          'keydown',
+        ),
       )
         .pipe(throttleTime(100))
         .pipe(

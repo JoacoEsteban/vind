@@ -11,12 +11,7 @@ import {
 } from 'rxjs'
 import { Domain, Path } from './url'
 import { BindingChannelImpl, type BindingChannel } from './messages/bindings'
-import {
-  clickEvent,
-  isBindableKeydownEvent,
-  mousedownEvent,
-  mouseupEvent,
-} from './element'
+import { clickEvent, mousedownEvent, mouseupEvent } from './element'
 import {
   DisabledPathsChannelImpl,
   type DisabledPathsChannel,
@@ -24,6 +19,7 @@ import {
 import { expose } from './rxjs'
 import { concur, sleep } from './control-flow'
 import { InexistentElementError } from './error'
+import type { VindKeyboardEvent } from './cross-frame-keyboard-events'
 
 class PageManager {
   constructor(
@@ -273,8 +269,8 @@ export class PageController extends PageManager {
     .asObservable()
     .pipe(distinctUntilChanged())
   // ------------------------------------------
-  getMatchingKey(event: KeyboardEvent): string | null {
-    if (!isBindableKeydownEvent(event)) {
+  getMatchingKey(event: VindKeyboardEvent): string | null {
+    if (!event.isBindable) {
       return null
     }
 
@@ -335,7 +331,7 @@ export class PageController extends PageManager {
     this.focusedBindingElementSubject.next(null)
   }
 
-  async onKeyPress(e: KeyboardEvent) {
+  async onKeyPress(e: VindKeyboardEvent) {
     const key = this.getMatchingKey(e)
     return key ? this.triggerBindingsByKey(key) : []
   }
