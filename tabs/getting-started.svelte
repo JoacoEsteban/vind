@@ -22,10 +22,18 @@
   import OverlayTarget from '~components/overlay-target.svelte'
   import { TestId } from '~lib/test-id'
   import { CrossFrameEventsController } from '~lib/cross-frame-keyboard-events'
+  import { match } from 'ts-pattern'
+  import { identity } from '~lib/misc'
 
   const style = document.createElement('style')
   style.textContent = styleText
   document.head.appendChild(style)
+
+  const framerate = match(
+    parseFloat(new URLSearchParams(location.search).get('framerate') ?? ''),
+  )
+    .with(NaN, () => Infinity)
+    .otherwise(identity)
 
   const transitionArgs = {
     duration: 750,
@@ -124,6 +132,7 @@
 
 <CrabsScene
   {spin$}
+  {framerate}
   colorSeed={$colorSeed$}
   onColorChange={(color) => color$.next(color)} />
 <div use:themeController>

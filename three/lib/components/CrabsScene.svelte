@@ -8,6 +8,8 @@
     startWith,
     combineLatest,
     BehaviorSubject,
+    throttleTime,
+    ignoreElements,
     withLatestFrom,
   } from 'rxjs'
   import { getCurrentViewport, type Viewport } from '../three'
@@ -25,6 +27,7 @@
   import chroma from 'chroma-js'
   import { generateId } from '~lib/id'
   import ColorHash from 'color-hash'
+  import { match, P } from 'ts-pattern'
 
   type FrameContext = [
     renderer: T.WebGLRenderer,
@@ -49,6 +52,7 @@
   export let spin$: VoidSubject
   export let colorSeed = generateId()
   export let onColorChange: undefined | ((e: string) => void)
+  export let framerate: number = Infinity
 
   let baseModelMap: T.Texture | null = null
   const hueShift$ = svelteCompat(new BehaviorSubject('311')).pipe(
@@ -102,6 +106,11 @@
   const mesh$ = new Subject<SceneMesh['mesh']>()
   const context$ = new Subject<FrameContext>()
   const frame$ = new Subject<FrameContext>()
+  const frameLimited$ = match(Math.abs(framerate))
+    .with(Infinity, NaN, () => frame$.asObservable())
+    .with(0, () => frame$.pipe(ignoreElements()))
+    .otherwise((framerate) => frame$.pipe(throttleTime(1000 / framerate)))
+
   const paused$ = new ToggleSubject()
   const spinFrom$ = spin$.pipe(
     map(() => performance.now()),
@@ -332,7 +341,7 @@
   // ------------------------------------------------------------------------
 
   fromEvent(window, 'resize')
-    .pipe(withLatestFrom(frame$))
+    .pipe(withLatestFrom(frameLimited$))
     .subscribe(([, context]) => setRatio(context))
 
   meshes$.subscribe((meshes) => meshes.forEach((box) => scene.add(box.mesh)))
@@ -392,7 +401,7 @@
     },
   )
 
-  frame$
+  frameLimited$
     .pipe(
       withLatestFrom(
         meshes$,
