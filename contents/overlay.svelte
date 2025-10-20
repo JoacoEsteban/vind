@@ -22,7 +22,7 @@
   import { log } from '~lib/log'
   import { themeController } from '~lib/theme-controller'
   import type { Path } from '~lib/url'
-  import { newBinding } from '~messages/index'
+  import { askForOptionsPage, newBinding } from '~messages/index'
   import { showOverlayStream } from '~messages/tabs'
   import { DocumentClient } from './document-client'
   import OverlayTarget from '../components/overlay-target.svelte'
@@ -57,20 +57,23 @@
     client.registerNewBinding(path)
   }
 
-  newBinding.stream.subscribe(() => registerNewBinding())
-
-  showOverlayStream.subscribe(toggleVisibility)
+  if (!client.isIframe) {
+    newBinding.stream.subscribe(() => registerNewBinding())
+    showOverlayStream.subscribe(toggleVisibility)
+  }
 </script>
 
-<div use:themeController>
-  <Popup
-    visible={showingOverlay}
-    ghost={$registering$}
-    disabled={$disableUi$}
-    {pageControllerInstance}
-    close={closePopup}
-    on:registerNewBinding={(e) => registerNewBinding(e.detail.path)} />
-  <Filters />
-  <Toaster disabled={$disableUi$} />
-  <OverlayTarget {registrationControllerInstance} {pageControllerInstance} />
-</div>
+{#if !client.isIframe}
+  <div use:themeController>
+    <Popup
+      visible={showingOverlay}
+      ghost={$registering$}
+      disabled={$disableUi$}
+      {pageControllerInstance}
+      close={closePopup}
+      on:registerNewBinding={(e) => registerNewBinding(e.detail.path)} />
+    <Filters />
+    <Toaster disabled={$disableUi$} />
+    <OverlayTarget {registrationControllerInstance} {pageControllerInstance} />
+  </div>
+{/if}

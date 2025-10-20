@@ -31,6 +31,8 @@ import {
 const isIframe = window.self !== window.top
 
 export class DocumentClient {
+  public readonly isIframe = isIframe
+
   constructor(
     private readonly keyboardEventsControllerInstance = new CrossFrameEventsController(
       isIframe,
