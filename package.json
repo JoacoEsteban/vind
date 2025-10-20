@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@extend-chrome/messages": "^1.2.2",
-    "@floating-ui/core": "^1.6.1",
+    "@floating-ui/core": "^1.7.3",
     "@parcel/runtime-js": "2.8.3",
     "@solid-primitives/event-listener": "^2.3.0",
     "@thedutchcoder/postcss-rem-to-px": "^0.0.2",
@@ -45,7 +45,7 @@
     "rxjs": "^7.8.1",
     "semver": "^7.6.2",
     "svelte": "4.2.0",
-    "svelte-floating-ui": "^1.5.8",
+    "svelte-floating-ui": "^1.6.2",
     "svelte-french-toast": "^1.2.0",
     "svelte-preprocess": "5.0.4",
     "three": "^0.173.0",
