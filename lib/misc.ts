@@ -46,6 +46,24 @@ export function not(val: boolean) {
   return !val
 }
 
+export function notNull<T>(value: T | null | undefined): value is T {
+  return value !== null && value !== undefined
+}
+
+export type NonNullableTuple<T extends readonly unknown[]> = {
+  [K in keyof T]: NonNullable<T[K]>
+}
+
+export type NullableTuple<T extends readonly unknown[]> = {
+  [K in keyof T]: T[K] | null
+}
+
+export function tupleNotNull<T extends readonly unknown[]>(
+  tuple: T,
+): tuple is NonNullableTuple<T> {
+  return tuple.every(notNull)
+}
+
 export function getPlatform(): 'windows' | 'mac' | 'linux' | 'unknown' {
   const platform = match(navigator.platform.toLowerCase())
     .when(
