@@ -2,6 +2,7 @@ import { pEvent, type CancelablePromise, type Emitter } from 'p-event'
 import { noop } from './misc'
 import type { Binding } from './binding'
 import { Observable, Subject } from 'rxjs'
+import type { VoidSubject } from './rxjs'
 
 export type KeyDownEmitter = Emitter<string, [KeyboardEvent]>
 
@@ -206,3 +207,72 @@ export class StylePropertyAndParentsObserver extends Observable<{
     return sub.asObservable()
   }
 }
+
+export class GlobalDisconnectionObserver {
+  private observer = new MutationObserver(this.handle.bind(this))
+
+  constructor(private readonly ownerDocument = document) {}
+
+  private listening = new Map<Node, VoidSubject>()
+
+  get observing() {
+    return this.listening.size > 0
+  }
+
+  private handle(records: MutationRecord[]) {
+    for (const list of records.flatMap((rec) => rec.removedNodes.values())) {
+      for (const node of list) {
+        this.handleNode(node)
+      }
+    }
+  }
+
+  private handleNode(node: Node) {
+    const subject = this.listening.get(node)
+
+    if (subject) {
+      subject.next()
+      subject.complete()
+      this.listening.delete(node)
+    }
+
+    if (this.collect()) {
+      return
+    }
+
+    node.childNodes.forEach((child) => this.handleNode(child))
+  }
+
+  observe(target: Node) {
+    if (!this.observing) {
+      this.observer.observe(this.ownerDocument, {
+        childList: true,
+        subtree: true,
+      })
+    }
+
+    const subject = new Subject<void>()
+    this.listening.set(target, subject)
+
+    return subject.asObservable()
+  }
+
+  disconnect(target: Node): void {
+    this.listening.get(target)?.complete()
+    this.listening.delete(target)
+    this.collect()
+  }
+
+  collect() {
+    if (this.listening.size === 0) {
+      this.observer.disconnect()
+      return true
+    }
+    return false
+  }
+}
+
+export const onElementDisconnected = ((observer) => (node: Node) => ({
+  onDisconnected$: observer.observe(node),
+  cancel: () => observer.disconnect(node),
+}))(new GlobalDisconnectionObserver())
