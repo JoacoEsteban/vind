@@ -122,7 +122,7 @@ export class RegistrationController {
   )
 
   public elementSelectionEnabled$ = defer(() =>
-    isPressingKey$(this.keyboardController.channel$, 'Alt'),
+    isPressingKey$(this.keyboardController, 'Alt'),
   ).pipe(map(not), shareLatest())
 
   public elementSelectionState$ = this.registrationState$$.pipe(

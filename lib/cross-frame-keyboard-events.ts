@@ -1,4 +1,15 @@
-import { Subject, Subscription, fromEvent, map, merge, take } from 'rxjs'
+import {
+  Observable,
+  Subject,
+  Subscription,
+  filter,
+  finalize,
+  fromEvent,
+  map,
+  merge,
+  share,
+  take,
+} from 'rxjs'
 import { forwardKeyEvent, type KeyboardEventDto } from '~messages/tabs'
 import { abortSignal$, instanceOfFilter } from './rxjs'
 import { match } from 'ts-pattern'
@@ -7,6 +18,7 @@ import { log } from './log'
 import { isBindableKeyboardEvent } from './element'
 import { DisposeBag } from './dispose-bag'
 import type { _Event } from 'bun-types/globals'
+import { TotalMap } from './map'
 
 export enum SupportedKeyboardEvent {
   KeyUp = 'keyup',
@@ -119,14 +131,37 @@ interface VindEventListenerObject extends VindEventListener {
 type VindListener = VindEventListener // | VindEventListenerObject
 
 export class CrossFrameEventsController extends CrossFrameKeyboardEventChannel {
-  private listeners = new Map<
+  private listeners = new TotalMap<
     SupportedKeyboardEvent,
     Map<VindListener, Subscription>
-  >([
-    [SupportedKeyboardEvent.KeyDown, new Map()],
-    [SupportedKeyboardEvent.KeyUp, new Map()],
-    [SupportedKeyboardEvent.KeyPress, new Map()],
-  ])
+  >({
+    [SupportedKeyboardEvent.KeyDown]: new Map(),
+    [SupportedKeyboardEvent.KeyUp]: new Map(),
+    [SupportedKeyboardEvent.KeyPress]: new Map(),
+  })
+
+  private eventSubjects = this.listeners.map(
+    () => new Subject<VindKeyboardEvent>(),
+  )
+  readonly eventStreams = this.eventSubjects.map((_, sub) => sub.asObservable())
+
+  constructor(
+    ...args: ConstructorParameters<typeof CrossFrameKeyboardEventChannel>
+  ) {
+    super(...args)
+
+    this.channel$
+      .pipe(
+        finalize(() => {
+          this.eventSubjects.forEach((stream) => stream.complete())
+        }),
+      )
+      .subscribe((ev) => {
+        this.eventSubjects
+          .get(ev.serialized.type as SupportedKeyboardEvent)
+          ?.next(ev)
+      })
+  }
 
   addEventListener(
     event: SupportedKeyboardEvent,
@@ -143,6 +178,11 @@ export class CrossFrameEventsController extends CrossFrameKeyboardEventChannel {
       throw new Error(`Invalid event type: ${event}`)
     }
 
+    const stream$ = this.eventStreams.get(event)
+    if (!stream$) {
+      throw new Error(`Invalid event type: ${event}`)
+    }
+
     const previousSubscription = listeners.get(listener)
     if (previousSubscription) {
       log.warn(`Listener already exists: ${listener}`)
@@ -153,8 +193,8 @@ export class CrossFrameEventsController extends CrossFrameKeyboardEventChannel {
     const { sink, dispose } = new DisposeBag()
 
     const obs = match(once)
-      .with(true, () => this.channel$.pipe(take(1)))
-      .otherwise(() => this.channel$)
+      .with(true, () => stream$.pipe(take(1)))
+      .otherwise(() => stream$)
       .pipe(sink())
 
     const subscription = obs.subscribe(listener)

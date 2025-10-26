@@ -18,7 +18,11 @@ import {
 } from 'rxjs'
 import { log } from './log'
 import { noop, type Constructor } from './misc'
-import type { VindKeyboardEvent } from './cross-frame-keyboard-events'
+import {
+  SupportedKeyboardEvent,
+  type CrossFrameEventsController,
+  type VindKeyboardEvent,
+} from './cross-frame-keyboard-events'
 
 export function expose<T>(observable: Observable<T>): () => T | null
 export function expose<T>(observable: Observable<T>, startWith: T): () => T
@@ -147,21 +151,22 @@ export function abortSignal$(signal: AbortSignal) {
 }
 
 export function isPressingKey$(
-  channel$: Observable<VindKeyboardEvent>,
+  controller: CrossFrameEventsController,
   key: string,
   initial: boolean = false,
 ) {
+  const keyDown$ = controller.eventStreams.get(SupportedKeyboardEvent.KeyDown)
+  const keyUp$ = controller.eventStreams.get(SupportedKeyboardEvent.KeyUp)
+
   const doFilter = (event: VindKeyboardEvent) => event.key === key
 
   return merge(
-    channel$.pipe(
-      filter((e) => e.type === 'keydown'),
+    keyDown$.pipe(
       filter(doFilter),
       debug('keydown'),
       map(() => true),
     ),
-    channel$.pipe(
-      filter((e) => e.type === 'keyup'),
+    keyUp$.pipe(
       filter(doFilter),
       debug('keyup'),
       map(() => false),
