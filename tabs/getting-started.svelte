@@ -16,7 +16,10 @@
   import { MemoryDisabledPathsChannelImpl } from '~lib/messages/disabled-paths'
   import VindLogo from '~components/vind-logo.svelte'
   import { useTransitions } from '~lib/transitions'
-  import { RegistrationState } from '~lib/registration-controller'
+  import {
+    ElementSelectionState,
+    RegistrationState,
+  } from '~lib/registration-controller'
   import { wrapIterable } from '~lib/svelte'
   import { generateId } from '~lib/id'
   import OverlayTarget from '~components/overlay-target.svelte'
@@ -128,6 +131,14 @@
   }
 
   const colorLabelTestId = new TestId('getting-started:color-label')
+
+  const disableUi$ = registrationControllerInstance.elementSelectionState$.pipe(
+    map((state) =>
+      match(state)
+        .with(ElementSelectionState.Paused, () => true)
+        .otherwise(() => false),
+    ),
+  )
 </script>
 
 <CrabsScene
@@ -281,7 +292,7 @@
     <Filters />
 
     <div class="absolute" style="z-index: 9999999999;">
-      <Toaster />
+      <Toaster disabled={$disableUi$} />
       <OverlayTarget
         {registrationControllerInstance}
         {pageControllerInstance} />
