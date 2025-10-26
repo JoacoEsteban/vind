@@ -64,7 +64,9 @@ export class VindKeyboardEvent extends KeyboardEvent {
 class CrossFrameKeyboardEventChannel {
   protected readonly events$ = merge(
     ...supportedEvents.map((event) =>
-      fromEvent(document, event).pipe(
+      fromEvent(document, event, {
+        capture: true,
+      }).pipe(
         instanceOfFilter(KeyboardEvent),
         map((event) => new VindKeyboardEvent(event)),
       ),
