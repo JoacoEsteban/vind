@@ -20,8 +20,8 @@ const supportedEvents = [
 ] as const
 
 export class VindKeyboardEvent extends KeyboardEvent {
-  rawEvent: KeyboardEvent | null
-  serialized: KeyboardEventDto
+  readonly rawEvent: KeyboardEvent | null
+  readonly serialized: KeyboardEventDto
   get isBindable() {
     return this.serialized.isBindable
   }
