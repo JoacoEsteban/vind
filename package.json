@@ -6,17 +6,21 @@
   "author": "dev@joacoesteban.com",
   "scripts": {
     "dev": "plasmo dev",
+    "prebuild": "pnpm run typecheck:svelte",
     "build": "plasmo build",
     "test": "bun x playwright test",
+    "prebuild:firefox": "pnpm run typecheck:svelte",
     "build:firefox": "plasmo build --target=firefox-mv2",
+    "prebuild:safari": "pnpm run typecheck:svelte",
     "build:safari": "plasmo build --target=safari-mv3",
     "package": "plasmo package",
     "package:firefox": "plasmo package --target=firefox-mv2",
     "package:safari": "plasmo package --target=safari-mv3",
     "rebuild-sharp": "npm rebuild --verbose sharp",
-    "bundle": "npm run build && npm run package",
-    "bundle:firefox": "npm run build:firefox && npm run package:firefox",
-    "bundle:all": "npm run bundle && npm run bundle:firefox"
+    "bundle": "pnpm run build && pnpm run package",
+    "bundle:firefox": "pnpm run build:firefox && pnpm run package:firefox",
+    "bundle:all": "pnpm run bundle && pnpm run bundle:firefox",
+    "typecheck:svelte": "svelte-check --tsconfig tsconfig.json"
   },
   "dependencies": {
     "@extend-chrome/messages": "^1.2.2",
@@ -60,6 +64,7 @@
     "@types/assert": "^1.5.8",
     "@types/chrome": "0.0.245",
     "@types/node": "^20.11.17",
+    "@types/three": "^0.180.0",
     "autoprefixer": "^10.4.16",
     "crypto-browserify": "^3.12.0",
     "daisyui": "^4.10.2",
@@ -68,6 +73,7 @@
     "prettier": "3.0.3",
     "prettier-plugin-svelte": "^3.2.3",
     "sharp": "^0.33.3",
+    "svelte-check": "^4.3.3",
     "tailwindcss": "^3.4.17",
     "typescript": "5.3.3"
   },
