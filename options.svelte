@@ -38,6 +38,7 @@
   import { BindingChannelImpl } from '~lib/messages/bindings'
   import { DisabledPathsChannelImpl } from '~lib/messages/disabled-paths'
   import { openTab } from '~background/utils/tab'
+  import { CrossFrameEventsController } from '~lib/cross-frame-keyboard-events'
 
   type orderedDomainMapOfOrderedPathMap = [
     string,
@@ -53,7 +54,11 @@
     pageController.bindingsChannel,
     pageController.disabledPathsChannel,
   )
-  const registrationController = new RegistrationController(pageController)
+  const keyboardEventsController = new CrossFrameEventsController(false)
+  const registrationController = new RegistrationController(
+    pageController,
+    keyboardEventsController,
+  )
   pageController.refreshResources()
 
   wakeUp.stream.subscribe(() => {
