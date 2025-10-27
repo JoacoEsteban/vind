@@ -43,27 +43,6 @@ export function getClosestBindableElement(
   return closest && isHighlightableElement(closest) ? closest : null
 }
 
-export function addClickTargetToElement(element: HTMLElement) {
-  const overlay = document.createElement('div')
-
-  const boundingRect = element.getBoundingClientRect()
-
-  overlay.style.position = 'fixed'
-  overlay.style.top = `${boundingRect.top}px`
-  overlay.style.left = `${boundingRect.left}px`
-  overlay.style.width = `${boundingRect.width}px`
-  overlay.style.height = `${boundingRect.height}px`
-
-  overlay.style.zIndex = '999999999'
-  overlay.style.borderRadius = getComputedStyle(element).borderRadius
-
-  overlay.classList.add('vind-overlay')
-  overlay.classList.add('vind-ignore-*')
-
-  document.body.appendChild(overlay)
-  return overlay
-}
-
 export async function waitForKey(
   key: string,
   signal?: AbortSignal,

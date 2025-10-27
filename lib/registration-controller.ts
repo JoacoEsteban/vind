@@ -5,10 +5,10 @@ import {
   defer,
   distinctUntilChanged,
   filter,
+  finalize,
   fromEvent,
   map,
   of,
-  pairwise,
   share,
   switchMap,
   tap,
@@ -19,14 +19,12 @@ import { log } from './log'
 import { PromiseWithResolvers } from './polyfills'
 import {
   getClosestBindableElement,
-  addClickTargetToElement,
   recordInputKey,
   waitForKeyDown,
   type KeyDownEmitter,
 } from './element'
 import { Binding } from './binding'
 import {
-  debug,
   exposeSubject,
   isPressingKey$,
   shareLatest,
@@ -39,6 +37,8 @@ import type { Domain, Path } from './url'
 import { RegistrationSuccess, Success } from './Event'
 import type { CrossFrameEventsController } from './cross-frame-keyboard-events'
 import { not } from './misc'
+import { DisposeBag } from './dispose-bag'
+import { ClickOverlay } from './click-overlay'
 
 export enum RegistrationState {
   Idle,
@@ -48,9 +48,9 @@ export enum RegistrationState {
 }
 
 export enum ElementSelectionState {
-  Idle,
-  Selecting,
-  Paused,
+  Idle = 'idle',
+  Selecting = 'selecting',
+  Paused = 'paused',
 }
 
 export class RegistrationController {
@@ -90,31 +90,102 @@ export class RegistrationController {
     target: HTMLElement
     el: HTMLElement
   }>((sub) => {
-    const target$ = this.targetedElement$.pipe(
+    const { dispose, sink } = new DisposeBag()
+    const overlay = new ClickOverlay()
+
+    enum LifeCycle {
+      Mounted = 'mounted',
+      Unmounted = 'unmounted',
+    }
+
+    const { Paused, Selecting, Idle } = ElementSelectionState
+    const { Mounted, Unmounted } = LifeCycle
+
+    const mouse$ = fromEvent<MouseEvent>(document, 'mousemove').pipe(
+      throttleTimeLeadTrail(20),
+      shareLatest(),
+    )
+
+    const targetedElement$ = mouse$.pipe(
       map(
-        (target) =>
-          target && {
-            target: addClickTargetToElement(target) as HTMLElement,
-            el: target,
-          },
+        (e) =>
+          document.elementsFromPoint(e.clientX, e.clientY) as HTMLElement[],
       ),
+      map<HTMLElement[], HTMLElement | null>((els) => {
+        for (const el of els) {
+          const match = getClosestBindableElement(el)
+          if (match) return match
+        }
+        return null
+      }),
+      distinctUntilChanged(),
     )
 
-    const filteredTarget$ = this.elementSelectionState$.pipe(
-      switchMap((state) =>
+    const controlClickOverlay$ = targetedElement$.pipe(
+      tap((el) =>
+        match(el)
+          .with(null, () => overlay.unmount())
+          .otherwise((el) => overlay.updateTarget(el).mount()),
+      ),
+      finalize(() => overlay.unmount()),
+    )
+
+    const mountedState$ = this.elementSelectionState$.pipe(
+      filter((state) =>
         match(state)
-          .with(ElementSelectionState.Selecting, () => target$)
-          .otherwise(() => of(null)),
+          .with(Selecting, Paused, () => true)
+          .with(Idle, () => false)
+          .exhaustive(),
       ),
-      tap((el) => sub.next(el)),
+      distinctUntilChanged(),
     )
 
-    filteredTarget$
+    const lifeCycle$ = this.elementSelectionState$.pipe(
+      map((state) =>
+        match(state)
+          .with(Selecting, Paused, () => Mounted)
+          .with(Idle, () => Unmounted)
+          .exhaustive(),
+      ),
+      distinctUntilChanged(),
+    )
+
+    lifeCycle$
       .pipe(
-        pairwise(),
-        tap(([prev]) => prev && document.body.removeChild(prev.target)),
+        switchMap((state) =>
+          match(state)
+            .with(Mounted, () => {
+              const { dispose, sink } = new DisposeBag()
+
+              // keep mouse listener alive to have last mouse position when reactivated
+              mouse$.pipe(sink()).subscribe()
+
+              return mountedState$.pipe(
+                switchMap((state) =>
+                  match(state)
+                    .with(Selecting, () => controlClickOverlay$)
+                    .otherwise(() => of(null)),
+                ),
+                finalize(dispose),
+              )
+            })
+            .with(Unmounted, () => of(null))
+            .exhaustive(),
+        ),
+        sink(),
       )
-      .subscribe()
+      .subscribe((el) => {
+        sub.next(
+          match(el)
+            .with(null, () => null)
+            .otherwise((el) => ({
+              el,
+              target: overlay.overlay,
+            })),
+        )
+      })
+
+    return dispose
   }).pipe(shareLatest())
 
   public currentElementSelectionTarget$ = this.elementSelectionTarget$.pipe(
@@ -209,6 +280,10 @@ export class RegistrationController {
       reject: cancel,
     } = PromiseWithResolvers<[HTMLElement, XPathObject, string]>()
     abortSignal.addEventListener('abort', () => cancel(abortSignal.reason))
+    const { dispose, sink } = new DisposeBag()
+
+    // Keep selection target alive during lifecycle
+    this.elementSelectionTarget$.pipe(sink()).subscribe()
 
     const clickToElements = () =>
       fromEvent<MouseEvent>(document, 'click').pipe(
@@ -224,13 +299,14 @@ export class RegistrationController {
         map(([, target]) => target!),
       )
 
-    const sub = this.elementSelectionState$
+    this.elementSelectionState$
       .pipe(
         switchMap((state) =>
           match(state)
             .with(ElementSelectionState.Selecting, clickToElements)
             .otherwise(() => EMPTY),
         ),
+        sink(),
       )
       .subscribe(async (val) => {
         const { el } = val
@@ -253,7 +329,7 @@ export class RegistrationController {
         log.info('on error @ selectElement', err)
         throw err
       })
-      .finally(() => sub.unsubscribe())
+      .finally(dispose)
 
     return selectedElement
   }
