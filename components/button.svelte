@@ -27,6 +27,20 @@
   export let tabindex: number = 0
   export let type: HTMLButtonElement['type'] = 'button'
 
+  let renderedElement: HTMLElement | null = null
+
+  $: if (renderedElement) {
+    if (renderedElement instanceof HTMLButtonElement) {
+      renderedElement.type = type
+      renderedElement.disabled = disabled
+      renderedElement.removeAttribute('aria-disabled')
+    } else {
+      renderedElement.removeAttribute('type')
+      renderedElement.toggleAttribute('aria-disabled', disabled)
+      renderedElement.removeAttribute('disabled')
+    }
+  }
+
   const opacity = 0.5
   $: topGradient = chroma(colorHash.hex(colorSeed)).alpha(opacity).hex()
   $: bottomGradient = chroma(topGradient)
@@ -48,7 +62,8 @@
     data-testid={testId?.id}
     {role}
     {tabindex}
-    {type}
+    bind:this={renderedElement}
+    aria-disabled={as !== 'button' ? disabled : undefined}
     class="outer f-center btn"
     class:round
     class:opaque
@@ -56,7 +71,6 @@
     class:highlight
     class:glassy
     class:ping
-    {disabled}
     style:--gradient-top={topGradient}
     style:--gradient-bottom={bottomGradient}
     style:--focus-color={focusColor}

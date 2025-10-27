@@ -100,7 +100,8 @@
       transform: scale(0.95);
       opacity: 0.5;
     }
-    &:disabled {
+    &:disabled,
+    &[aria-disabled] {
       opacity: 0.5;
       cursor: not-allowed;
       @include desaturate;
