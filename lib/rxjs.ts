@@ -15,6 +15,7 @@ import {
   filter,
   merge,
   startWith,
+  finalize,
 } from 'rxjs'
 import { log } from './log'
 import { noop, type Constructor } from './misc'
@@ -23,6 +24,7 @@ import {
   type CrossFrameEventsController,
   type VindKeyboardEvent,
 } from './cross-frame-keyboard-events'
+import { match } from 'ts-pattern'
 
 export function expose<T>(observable: Observable<T>): () => T | null
 export function expose<T>(observable: Observable<T>, startWith: T): () => T
@@ -116,10 +118,23 @@ export function asVoid() {
   return map(noop)
 }
 
-export function debug<T>(message?: string, logFn = log.debug) {
-  return tap((value: T) => {
+export function debug<T>(
+  message?: string,
+  logFn = log.debug,
+  behavior: 'tap' | 'finalize' = 'tap',
+) {
+  const fn = match(behavior)
+    .with('tap', () => tap<T>)
+    .with('finalize', () => finalize<T>)
+    .exhaustive()
+
+  return fn((value?: T) => {
     logFn(message || 'Log:', value)
   })
+}
+
+export function debugEnd<T>(message?: string, logFn = log.debug) {
+  return debug<T>(message, logFn, 'finalize')
 }
 
 export function makeDebug(logFn = log.debug) {
