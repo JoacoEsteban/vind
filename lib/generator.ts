@@ -72,16 +72,6 @@ export function* combinationsDescending<T>(
   }
 }
 
-export function* combinationsAscending<T>(
-  arr: T[],
-): Generator<CombinationYield<T>> {
-  for (let i = 0; i <= arr.length; i++) {
-    for (const combination of combinationsGenerator(arr, i)) {
-      yield combination
-    }
-  }
-}
-
 export function* pairCombinations<T>(arr: T[]): Generator<[T, T]> {
   for (const combination of combinationsGenerator(arr, 2)) {
     yield combination as [T, T]
