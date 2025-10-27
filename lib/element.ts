@@ -46,15 +46,19 @@ export function getClosestBindableElement(
 export async function waitForKey(
   key: string,
   signal?: AbortSignal,
+  emitter: KeyDownEmitter = document,
 ): Promise<void> {
-  await pEvent<string, KeyboardEvent>(document, 'keydown', {
+  await pEvent<string, KeyboardEvent>(emitter, 'keydown', {
     signal,
     filter: (e) => e.key === key,
   }).catch(noop)
 }
 
-export function recordInputKey(signal?: AbortSignal): Promise<string> {
-  return pEvent<string, KeyboardEvent>(document, 'keydown', {
+export function recordInputKey(
+  signal?: AbortSignal,
+  emitter: KeyDownEmitter = document,
+): Promise<string> {
+  return pEvent<string, KeyboardEvent>(emitter, 'keydown', {
     signal,
     filter: (e) => isBindableKeydownEvent(e),
   }).then((e) => {
