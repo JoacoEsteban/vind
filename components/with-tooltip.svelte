@@ -4,7 +4,7 @@
     flip,
     shift,
     offset as offsetMiddleware,
-  } from 'svelte-floating-ui/dom'
+  } from 'svelte-floating-ui/dist/dom'
   import { noop, tupleNotNull } from '~lib/misc'
   import { handleExitPolygon, PolygonState } from '~lib/safe-polygon'
   import { transitionIn, transitionOut } from '~lib/transitions'
