@@ -4,6 +4,7 @@
   import { fade, scale } from 'svelte/transition'
   import { match } from 'ts-pattern'
   import { colorSeeds } from '~lib/definitions'
+  import { autofocus } from '~lib/autofocus'
   import {
     BooleanPrompt$,
     Prompt$,
@@ -100,6 +101,8 @@
     aria-modal="true">
     <div
       role="button"
+      tabindex="-1"
+      aria-label="Close dialog"
       transition:fade
       on:click={cancel}
       on:keydown={backdropKeydown}
@@ -146,7 +149,7 @@
               class="mt-3 text-center sm:text-left px-4 sm:px-6 pb-4"
               on:submit|preventDefault={confirm}>
               <input
-                autofocus
+                use:autofocus
                 class="input input-bordered w-full !bg-[#fff4] rounded-full text-xl font-medium text-center"
                 type="text"
                 placeholder={prompt?.options.placeholder || 'Enter text'}

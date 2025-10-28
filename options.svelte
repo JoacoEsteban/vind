@@ -386,9 +386,9 @@
       animation-play-state: paused;
     }
   }
-  ._container {
+  /* ._container {
     width: min(80em, 100%);
-  }
+  } */
   .mosaic {
     --mosaic-size-from: 200px;
     --mosaic-size-to: 210px;
