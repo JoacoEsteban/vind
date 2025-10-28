@@ -51,11 +51,11 @@ export function notNull<T>(value: T | null | undefined): value is T {
 }
 
 export type NonNullableTuple<T extends readonly unknown[]> = {
-  [K in keyof T]: NonNullable<T[K]>
+  readonly [K in keyof T]: NonNullable<T[K]>
 }
 
 export type NullableTuple<T extends readonly unknown[]> = {
-  [K in keyof T]: T[K] | null
+  readonly [K in keyof T]: T[K] | null
 }
 
 export function tupleNotNull<T extends readonly unknown[]>(

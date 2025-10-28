@@ -73,7 +73,7 @@
       switchMap(([from, to]) =>
         match([from, to])
           .when(
-            (arr) => tupleNotNull(arr),
+            tupleNotNull<readonly [HTMLElement | null, HTMLElement | null]>,
             ([from, to]) => handleExitPolygon(from, to),
           )
           .otherwise(() => of(PolygonState.Idle)),
