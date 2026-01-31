@@ -16,9 +16,12 @@
 </script>
 
 <script lang="ts">
+  // @ts-expect-error Resolved by Parcel named pipeline in .parcelrc
+  import COMMIT_SHA from 'buildconst:./commit-sha.stub'
   import Filters from '~components/filters.svelte'
   import Popup from '~components/popup.svelte'
   import Toaster from '~components/toaster.svelte'
+  import { getOverlayBuildLabel } from '~lib/build-label'
   import { log } from '~lib/log'
   import { themeController } from '~lib/theme-controller'
   import type { Path } from '~lib/url'
@@ -46,6 +49,8 @@
     ),
   )
 
+  const sha = getOverlayBuildLabel(COMMIT_SHA, ENV_PROD)
+
   function toggleVisibility() {
     log.info('on toggle visibility')
     showingOverlay = !showingOverlay
@@ -67,6 +72,7 @@
 {#if !client.isIframe}
   <div use:themeController>
     <Popup
+      {sha}
       visible={showingOverlay}
       ghost={$registering$}
       disabled={$disableUi$}

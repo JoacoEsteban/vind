@@ -5,6 +5,7 @@
   import BindingButton from '~components/binding-button.svelte'
   import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
+  import { getPopupTitle } from '~lib/build-label'
   import { BindButtonId } from '~lib/test-id'
   import { draggable } from '~lib/draggable'
   import { MapToOrderedTuple } from '~lib/map'
@@ -22,6 +23,8 @@
   export let buttonPing: boolean = false
   export let bindingsPing: boolean = false
   const dragEnabled$ = new BehaviorSubject<boolean>(!ghost)
+
+  export let sha: string | null = null
 
   $: {
     dragEnabled$.next(!ghost)
@@ -78,7 +81,7 @@
       class:ghost
       class:force-ghost={disabled}>
       <div class="flex justify-between sticky top-0 z-10">
-        <h2 class="font-black m-0 opacity-25">Vind</h2>
+        <h2 class="font-black m-0 opacity-25">{getPopupTitle(sha)}</h2>
         <div class="flex">
           <SymbolButton
             disabled={ghost}
