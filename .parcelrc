@@ -1,0 +1,7 @@
+{
+  "extends": "@plasmohq/parcel-config",
+  "reporters": ["...", "./tools/parcel-reporter-jj-watch.cjs"],
+  "transformers": {
+    "buildconst:*": ["./tools/parcel-transformer-buildconst.cjs"]
+  }
+}

@@ -43,6 +43,16 @@ declare module 'raw:*' {
   export default value
 }
 
+declare module 'buildconst:*' {
+  const value: string
+  export default value
+}
+
+declare module 'buildconst:./commit-sha.stub' {
+  const value: string
+  export default value
+}
+
 declare global {
   interface Window {
     navigation?: {
