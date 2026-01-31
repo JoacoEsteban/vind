@@ -51,6 +51,10 @@
     on:mouseleave={() => dispatch('blur')}
     on:focus={() => dispatch('focus')}
     on:blur={() => dispatch('blur')}>
-    {bindingKey}
+    {#if typeof bindingKey === 'function'}
+      <svelte:component this={bindingKey} />
+    {:else}
+      {bindingKey}
+    {/if}
   </Button>
 </div>

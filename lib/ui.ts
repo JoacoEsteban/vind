@@ -1,4 +1,7 @@
-export const bindingKeySymbolMap = new Map<string, string>(
+export const bindingKeySymbolMap = new Map<
+  string,
+  string | ConstructorOfATypedSvelteComponent
+>(
   Object.entries({
     ' ': '␣',
     Enter: '↵',
