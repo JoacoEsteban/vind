@@ -32,10 +32,11 @@
     RegistrationState,
   } from '~lib/registration-controller'
   import { match } from 'ts-pattern'
+  import { ENV_PROD } from '~lib/env'
 
   const client = new DocumentClient()
   const { pageControllerInstance, registrationControllerInstance } = client
-  let showingOverlay = false
+  let showingOverlay = !ENV_PROD
   const registering$ = registrationControllerInstance.registrationInProgress$
   const disableUi$ = registrationControllerInstance.elementSelectionState$.pipe(
     map((state) =>
