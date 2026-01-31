@@ -1,3 +1,5 @@
+import { SymbolComponent } from '~/lib/symbols'
+
 export const bindingKeySymbolMap = new Map<
   string,
   string | ConstructorOfATypedSvelteComponent
@@ -9,5 +11,6 @@ export const bindingKeySymbolMap = new Map<
     ArrowDown: '↓',
     ArrowLeft: '←',
     ArrowRight: '→',
+    Backspace: SymbolComponent('deleteLeft', '2.5rem'),
   }),
 )

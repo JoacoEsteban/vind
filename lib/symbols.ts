@@ -25,6 +25,7 @@ import deleteLeftFillRaw from '~/assets/symbols/delete.left.fill.json'
 import deleteRightFillRaw from '~/assets/symbols/delete.right.fill.json'
 import paintPaletteRaw from '~/assets/symbols/paintpalette.fill.json'
 import arrowClockwiseRaw from '~/assets/symbols/arrow.clockwise.json'
+import deleteLeftRaw from '~/assets/symbols/delete.left.json'
 
 import { default as SvelteSymbolComponent } from '~components/symbol.svelte'
 import type { ComponentConstructorOptions } from 'svelte'
@@ -68,6 +69,7 @@ const [
   deleteRightFill,
   paintPalette,
   arrowClockwise,
+  deleteLeft,
 ] = [
   gearRaw,
   arrowDownRaw,
@@ -94,6 +96,7 @@ const [
   deleteRightFillRaw,
   paintPaletteRaw,
   arrowClockwiseRaw,
+  deleteLeftRaw,
 ]
   .map(checkSymbol)
   .map((symbol) => {
@@ -139,6 +142,7 @@ export const symbols = {
   deleteRightFill,
   paintPalette,
   arrowClockwise,
+  deleteLeft,
 }
 export type SymbolName = keyof typeof symbols
 
