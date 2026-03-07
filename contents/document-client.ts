@@ -7,6 +7,7 @@ import {
   pairwise,
   startWith,
   throttleTime,
+  withLatestFrom,
 } from 'rxjs'
 import toast from 'svelte-french-toast/dist'
 import { match } from 'ts-pattern'
@@ -20,6 +21,8 @@ import {
 import { log } from '~lib/log'
 import { BindingChannelImpl } from '~lib/messages/bindings'
 import { DisabledPathsChannelImpl } from '~lib/messages/disabled-paths'
+import { NotificationSettingsChannelImpl } from '~lib/messages/notification-settings'
+import { notificationSettingKeys } from '~lib/notification-settings'
 import { PageController } from '~lib/page-controller'
 import { RegistrationController } from '~lib/registration-controller'
 import { Path, getSanitizedCurrentUrl } from '~lib/url'
@@ -40,6 +43,7 @@ export class DocumentClient {
     public readonly pageControllerInstance = new PageController(
       new BindingChannelImpl(),
       new DisabledPathsChannelImpl(),
+      new NotificationSettingsChannelImpl(),
       'content-script',
       getSanitizedCurrentUrl(),
     ),
@@ -114,27 +118,48 @@ export class DocumentClient {
           instance.onKeyPress(event)
         })
 
-      instance.triggers$.subscribe(async (trigger) => {
-        trigger
-          .then((presses) => {
-            toast.success('Binding activated', { duration: 500 })
-          })
-          .catch((err) => {
-            log.error('Error in trigger', err)
-            const message = match<Error, string>(err)
-              .when(
-                () => err instanceof InexistentElementError,
-                () =>
-                  'The element that the binding is trying to target does not exist on this page. You can try binding it again',
-              )
-              .when(
-                () => err instanceof VindError,
-                () => err.message,
-              )
-              .otherwise(() => 'An unknown error occurred')
-            toast.error(message, { duration: 5000 })
-          })
-      })
+      instance.triggers$
+        .pipe(withLatestFrom(this.pageControllerInstance.notificationSettings$))
+        .subscribe(async ([trigger, notificationSettings]) => {
+          trigger
+            .then((presses) => {
+              if (
+                notificationSettings.get(
+                  notificationSettingKeys.bindingActivated,
+                )?.enabled
+              ) {
+                toast.success('Binding activated', { duration: 500 })
+              }
+            })
+            .catch((err) => {
+              log.error('Error in trigger', err)
+              const message = match<Error, string | null>(err)
+                .when(
+                  () => err instanceof InexistentElementError,
+                  () =>
+                    match(
+                      notificationSettings.get(
+                        notificationSettingKeys.inexistentElementError,
+                      )?.enabled,
+                    )
+                      .with(
+                        true,
+                        () =>
+                          'The element that the binding is trying to target does not exist on this page. You can try binding it again',
+                      )
+                      .otherwise(() => null),
+                )
+                .when(
+                  () => err instanceof VindError,
+                  () => err.message,
+                )
+                .otherwise(() => 'An unknown error occurred')
+
+              if (message) {
+                toast.error(message, { duration: 5000 })
+              }
+            })
+        })
     })
   }
 

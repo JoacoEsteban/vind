@@ -20,11 +20,17 @@ import { expose } from './rxjs'
 import { concur, sleep } from './control-flow'
 import { InexistentElementError } from './error'
 import type { VindKeyboardEvent } from './cross-frame-keyboard-events'
+import {
+  NotificationSettingsChannelImpl,
+  type NotificationSettingsChannel,
+} from './messages/notification-settings'
+import type { NotificationSettingKey } from './notification-settings'
 
 class PageManager {
   constructor(
     public bindingsChannel: BindingChannel = new BindingChannelImpl(),
     public disabledPathsChannel: DisabledPathsChannel = new DisabledPathsChannelImpl(),
+    public notificationSettingsChannel: NotificationSettingsChannel = new NotificationSettingsChannelImpl(),
     public pageType: 'content-script' | 'options',
     currentUrl: URL | null = null,
   ) {
@@ -61,6 +67,9 @@ class PageManager {
   >([])
   protected disabledPathsSubject: BehaviorSubject<Set<string>> =
     new BehaviorSubject(new Set<string>())
+  protected notificationSettingsSubject: BehaviorSubject<
+    Map<NotificationSettingKey, { enabled: boolean }>
+  > = new BehaviorSubject(new Map())
 
   // ------------------------------------------
 
@@ -108,7 +117,11 @@ class PageManager {
 
   protected async updateResources(url: URL | null = null) {
     if (this.pageType === 'options') {
-      return Promise.all([this.loadAllBindings(), this.loadAllDisabledPaths()])
+      return Promise.all([
+        this.loadAllBindings(),
+        this.loadAllDisabledPaths(),
+        this.loadAllNotificationSettings(),
+      ])
     }
 
     if (!url) {
@@ -119,6 +132,7 @@ class PageManager {
     return Promise.all([
       this.updateBindings(url),
       this.updateDisabledPaths(url),
+      this.loadAllNotificationSettings(),
     ])
   }
 
@@ -148,6 +162,14 @@ class PageManager {
     this.disabledPathsSubject.next(domain_paths)
   }
 
+  protected async loadAllNotificationSettings() {
+    log.info('Loading all notification settings')
+    const notificationSettings =
+      await this.notificationSettingsChannel.getAllSettings()
+    log.debug('notification settings', notificationSettings)
+    this.notificationSettingsSubject.next(notificationSettings)
+  }
+
   public currentSiteSplitted = expose(this.currentSiteSplitted$)
 }
 
@@ -162,6 +184,10 @@ export class PageController extends PageManager {
     this.onEveryDisabledPathEvent$.subscribe(() => {
       log.info('DisabledPath updated, refreshing disabled paths')
       this.refreshDisabledPaths()
+    })
+    this.onEveryNotificationSettingEvent$.subscribe(() => {
+      log.info('Notification setting updated, refreshing notification settings')
+      this.loadAllNotificationSettings()
     })
   }
   public onBindingRemoved$ = this.bindingsChannel.onBindingRemoved$
@@ -184,8 +210,16 @@ export class PageController extends PageManager {
     this.onDisabledBindingPathAdded$,
   )
 
+  public onNotificationSettingUpdated$ =
+    this.notificationSettingsChannel.onNotificationSettingUpdated$
+
+  public onEveryNotificationSettingEvent$ = merge(
+    this.onNotificationSettingUpdated$,
+  )
+
   public bindings$ = this.bindingsSubject.asObservable()
   public disabledDomainPaths$ = this.disabledPathsSubject.asObservable()
+  public notificationSettings$ = this.notificationSettingsSubject.asObservable()
 
   public disabledPathsSet$ = this.disabledDomainPaths$.pipe(
     map(

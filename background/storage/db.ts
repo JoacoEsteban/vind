@@ -1,4 +1,5 @@
 import Dexie from 'dexie'
+import type { NotificationSettingKey } from '~lib/notification-settings'
 
 export type SerializableXPathObject = {
   tagName: string
@@ -26,9 +27,16 @@ export type BindingDoc = {
 export type DisabledBindingPathDoc = {
   domain_path: string
 }
+
+export type NotificationSettingDoc = {
+  key: NotificationSettingKey
+  enabled: boolean
+}
+
 export class VindDB extends Dexie {
   bindings: Dexie.Table<BindingDoc, string>
   disabledBindingPaths: Dexie.Table<DisabledBindingPathDoc>
+  notificationSettings: Dexie.Table<NotificationSettingDoc, string>
 
   constructor() {
     super('vind-db')
@@ -51,7 +59,12 @@ export class VindDB extends Dexie {
       bindings: 'id, [domain+path], key, selector, xpathObject',
     })
 
+    this.version(6).stores({
+      notificationSettings: '&key',
+    })
+
     this.bindings = this.table('bindings')
     this.disabledBindingPaths = this.table('disabledBindingPaths')
+    this.notificationSettings = this.table('notificationSettings')
   }
 }

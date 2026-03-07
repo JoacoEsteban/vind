@@ -27,6 +27,7 @@
   import { CrossFrameEventsController } from '~lib/cross-frame-keyboard-events'
   import { match } from 'ts-pattern'
   import { identity } from '~lib/misc'
+  import { MemoryNotificationSettingsChannelImpl } from '~lib/messages/notification-settings'
 
   const style = document.createElement('style')
   style.textContent = styleText
@@ -79,6 +80,7 @@
     new PageController(
       new MemoryBindingChannelImpl(),
       new MemoryDisabledPathsChannelImpl(),
+      new MemoryNotificationSettingsChannelImpl(),
       'content-script',
       new URL('https://vind-works.io/getting-started'),
     ),

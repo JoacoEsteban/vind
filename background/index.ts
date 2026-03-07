@@ -4,6 +4,7 @@ import { showOverlay, wakeUp } from '~messages/tabs'
 import { VindDB } from './storage/db'
 import { BindingsStorageImpl } from './storage/bindings-storage'
 import { DisabledBindingPathsStorageImpl } from './storage/disabled-paths-storage'
+import { NotificationSettingsStorageImpl } from './storage/notification-settings-storage'
 import { bindingsMessages } from '~messages/storage'
 import { log } from '~lib/log'
 import { StorageHandlers } from './handlers'
@@ -16,8 +17,13 @@ export const bindingsStorage = new BindingsStorageImpl(db)
 export const disabledBindingPathsStorage = new DisabledBindingPathsStorageImpl(
   db,
 )
+export const notificationSettingsStorage = new NotificationSettingsStorageImpl(db)
 
-new StorageHandlers(bindingsStorage, disabledBindingPathsStorage).init()
+new StorageHandlers(
+  bindingsStorage,
+  disabledBindingPathsStorage,
+  notificationSettingsStorage,
+).init()
 new EventHandlers().init()
 
 const tabs = interopTabs()

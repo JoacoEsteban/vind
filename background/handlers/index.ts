@@ -1,5 +1,6 @@
 import type { BindingsStorage } from '~background/storage/bindings-storage'
 import type { DisabledBindingPathsStorage } from '~background/storage/disabled-paths-storage'
+import type { NotificationSettingsStorage } from '~background/storage/notification-settings-storage'
 import { getAssertedActiveTabId } from '~background/utils/tab'
 import { serializeError } from '~lib/error'
 import { log } from '~lib/log'
@@ -7,6 +8,7 @@ import { Domain, Path } from '~lib/url'
 import {
   bindingsMessages,
   disabledPathsMessages,
+  notificationSettingsMessages,
   type ErrResponse,
 } from '~messages/storage'
 
@@ -14,11 +16,13 @@ export class StorageHandlers {
   constructor(
     private bindingsStorage: BindingsStorage,
     private disabledBindingPathsStorage: DisabledBindingPathsStorage,
+    private notificationSettingsStorage: NotificationSettingsStorage,
   ) {}
 
   init() {
     this.setupBindings()
     this.setupDisabledPaths()
+    this.setupNotificationSettings()
     this.setupEvents()
   }
 
@@ -182,6 +186,36 @@ export class StorageHandlers {
     storage.onDeleted$.subscribe(async (disabledPath) => {
       log.info('onDeleted from background index', disabledPath)
       disabledPathsMessages.onDisabledBindingPathRemoved.ask(disabledPath, {
+        tabId: await getAssertedActiveTabId(),
+      })
+    })
+  }
+
+  setupNotificationSettings() {
+    const storage = this.notificationSettingsStorage
+
+    notificationSettingsMessages.getAllSettings.stream.subscribe(
+      async ([, sender, respond]) => {
+        const settings = await storage.getAllSettings()
+        respond(settings)
+      },
+    )
+
+    notificationSettingsMessages.setSetting.stream.subscribe(
+      async ([{ key, enabled }, sender, respond]) => {
+        this.respondError(storage.setSetting(key, enabled), respond)
+      },
+    )
+
+    notificationSettingsMessages.restoreDefaults.stream.subscribe(
+      async ([, sender, respond]) => {
+        this.respondError(storage.restoreDefaults(), respond)
+      },
+    )
+
+    storage.onUpdated$.subscribe(async (setting) => {
+      log.info('onUpdated notification setting from background index', setting)
+      notificationSettingsMessages.onNotificationSettingUpdated.ask(setting, {
         tabId: await getAssertedActiveTabId(),
       })
     })

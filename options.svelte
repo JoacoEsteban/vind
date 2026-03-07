@@ -35,8 +35,10 @@
   import { Domain, Path } from '~lib/url'
   import { wakeUp } from '~messages/tabs'
   import Migrator from '~options/migrator.svelte'
+  import Notifications from '~options/notifications.svelte'
   import { BindingChannelImpl } from '~lib/messages/bindings'
   import { DisabledPathsChannelImpl } from '~lib/messages/disabled-paths'
+  import { NotificationSettingsChannelImpl } from '~lib/messages/notification-settings'
   import { openTab } from '~background/utils/tab'
   import { CrossFrameEventsController } from '~lib/cross-frame-keyboard-events'
 
@@ -48,6 +50,7 @@
   const pageController = new PageController(
     new BindingChannelImpl(),
     new DisabledPathsChannelImpl(),
+    new NotificationSettingsChannelImpl(),
     'options',
   )
   const resourceMigrator = new ResourceMigrator(
@@ -55,6 +58,7 @@
     pageController.disabledPathsChannel,
   )
   const keyboardEventsController = new CrossFrameEventsController(false)
+  const notificationSettingsChannel = new NotificationSettingsChannelImpl()
   const registrationController = new RegistrationController(
     pageController,
     keyboardEventsController,
@@ -80,6 +84,11 @@
       name: 'Import/Export',
       key: 'migrator',
       icon: 'arrowDownRightAndArrowUpLeft',
+    },
+    {
+      name: 'Notifications',
+      key: 'notifications',
+      icon: 'bellFill',
     },
   ]
   let activeKey = options[0].key
@@ -293,6 +302,9 @@
         {/if}
         {#if activeKey === 'migrator'}
           <Migrator migrator={resourceMigrator} />
+        {/if}
+        {#if activeKey === 'notifications'}
+          <Notifications {pageController} />
         {/if}
       </main>
     </div>

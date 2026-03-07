@@ -1,5 +1,10 @@
 import { getMessage } from '@extend-chrome/messages'
-import type { BindingDoc, DisabledBindingPathDoc } from '~background/storage/db'
+import type {
+  BindingDoc,
+  DisabledBindingPathDoc,
+  NotificationSettingDoc,
+} from '~background/storage/db'
+import type { NotificationSettingKey } from '~lib/notification-settings'
 import { splitMessage } from './lib'
 
 export type ErrResponse<T = void> = {
@@ -10,6 +15,11 @@ export type ErrResponse<T = void> = {
 export type DisabledPathPayload = {
   domain: string
   path: string
+}
+
+export type NotificationSettingPayload = {
+  key: NotificationSettingKey
+  enabled: boolean
 }
 
 export const bindingsMessages = {
@@ -90,5 +100,26 @@ export const disabledPathsMessages = {
   ),
   onDisabledBindingPathAdded: splitMessage(
     getMessage<DisabledBindingPathDoc>('onDisabledBindingPathAdded'),
+  ),
+}
+
+export const notificationSettingsMessages = {
+  getAllSettings: splitMessage(
+    getMessage<void, NotificationSettingDoc[]>('getAllNotificationSettings', {
+      async: true,
+    }),
+  ),
+  restoreDefaults: splitMessage(
+    getMessage<void, ErrResponse>('restoreNotificationSettings', {
+      async: true,
+    }),
+  ),
+  setSetting: splitMessage(
+    getMessage<NotificationSettingPayload, ErrResponse>('setNotificationSetting', {
+      async: true,
+    }),
+  ),
+  onNotificationSettingUpdated: splitMessage(
+    getMessage<NotificationSettingDoc>('onNotificationSettingUpdated'),
   ),
 }
