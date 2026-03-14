@@ -2,6 +2,7 @@
   import type { symbols } from '~lib/symbols'
   import Button from './button.svelte'
   import Symbol from './symbol.svelte'
+  import type { TestId } from '~lib/test-id'
 
   export let name: keyof typeof symbols
   export let size: string = '50px'
@@ -11,6 +12,7 @@
   export let disabled: boolean = false
   export let glassy: boolean = false
   export let colorSeed: string | undefined = undefined
+  export let testId: TestId | undefined = undefined
 </script>
 
 <Button
@@ -19,6 +21,7 @@
   {disabled}
   {glassy}
   {colorSeed}
+  {testId}
   round={true}
   roundSize={size}
   roundPadding={padding}

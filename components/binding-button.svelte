@@ -28,7 +28,7 @@
     )
     .subscribe()
 
-  $: testId = BindingButtonId(binding.key)
+  $: testId = new BindingButtonId(binding.key)
 
   const dispatch = createEventDispatcher()
 

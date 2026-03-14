@@ -29,3 +29,5 @@ export function wrapIterable<T>(
     },
   }
 }
+
+export type { Renderable } from '~node_modules/svelte-french-toast/dist'

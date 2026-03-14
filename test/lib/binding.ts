@@ -33,7 +33,7 @@ export async function createBinding({
   await page.mouse.click(x, y).then(nextFrame)
   await page.keyboard.type(key)
 
-  const bindingButton = page.getByTestId(BindingButtonId(key).id)
+  const bindingButton = page.getByTestId(new BindingButtonId(key).id)
 
   const assertIsEnabled = () => expect(bindingButton).toBeEnabled()
 

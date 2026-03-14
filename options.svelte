@@ -41,6 +41,7 @@
   import { NotificationSettingsChannelImpl } from '~lib/messages/notification-settings'
   import { openTab } from '~background/utils/tab'
   import { CrossFrameEventsController } from '~lib/cross-frame-keyboard-events'
+  import { OptionsTabsId } from '~lib/test-id'
 
   type orderedDomainMapOfOrderedPathMap = [
     string,
@@ -58,7 +59,6 @@
     pageController.disabledPathsChannel,
   )
   const keyboardEventsController = new CrossFrameEventsController(false)
-  const notificationSettingsChannel = new NotificationSettingsChannelImpl()
   const registrationController = new RegistrationController(
     pageController,
     keyboardEventsController,
@@ -70,11 +70,7 @@
     pageController.refreshResources()
   })
 
-  const options: {
-    name: string
-    key: string
-    icon: SymbolName
-  }[] = [
+  const options = [
     {
       name: 'Bindings',
       key: 'bindings',
@@ -90,8 +86,8 @@
       key: 'notifications',
       icon: 'bellFill',
     },
-  ]
-  let activeKey = options[0].key
+  ] as const
+  let activeKey: (typeof options)[number]['key'] = options[0].key
 
   const bindingsMap = combineLatest([
     pageController.bindingsByPathMap$,
@@ -281,6 +277,7 @@
         <div role="tablist" class="flex gap-3 flex-wrap items-center">
           {#each options as option}
             <Button
+              testId={new OptionsTabsId(option.key)}
               opaque={true}
               role="tab"
               disabled={$currentKeyChange$ !== null}

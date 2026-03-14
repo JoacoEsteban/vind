@@ -31,7 +31,22 @@ import {
   CrossFrameEventsController,
   VindKeyboardEvent,
 } from '~lib/cross-frame-keyboard-events'
+import {
+  RegistrationNotificationToastId,
+  RegistrationStateId,
+  TestId,
+  bindingActivatedNotificationId,
+} from '~lib/test-id'
+import { Render } from '~lib/test-id-svelte'
 const isIframe = window.self !== window.top
+
+const registrationNotificationIds = {
+  loading: new RegistrationNotificationToastId('loading'),
+  success: new RegistrationNotificationToastId('success'),
+  aborted: new RegistrationNotificationToastId('aborted'),
+  failedKnown: new RegistrationNotificationToastId('failedKnown'),
+  failedUnknown: new RegistrationNotificationToastId('failedUnknown'),
+}
 
 export class DocumentClient {
   public readonly isIframe = isIframe
@@ -71,7 +86,7 @@ export class DocumentClient {
         const message = registrationStateToastOptions[state]
         const toastId =
           message &&
-          toast(message.text, {
+          toast(Render(message.text).withId(new RegistrationStateId(state)), {
             duration: Infinity,
             icon: message.icon,
           })
@@ -128,7 +143,12 @@ export class DocumentClient {
                   notificationSettingKeys.bindingActivated,
                 )?.enabled
               ) {
-                toast.success('Binding activated', { duration: 500 })
+                toast.success(
+                  Render('Binding activated').withId(
+                    bindingActivatedNotificationId,
+                  ),
+                  { duration: 500 },
+                )
               }
             })
             .catch((err) => {
@@ -184,30 +204,51 @@ export class DocumentClient {
     )
 
     const loadingToast = toast.loading(
-      'Registering Binding. Press ESC to cancel.',
+      Render('Registering Binding. Press ESC to cancel.').withId(
+        registrationNotificationIds.loading,
+      ),
       { position: 'top-right' },
     )
 
     registration.then(() => {
       log.success('registering done')
-      toast.success('Binding registered')
+      toast.success(
+        Render('Binding registered').withId(
+          registrationNotificationIds.success,
+        ),
+      )
     })
 
     registration.catch((err) => {
       log.error('registering failed', err)
 
-      const [message, duration] = match<Error, [string, number]>(err)
+      const [message, duration, testId] = match<
+        Error,
+        [string, number, TestId]
+      >(err)
         .when(
           (err) => err instanceof RegistrationAbortedError,
-          () => ['Registration aborted', 1000],
+          () => [
+            'Registration aborted',
+            1000,
+            registrationNotificationIds.aborted,
+          ],
         )
         .when(
           (err) => err instanceof VindError,
-          (err: VindError) => [err.message, 3000],
+          (err: VindError) => [
+            err.message,
+            3000,
+            registrationNotificationIds.failedKnown,
+          ],
         )
-        .otherwise(() => ['Failed to register binding', 3000])
+        .otherwise(() => [
+          'Failed to register binding',
+          3000,
+          registrationNotificationIds.failedUnknown,
+        ])
 
-      toast.error(message, {
+      toast.error(Render(message).withId(testId), {
         duration,
       })
     })

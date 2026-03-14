@@ -19,6 +19,8 @@
   import { DisposeBag } from '~lib/dispose-bag'
   import { log } from '~lib/log'
   import { match } from '~node_modules/ts-pattern/dist'
+  import { NotificationToggleButtonId } from '~lib/test-id'
+  // import { NotificationToggleButtonId } from '~lib/test-id'
 
   export let pageController: PageController
   const { sink, dispose } = new DisposeBag()
@@ -76,6 +78,7 @@
       <p class="m-0">Show a toast when a binding is triggered.</p>
     </div>
     <Toggle
+      testId={new NotificationToggleButtonId('bindingActivated')}
       checked={$notificationSettings.get(
         notificationSettingKeys.bindingActivated,
       )?.enabled}
@@ -94,6 +97,7 @@
       </p>
     </div>
     <Toggle
+      testId={new NotificationToggleButtonId('inexistentElementError')}
       checked={$notificationSettings.get(
         notificationSettingKeys.inexistentElementError,
       )?.enabled}

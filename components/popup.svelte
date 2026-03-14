@@ -6,7 +6,7 @@
   import Button from '~components/button.svelte'
   import DisplayUrl from '~components/display-url.svelte'
   import { getPopupTitle } from '~lib/build-label'
-  import { BindButtonId } from '~lib/test-id'
+  import { BindButtonId, OpenOptionsButtonId } from '~lib/test-id'
   import { draggable } from '~lib/draggable'
   import { MapToOrderedTuple } from '~lib/map'
   import type { PageController } from '~lib/page-controller'
@@ -84,6 +84,7 @@
         <h2 class="font-black m-0 opacity-25">{getPopupTitle(sha)}</h2>
         <div class="flex">
           <SymbolButton
+            testId={OpenOptionsButtonId}
             disabled={ghost}
             opaque={true}
             name="gear"
