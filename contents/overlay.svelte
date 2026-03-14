@@ -36,8 +36,10 @@
   } from '~lib/registration-controller'
   import { match } from 'ts-pattern'
   import { ENV_PROD } from '~lib/env'
+  import { OverlayId } from '~lib/test-id'
 
   const client = new DocumentClient()
+  const testid = OverlayId
   const { pageControllerInstance, registrationControllerInstance } = client
   let showingOverlay = !ENV_PROD
   const registering$ = registrationControllerInstance.registrationInProgress$
@@ -70,7 +72,7 @@
 </script>
 
 {#if !client.isIframe}
-  <div use:themeController>
+  <div use:themeController data-testid={testid.id}>
     <Popup
       {sha}
       visible={showingOverlay}

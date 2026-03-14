@@ -1,5 +1,11 @@
 import type { Page } from '@playwright/test'
 
+export const html = (strings: TemplateStringsArray, ...values: unknown[]) =>
+  strings.reduce(
+    (acc, str, i) => acc + str + (values[i] === undefined ? '' : values[i]),
+    '',
+  )
+
 export const waitFrames = (page: Page, frames = 1) =>
   page.evaluate((frames) => {
     function loop(resolve: () => void, iterations = 0, frames = 1) {
@@ -14,3 +20,15 @@ export const waitFrames = (page: Page, frames = 1) =>
 
 export const nextFrameWaiter = (page: Page, frames?: number) => () =>
   waitFrames(page, frames)
+
+export const loadStaticHTML = async (page: Page, html: string) => {
+  await page.route('http://vind.test/*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: html,
+    })
+  })
+
+  return page.goto('http://vind.test/index.html')
+}

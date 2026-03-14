@@ -5,7 +5,10 @@
 </script>
 
 <Toaster
-  containerClassName={clsx('made-tommy font-regular vind-ignore-*', {
-    'force-ghost': disabled,
-  })}
-  toastOptions={{ className: 'bg-blur ghost vind-ignore-*' }} />
+  containerClassName={clsx(
+    'made-tommy font-regular vind-ignore-* vind-toaster',
+    {
+      'force-ghost': disabled,
+    },
+  )}
+  toastOptions={{ className: 'bg-blur ghost vind-ignore-* vind-toast' }} />
