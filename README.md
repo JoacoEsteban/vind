@@ -1,11 +1,11 @@
 # Vind
 
-[![Vind Logo](./assets/store/splash-768.png)](https://chrome.google.com/webstore/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
+[![Vind Logo](./assets/store/splash-768.png)](https://chrome.google.com/webstore/detail/vind/ocohbenbjomofbknmcmaedadcmonedee?utm_source=github_readme)
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
-[![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
-[![Chrome Web Store Rating Count](https://img.shields.io/chrome-web-store/rating-count/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee)
+[![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee?utm_source=github_readme)
+[![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee?utm_source=github_readme)
+[![Chrome Web Store Rating Count](https://img.shields.io/chrome-web-store/rating-count/ocohbenbjomofbknmcmaedadcmonedee)](https://chromewebstore.google.com/detail/vind/ocohbenbjomofbknmcmaedadcmonedee?utm_source=github_readme)
 
 # Vind – Custom Keyboard Shortcuts for Any Website
 
