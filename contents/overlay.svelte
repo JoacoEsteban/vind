@@ -41,7 +41,7 @@
   const client = new DocumentClient()
   const testid = OverlayId
   const { pageControllerInstance, registrationControllerInstance } = client
-  let showingOverlay = !ENV_PROD
+  let showingOverlay = false
   const registering$ = registrationControllerInstance.registrationInProgress$
   const disableUi$ = registrationControllerInstance.elementSelectionState$.pipe(
     map((state) =>
