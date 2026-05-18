@@ -6,6 +6,7 @@
   "author": "dev@joacoesteban.com",
   "scripts": {
     "dev": "plasmo dev",
+    "dev:ff": "plasmo dev --target=firefox-mv2",
     "prebuild": "pnpm run typecheck:svelte",
     "build": "plasmo build",
     "test": "bun x playwright test",
