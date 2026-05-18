@@ -7,6 +7,7 @@ export const [showOverlay, showOverlayStream, waitForShowOverlay] =
 export const wakeUp = splitMessage(getMessage<void>('wakeUp'))
 
 export type KeyboardEventDto = {
+  readonly dto: true
   type: string
   key: string
   code: string

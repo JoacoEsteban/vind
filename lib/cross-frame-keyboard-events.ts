@@ -1,7 +1,7 @@
 import {
-  Observable,
   Subject,
   Subscription,
+  catchError,
   filter,
   finalize,
   fromEvent,
@@ -10,10 +10,10 @@ import {
   share,
   take,
 } from 'rxjs'
+import { EMPTY } from 'rxjs'
 import { forwardKeyEvent, type KeyboardEventDto } from '~messages/tabs'
 import { abortSignal$, instanceOfFilter } from './rxjs'
 import { match } from 'ts-pattern'
-import { P } from 'ts-pattern'
 import { log } from './log'
 import { isBindableKeyboardEvent } from './element'
 import { DisposeBag } from './dispose-bag'
@@ -34,9 +34,10 @@ const supportedEvents = [
 export class VindKeyboardEvent extends KeyboardEvent {
   readonly rawEvent: KeyboardEvent | null
   readonly serialized: KeyboardEventDto
-  get isBindable() {
-    return this.serialized.isBindable
-  }
+  // isBindable must be an own data property, not a prototype getter.
+  // Firefox applies Xray to VindKeyboardEvent (KeyboardEvent subclass) and
+  // strips prototype getters from JS subclasses. Own data properties survive.
+  readonly isBindable: boolean
 
   constructor(serialized: KeyboardEventDto)
   constructor(event: KeyboardEvent)
@@ -51,14 +52,15 @@ export class VindKeyboardEvent extends KeyboardEvent {
 
     const { toDto } = CrossFrameKeyboardEventChannel
 
+    // Cannot use instanceof here — Firefox Xray breaks it for native DOM subclasses.
     const { serialized, rawEvent } = match(event)
-      .with(P.instanceOf(KeyboardEvent), (rawEvent) => ({
-        serialized: toDto(rawEvent),
-        rawEvent,
-      }))
-      .otherwise((serialized) => ({
+      .with({ dto: true }, (serialized) => ({
         serialized,
         rawEvent: null,
+      }))
+      .otherwise((rawEvent) => ({
+        serialized: toDto(rawEvent),
+        rawEvent,
       }))
 
     super(event.type, {
@@ -70,6 +72,7 @@ export class VindKeyboardEvent extends KeyboardEvent {
 
     this.serialized = serialized
     this.rawEvent = rawEvent ?? null
+    this.isBindable = serialized.isBindable
   }
 }
 
@@ -104,12 +107,17 @@ class CrossFrameKeyboardEventChannel {
       this.events$,
       forwardKeyEvent.stream.pipe(
         map(([event]) => new VindKeyboardEvent(event)),
+        catchError((err) => {
+          log.error('forwardKeyEvent.stream error:', err)
+          return EMPTY
+        }),
       ),
     ).subscribe(this.channel)
   }
 
   static toDto(event: KeyboardEvent): KeyboardEventDto {
     return {
+      dto: true,
       type: event.type,
       key: event.key,
       code: event.code,
