@@ -6,7 +6,8 @@
   import { BehaviorSubject, combineLatest, first, map, share } from 'rxjs'
   import toast from 'svelte-french-toast/dist'
   import { match } from 'ts-pattern'
-  import logo from '~/assets/icon.png'
+  import mosaicSharp from '~/assets/mosaic-sharp.png'
+  import mosaicSoft from '~/assets/mosaic-soft.png'
   import Button from '~components/button.svelte'
   import Dialog from '~components/dialog.svelte'
   import Filters from '~components/filters.svelte'
@@ -15,7 +16,6 @@
   import Toaster from '~components/toaster.svelte'
   import { handleAnimationState } from '~lib/animation-state'
   import { Binding } from '~lib/binding'
-  import { cursorPosition } from '~lib/cursor-position'
   import { Messages, registrationStateToastOptions } from '~lib/definitions'
   import { isPromptOpen$ } from '~lib/dialog'
   import { RegistrationAbortedError, UnkownError } from '~lib/error'
@@ -239,11 +239,18 @@
       class="backdrop"
       style:--_bg-1={bg1.hex()}
       style:--_bg-2={bg2.hex()}>
-      <div class="v_toggle-visibility w-full h-full enabled">
-        <div
-          use:handleAnimationState
-          class="mosaic mosaic-center"
-          style:background-image={`url(${logo})`}>
+      <div class="hue">
+        <div class="v_toggle-visibility w-full h-full enabled">
+          <div class="mosaic">
+            <div
+              class="mosaic-layer mosaic-soft"
+              style:background-image={`url(${mosaicSoft})`}>
+            </div>
+            <div
+              class="mosaic-layer mosaic-sharp"
+              style:background-image={`url(${mosaicSharp})`}>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -357,21 +364,8 @@
     width: 100%;
     height: 100%;
     z-index: -1;
+    transition: transform 0.5s var(--bezier-symmetric);
 
-    background: linear-gradient(
-      180deg,
-      var(--_bg-1, #1e3a8a) 0%,
-      var(--_bg-2, #f544f5) 100%
-    );
-    animation: hue-rotate 10s infinite;
-    @keyframes hue-rotate {
-      0% {
-        filter: hue-rotate(0deg);
-      }
-      100% {
-        filter: hue-rotate(360deg);
-      }
-    }
     &::after {
       content: '';
       position: absolute;
@@ -384,57 +378,76 @@
       z-index: 1;
     }
   }
-  .backdrop {
-    transition: transform 0.5s var(--bezier-symmetric);
+  .hue {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      var(--_bg-1, #1e3a8a) 0%,
+      var(--_bg-2, #f544f5) 100%
+    );
+    animation: hue-rotate 10s infinite;
+    animation-play-state: var(--animation-play-state, running);
+
+    @keyframes hue-rotate {
+      0% {
+        filter: hue-rotate(0deg);
+      }
+      100% {
+        filter: hue-rotate(360deg);
+      }
+    }
   }
   .dialog-open {
     .backdrop {
       transform: scale(1.15);
     }
     .mosaic {
-      animation-play-state: paused;
+      --animation-play-state: paused;
     }
   }
-  /* ._container {
-    width: min(80em, 100%);
-  } */
+  // Blur and tile size are baked into the mosaic tiles (tools/bake-mosaic.ts)
+  // so every animated property below stays on the compositor.
   .mosaic {
-    --mosaic-size-from: 200px;
-    --mosaic-size-to: 210px;
-    // --x: calc(var(--mouse-x) * calc(var(--mouse-x)/50))
-    --x: var(--mouse-x);
-    // --y: calc(var(--mouse-y) * calc(var(--mouse-y)/50))
-    --y: var(--mouse-y);
-
+    position: relative;
     width: 100%;
     height: 100%;
     opacity: 0.3;
+    animation: 5s infinite breathe var(--bezier-symmetric);
+    animation-play-state: var(--animation-play-state, running);
 
-    transition: background-position 0.01s;
-
-    background-position: var(--x) var(--y);
-    &.mosaic-center {
-      background-position: center;
-    }
-
-    background-repeat: repeat;
-
-    animation: 5s infinite size var(--bezier-symmetric);
-
-    animation-fill-mode: backwards;
-
-    @keyframes size {
-      0% {
-        background-size: var(--mosaic-size-from);
-        filter: blur(23px);
-      }
+    // 200px → 210px tiles
+    @keyframes breathe {
       50% {
-        background-size: var(--mosaic-size-to);
-        filter: blur(3px);
+        transform: scale(1.05);
       }
-      100% {
-        background-size: var(--mosaic-size-from);
-        filter: blur(23px);
+    }
+  }
+  .mosaic-layer {
+    position: absolute;
+    inset: 0;
+    background-size: 200px;
+    background-position: center;
+    background-repeat: repeat;
+    animation: 5s infinite var(--bezier-symmetric);
+    animation-play-state: var(--animation-play-state, running);
+  }
+  .mosaic-soft {
+    animation-name: soft-fade;
+
+    @keyframes soft-fade {
+      50% {
+        opacity: 0;
+      }
+    }
+  }
+  .mosaic-sharp {
+    opacity: 0;
+    animation-name: sharp-fade;
+
+    @keyframes sharp-fade {
+      50% {
+        opacity: 1;
       }
     }
   }
