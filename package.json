@@ -18,6 +18,7 @@
     "package:firefox": "plasmo package --target=firefox-mv2",
     "package:safari": "plasmo package --target=safari-mv3",
     "rebuild-sharp": "npm rebuild --verbose sharp",
+    "bake:mosaic": "bun tools/bake-mosaic.ts",
     "bundle": "pnpm run build && pnpm run package",
     "bundle:firefox": "pnpm run build:firefox && pnpm run package:firefox",
     "bundle:all": "pnpm run bundle && pnpm run bundle:firefox",
