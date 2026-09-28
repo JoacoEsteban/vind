@@ -30,4 +30,4 @@ export function wrapIterable<T>(
   }
 }
 
-export type { Renderable } from '~node_modules/svelte-french-toast/dist'
+export type { Renderable } from '~/node_modules/svelte-french-toast/dist'

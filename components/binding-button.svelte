@@ -1,11 +1,11 @@
 <script lang="ts">
   import { delay, filter, tap, type Observable } from 'rxjs'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import type { Binding } from '~lib/binding'
-  import { Stack } from '~lib/rxjs'
-  import { bindingKeySymbolMap } from '~lib/ui'
+  import type { Binding } from '~/lib/binding'
+  import { Stack } from '~/lib/rxjs'
+  import { bindingKeySymbolMap } from '~/lib/ui'
   import Button from './button.svelte'
-  import { BindingButtonId } from '~lib/test-id'
+  import { BindingButtonId } from '~/lib/test-id'
 
   export let binding: Binding
   export let opaque: boolean = false

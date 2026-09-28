@@ -9,7 +9,7 @@ import type {
   SerializableChildXPathObject,
   SerializableParentXPathObject,
   SerializableXPathObject,
-} from '~background/storage/db'
+} from '~/background/storage/db'
 import { noop } from './misc'
 const robulaClient = new RobulaPlus()
 

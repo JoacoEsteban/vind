@@ -1,16 +1,16 @@
-import type { BindingsStorage } from '~background/storage/bindings-storage'
-import type { DisabledBindingPathsStorage } from '~background/storage/disabled-paths-storage'
-import type { NotificationSettingsStorage } from '~background/storage/notification-settings-storage'
-import { getAssertedActiveTabId } from '~background/utils/tab'
-import { serializeError } from '~lib/error'
-import { log } from '~lib/log'
-import { Domain, Path } from '~lib/url'
+import type { BindingsStorage } from '~/background/storage/bindings-storage'
+import type { DisabledBindingPathsStorage } from '~/background/storage/disabled-paths-storage'
+import type { NotificationSettingsStorage } from '~/background/storage/notification-settings-storage'
+import { getAssertedActiveTabId } from '~/background/utils/tab'
+import { serializeError } from '~/lib/error'
+import { log } from '~/lib/log'
+import { Domain, Path } from '~/lib/url'
 import {
   bindingsMessages,
   disabledPathsMessages,
   notificationSettingsMessages,
   type ErrResponse,
-} from '~messages/storage'
+} from '~/messages/storage'
 
 export class StorageHandlers {
   constructor(

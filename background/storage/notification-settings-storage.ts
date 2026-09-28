@@ -1,12 +1,12 @@
 import { Observable, Subject } from 'rxjs'
-import { log } from '~lib/log'
+import { log } from '~/lib/log'
 import {
   defaultNotificationSettings,
   notificationSettingKeyList,
   type NotificationSettingKey,
-} from '~lib/notification-settings'
+} from '~/lib/notification-settings'
 import type { NotificationSettingDoc, VindDB } from './db'
-import { notNull } from '~lib/misc'
+import { notNull } from '~/lib/misc'
 
 export interface NotificationSettingsStorage {
   getAllSettings: () => Promise<NotificationSettingDoc[]>

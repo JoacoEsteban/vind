@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
-import type { TestId } from '~lib/test-id'
-import { expect } from '~test/fixtures'
+import type { TestId } from '~/lib/test-id'
+import { expect } from '~/test/fixtures'
 
 export class LocatorTextContentChangeValidator {
   private state: {

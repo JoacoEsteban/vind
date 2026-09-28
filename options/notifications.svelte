@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
   import toast from 'svelte-french-toast/dist'
-  import Button from '~components/button.svelte'
-  import Toggle from '~components/toggle.svelte'
+  import Button from '~/components/button.svelte'
+  import Toggle from '~/components/toggle.svelte'
   import {
     notificationSettingKeys,
     type NotificationSettingKey,
-  } from '~lib/notification-settings'
-  import type { PageController } from '~lib/page-controller'
+  } from '~/lib/notification-settings'
+  import type { PageController } from '~/lib/page-controller'
   import {
     EMPTY,
     from,
@@ -16,11 +16,11 @@
     switchMap,
     withLatestFrom,
   } from 'rxjs'
-  import { DisposeBag } from '~lib/dispose-bag'
-  import { log } from '~lib/log'
-  import { match } from '~node_modules/ts-pattern/dist'
-  import { NotificationToggleButtonId } from '~lib/test-id'
-  // import { NotificationToggleButtonId } from '~lib/test-id'
+  import { DisposeBag } from '~/lib/dispose-bag'
+  import { log } from '~/lib/log'
+  import { match } from '~/node_modules/ts-pattern/dist'
+  import { NotificationToggleButtonId } from '~/lib/test-id'
+  // import { NotificationToggleButtonId } from '~/lib/test-id'
 
   export let pageController: PageController
   const { sink, dispose } = new DisposeBag()

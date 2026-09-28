@@ -1,5 +1,5 @@
 import { match } from 'ts-pattern'
-import { interopRuntime } from '~background/utils/runtime'
+import { interopRuntime } from '~/background/utils/runtime'
 
 export type Constructor<T> = new (...args: any[]) => T
 

@@ -2,10 +2,10 @@
   import chroma from 'chroma-js'
   import ColorHash from 'color-hash'
   import { createEventDispatcher } from 'svelte'
-  import { generateId } from '~lib/id'
-  import { type SymbolName } from '~lib/symbols'
+  import { generateId } from '~/lib/id'
+  import { type SymbolName } from '~/lib/symbols'
   import Symbol from './symbol.svelte'
-  import { TestId } from '~lib/test-id'
+  import { TestId } from '~/lib/test-id'
 
   const colorHash = new ColorHash()
 

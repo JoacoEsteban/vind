@@ -1,8 +1,8 @@
 <script lang="ts">
   import { RegistrationController } from '~/lib/registration-controller'
-  import { transitionIn, transitionOut } from '~lib/transitions'
+  import { transitionIn, transitionOut } from '~/lib/transitions'
   import { map, switchMap } from 'rxjs'
-  import type { PageController } from '~lib/page-controller'
+  import type { PageController } from '~/lib/page-controller'
 
   export let registrationControllerInstance: RegistrationController
   export let pageControllerInstance: PageController

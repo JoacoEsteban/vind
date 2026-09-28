@@ -1,8 +1,8 @@
 import type Dexie from 'dexie'
 import type { BindingDoc, VindDB } from './db'
-import { log } from '~lib/log'
+import { log } from '~/lib/log'
 import { Observable, Subject } from 'rxjs'
-import type { Domain, Path } from '~lib/url'
+import type { Domain, Path } from '~/lib/url'
 
 export interface BindingsStorage {
   getAllBindings: () => Promise<BindingDoc[]>

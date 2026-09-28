@@ -1,8 +1,8 @@
 import {
   disabledPathsMessages,
   type DisabledPathPayload,
-} from '~messages/storage'
-import type { DisabledBindingPathDoc } from '~background/storage/db'
+} from '~/messages/storage'
+import type { DisabledBindingPathDoc } from '~/background/storage/db'
 import { Domain, Path, urlFromParts } from '../url'
 import { throwOnResponseError } from '.'
 import { Subject, type Observable } from 'rxjs'

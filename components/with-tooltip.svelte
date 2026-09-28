@@ -5,13 +5,13 @@
     shift,
     offset as offsetMiddleware,
   } from 'svelte-floating-ui/dist/dom'
-  import { noop, tupleNotNull } from '~lib/misc'
-  import { handleExitPolygon, PolygonState } from '~lib/safe-polygon'
-  import { transitionIn, transitionOut } from '~lib/transitions'
+  import { noop, tupleNotNull } from '~/lib/misc'
+  import { handleExitPolygon, PolygonState } from '~/lib/safe-polygon'
+  import { transitionIn, transitionOut } from '~/lib/transitions'
   import { BehaviorSubject, distinctUntilChanged, of, switchMap } from 'rxjs'
   import { match } from 'ts-pattern'
   import { onDestroy } from 'svelte'
-  import { DisposeBag } from '~lib/dispose-bag'
+  import { DisposeBag } from '~/lib/dispose-bag'
 
   export let placement: 'top' | 'bottom' | 'left' | 'right' = 'top'
   export let bordered = false

@@ -11,7 +11,7 @@ import {
   take,
 } from 'rxjs'
 import { EMPTY } from 'rxjs'
-import { forwardKeyEvent, type KeyboardEventDto } from '~messages/tabs'
+import { forwardKeyEvent, type KeyboardEventDto } from '~/messages/tabs'
 import { abortSignal$, instanceOfFilter } from './rxjs'
 import { match } from 'ts-pattern'
 import { log } from './log'

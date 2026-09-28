@@ -1,4 +1,4 @@
-import { BindButtonId, TestId } from '~lib/test-id'
+import { BindButtonId, TestId } from '~/lib/test-id'
 import { test, expect } from './fixtures'
 import { expectBindingTriggerToSucceed, createBinding } from './lib/binding'
 import { LocatorTextContentChangeValidator } from './lib/cases'

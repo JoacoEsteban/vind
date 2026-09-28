@@ -1,7 +1,7 @@
 import { match, P } from 'ts-pattern'
-import { log } from '~lib/log'
-import { noop } from '~lib/misc'
-import { forwardKeyEvent } from '~messages/tabs'
+import { log } from '~/lib/log'
+import { noop } from '~/lib/misc'
+import { forwardKeyEvent } from '~/messages/tabs'
 
 export class EventHandlers {
   constructor() {}

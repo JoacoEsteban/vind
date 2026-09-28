@@ -1,5 +1,5 @@
 import Dexie from 'dexie'
-import type { NotificationSettingKey } from '~lib/notification-settings'
+import type { NotificationSettingKey } from '~/lib/notification-settings'
 
 export type SerializableXPathObject = {
   tagName: string

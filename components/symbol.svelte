@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { symbols } from '~lib/symbols'
+  import { symbols } from '~/lib/symbols'
 
   export let size = '100%'
   export let name: keyof typeof symbols

@@ -4,7 +4,7 @@ import {
   bindingActivatedNotificationId,
   OptionsTabsId,
   NotificationToggleButtonId,
-} from '~lib/test-id'
+} from '~/lib/test-id'
 import { test, expect } from './fixtures'
 import { expectBindingTriggerToSucceed, createBinding } from './lib/binding'
 import { html, loadStaticHTML } from './lib/utils'

@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test'
-import { expect } from '~test/fixtures'
+import { expect } from '~/test/fixtures'
 
 export type ToggleValue = 'true' | 'false'
 

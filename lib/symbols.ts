@@ -28,7 +28,7 @@ import arrowClockwiseRaw from '~/assets/symbols/arrow.clockwise.json'
 import deleteLeftRaw from '~/assets/symbols/delete.left.json'
 import bellFillRaw from '~/assets/symbols/bell.fill.json'
 
-import { default as SvelteSymbolComponent } from '~components/symbol.svelte'
+import { default as SvelteSymbolComponent } from '~/components/symbol.svelte'
 import type { ComponentConstructorOptions } from 'svelte'
 
 export const SymbolSchema = z.object({
