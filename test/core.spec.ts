@@ -10,10 +10,10 @@ test('create and trigger binding', async ({
   await page.goto('https://google.com')
   page.bringToFront()
 
-  const speechDialog = page.locator('#spch-dlg').first()
+  const speechDialog = page.locator('dialog#H8C8bb').first()
 
-  expect(speechDialog).toBeAttached()
-  expect(speechDialog).not.toHaveAttribute('open')
+  await expect(speechDialog).toBeAttached()
+  await expect(speechDialog).not.toHaveAttribute('open')
 
   await openOverlay()
 
