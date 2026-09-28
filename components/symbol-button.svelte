@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { symbols } from '~lib/symbols'
+  import type { symbols } from '~/lib/symbols'
   import Button from './button.svelte'
   import Symbol from './symbol.svelte'
-  import type { TestId } from '~lib/test-id'
+  import type { TestId } from '~/lib/test-id'
 
   export let name: keyof typeof symbols
   export let size: string = '50px'

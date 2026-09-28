@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Symbol from '~components/symbol.svelte'
-  import type { SymbolName } from '~lib/symbols'
+  import Symbol from '~/components/symbol.svelte'
+  import type { SymbolName } from '~/lib/symbols'
 
   export let title: string
   export let symbol: SymbolName | null

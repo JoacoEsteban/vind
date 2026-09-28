@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { TestId } from '~lib/test-id'
-  import type { Renderable } from '~lib/svelte'
+  import type { TestId } from '~/lib/test-id'
+  import type { Renderable } from '~/lib/svelte'
 
   export let SlotComponent: Renderable
   export let testId: TestId

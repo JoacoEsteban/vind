@@ -1,5 +1,5 @@
 <script lang="ts">
-  import VindLogo from '~components/vind-logo.svelte'
+  import VindLogo from '~/components/vind-logo.svelte'
 </script>
 
 <div

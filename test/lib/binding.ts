@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
-import { expect } from '~test/fixtures'
-import { BindButtonId, BindingButtonId } from '~lib/test-id'
+import { expect } from '~/test/fixtures'
+import { BindButtonId, BindingButtonId } from '~/lib/test-id'
 import { nextFrameWaiter } from './utils'
 
 export type TestBinding = Awaited<ReturnType<typeof createBinding>>

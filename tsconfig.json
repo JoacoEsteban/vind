@@ -1,13 +1,9 @@
 {
-  "extends": "plasmo/templates/tsconfig.base",
-  "exclude": ["node_modules"],
-  "include": [".plasmo/index.d.ts", "./**/*.ts", "./**/*.svelte", "./**/*.d.ts"],
+  "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
-    "paths": {
-      "~*": ["./*"]
-    },
-    "baseUrl": ".",
-    "types": ["svelte", "bun-types"],
-    "strict": true
+    "allowJs": true,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": false,
+    "types": ["svelte", "bun-types"]
   }
 }

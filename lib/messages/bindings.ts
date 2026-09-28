@@ -1,11 +1,11 @@
-import { bindingsMessages } from '~messages/storage'
+import { bindingsMessages } from '~/messages/storage'
 import { Binding } from '../binding'
-import type { BindingDoc } from '~background/storage/db'
+import type { BindingDoc } from '~/background/storage/db'
 import { log } from '../log'
 import { Domain, Path, urlFromParts } from '../url'
 import { Observable, Subject, filter } from 'rxjs'
 import { throwOnResponseError } from '.'
-import { XPathObject } from '~lib/xpath'
+import { XPathObject } from '~/lib/xpath'
 import { match } from 'ts-pattern'
 
 export interface BindingChannel {

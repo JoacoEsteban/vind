@@ -1,33 +1,31 @@
 {
   "name": "vind",
-  "displayName": "Vind: Keyboard Shortcuts for Every Website",
   "version": "3.8.1",
   "description": "Create keyboard shortcuts for any web element. Boost productivity, eliminate mouse clicks, navigate faster on all sites.",
   "author": "dev@joacoesteban.com",
   "scripts": {
-    "dev": "plasmo dev",
-    "dev:ff": "plasmo dev --target=firefox-mv2",
+    "dev": "wxt",
+    "dev:ff": "wxt -b firefox",
     "prebuild": "pnpm run typecheck:svelte",
-    "build": "plasmo build",
+    "build": "wxt build",
     "test": "bun x playwright test",
     "prebuild:firefox": "pnpm run typecheck:svelte",
-    "build:firefox": "plasmo build --target=firefox-mv2",
+    "build:firefox": "wxt build -b firefox",
     "prebuild:safari": "pnpm run typecheck:svelte",
-    "build:safari": "plasmo build --target=safari-mv3",
-    "package": "plasmo package",
-    "package:firefox": "plasmo package --target=firefox-mv2",
-    "package:safari": "plasmo package --target=safari-mv3",
+    "build:safari": "wxt build -b safari --mv3",
     "rebuild-sharp": "npm rebuild --verbose sharp",
     "bake:mosaic": "bun tools/bake-mosaic.ts",
-    "bundle": "pnpm run build && pnpm run package",
-    "bundle:firefox": "pnpm run build:firefox && pnpm run package:firefox",
+    "prebundle": "pnpm run typecheck:svelte",
+    "bundle": "wxt zip",
+    "prebundle:firefox": "pnpm run typecheck:svelte",
+    "bundle:firefox": "wxt zip -b firefox",
     "bundle:all": "pnpm run bundle && pnpm run bundle:firefox",
-    "typecheck:svelte": "svelte-check --tsconfig tsconfig.json"
+    "typecheck:svelte": "svelte-check --tsconfig tsconfig.json",
+    "postinstall": "wxt prepare"
   },
   "dependencies": {
     "@extend-chrome/messages": "^1.2.2",
     "@floating-ui/core": "^1.7.3",
-    "@parcel/runtime-js": "2.8.3",
     "@solid-primitives/event-listener": "^2.3.0",
     "@thedutchcoder/postcss-rem-to-px": "^0.0.2",
     "@types/bun": "^1.2.2",
@@ -46,7 +44,6 @@
     "motion": "^12.4.1",
     "nanoid": "^5.0.2",
     "p-event": "^6.0.0",
-    "plasmo": "0.90.5",
     "px-robula-plus": "^1.0.1",
     "rxjs": "^7.8.1",
     "semver": "^7.6.2",
@@ -61,59 +58,26 @@
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "4.1.0",
-    "@parcel/plugin": "2.9.3",
     "@playwright/test": "^1.50.1",
-    "@plasmohq/parcel-config": "0.42.0",
+    "@sveltejs/vite-plugin-svelte": "^3",
     "@tailwindcss/typography": "^0.5.12",
     "@types/assert": "^1.5.8",
     "@types/chrome": "0.0.245",
     "@types/node": "^20.11.17",
     "@types/three": "^0.180.0",
+    "@wxt-dev/auto-icons": "^1.1.2",
     "autoprefixer": "^10.4.16",
-    "crypto-browserify": "^3.12.0",
     "daisyui": "^4.10.2",
     "postcss": "^8.4.32",
     "postcss-cli": "^10.1.0",
     "prettier": "3.0.3",
     "prettier-plugin-svelte": "^3.2.3",
+    "sass": "~1.75.0",
     "sharp": "^0.33.3",
     "svelte-check": "^4.3.3",
     "tailwindcss": "^3.4.17",
-    "typescript": "5.3.3"
-  },
-  "manifest": {
-    "permissions": [
-      "unlimitedStorage"
-    ],
-    "commands": {
-      "toggle-overlay": {
-        "suggested_key": {
-          "default": "Alt+V"
-        },
-        "description": "Toggle the Vind overlay on the current page."
-      },
-      "open-options": {
-        "description": "Open the Vind options page."
-      },
-      "new-binding": {
-        "suggested_key": {
-          "default": "Alt+Shift+V"
-        },
-        "description": "Create a new keyboard shortcut binding."
-      }
-    },
-    "browser_specific_settings": {
-      "gecko": {
-        "id": "vind@joacoesteban.com"
-      }
-    }
-  },
-  "alias": {
-    "~": "./"
-  },
-  "pnpm": {
-    "overrides": {
-      "@parcel/runtime-js": "2.8.3"
-    }
+    "typescript": "5.9.3",
+    "vite": "^6",
+    "wxt": "^0.21.4"
   }
 }

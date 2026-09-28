@@ -1,5 +1,5 @@
 import { match } from 'ts-pattern'
-import { StylePropertyAndParentsObserver } from '~lib/element'
+import { StylePropertyAndParentsObserver } from '~/lib/element'
 import { EMPTY, Observable, fromEvent, map, merge, switchMap, tap } from 'rxjs'
 import { expose, instanceOfFilter } from './rxjs'
 import { DisposeBag } from './dispose-bag'

@@ -46,11 +46,11 @@ https://vind-works.io
 
 1. Clone this repository
 2. Navigate to the directory: `cd Vind`
-3. Install dependencies: `npm install`
+3. Install dependencies: `pnpm install`
 
 ## Usage
 
-1. Run the extension: `npm start`
+1. Run the extension: `pnpm dev` (WXT opens a browser with the extension loaded)
 2. Open your browser and navigate to the extension settings to configure key mappings.
 
 ## Contributing

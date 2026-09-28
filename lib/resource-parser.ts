@@ -3,7 +3,7 @@ import {
   type SerializableXPathObject,
   type SerializableParentXPathObject,
   type SerializableChildXPathObject,
-} from '~background/storage/db'
+} from '~/background/storage/db'
 import semver from 'semver'
 import { match } from 'ts-pattern'
 

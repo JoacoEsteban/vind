@@ -1,4 +1,4 @@
-import '@virtualstate/navigation/polyfill'
+import '@virtualstate/navigation/polyfill/rollup'
 import {
   Subject,
   filter,
@@ -9,35 +9,35 @@ import {
   throttleTime,
   withLatestFrom,
 } from 'rxjs'
-import toast from 'svelte-french-toast/dist'
+import toast from 'svelte-french-toast'
 import { match } from 'ts-pattern'
-import { registrationStateToastOptions } from '~lib/definitions'
+import { registrationStateToastOptions } from '~/lib/definitions'
 import {
   InexistentElementError,
   RegistrationAbortedError,
   UnexpectedError,
   VindError,
-} from '~lib/error'
-import { log } from '~lib/log'
-import { BindingChannelImpl } from '~lib/messages/bindings'
-import { DisabledPathsChannelImpl } from '~lib/messages/disabled-paths'
-import { NotificationSettingsChannelImpl } from '~lib/messages/notification-settings'
-import { notificationSettingKeys } from '~lib/notification-settings'
-import { PageController } from '~lib/page-controller'
-import { RegistrationController } from '~lib/registration-controller'
-import { Path, getSanitizedCurrentUrl } from '~lib/url'
-import { wakeUp } from '~messages/tabs'
+} from '~/lib/error'
+import { log } from '~/lib/log'
+import { BindingChannelImpl } from '~/lib/messages/bindings'
+import { DisabledPathsChannelImpl } from '~/lib/messages/disabled-paths'
+import { NotificationSettingsChannelImpl } from '~/lib/messages/notification-settings'
+import { notificationSettingKeys } from '~/lib/notification-settings'
+import { PageController } from '~/lib/page-controller'
+import { RegistrationController } from '~/lib/registration-controller'
+import { Path, getSanitizedCurrentUrl } from '~/lib/url'
+import { wakeUp } from '~/messages/tabs'
 import {
   CrossFrameEventsController,
   VindKeyboardEvent,
-} from '~lib/cross-frame-keyboard-events'
+} from '~/lib/cross-frame-keyboard-events'
 import {
   RegistrationNotificationToastId,
   RegistrationStateId,
   TestId,
   bindingActivatedNotificationId,
-} from '~lib/test-id'
-import { Render } from '~lib/test-id-svelte'
+} from '~/lib/test-id'
+import { Render } from '~/lib/test-id-svelte'
 const isIframe = window.self !== window.top
 
 const registrationNotificationIds = {

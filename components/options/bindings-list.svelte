@@ -4,14 +4,14 @@
   import { match } from 'ts-pattern'
   import DisplayUrl from '~/components/display-url.svelte'
   import { Domain, Path } from '~/lib/url'
-  import BindingButton from '~components/binding-button.svelte'
-  import Button from '~components/button.svelte'
-  import Divider from '~components/divider.svelte'
-  import Toggle from '~components/toggle.svelte'
-  import WithTooltip from '~components/with-tooltip.svelte'
-  import type { Binding } from '~lib/binding'
-  import { ENV_PROD } from '~lib/env'
-  import { wrapIterable } from '~lib/svelte'
+  import BindingButton from '~/components/binding-button.svelte'
+  import Button from '~/components/button.svelte'
+  import Divider from '~/components/divider.svelte'
+  import Toggle from '~/components/toggle.svelte'
+  import WithTooltip from '~/components/with-tooltip.svelte'
+  import type { Binding } from '~/lib/binding'
+  import { ENV_PROD } from '~/lib/env'
+  import { wrapIterable } from '~/lib/svelte'
 
   export let bindingsMap: Observable<
     [string, [string, { bindings: Binding[]; enabled: boolean }][]][]

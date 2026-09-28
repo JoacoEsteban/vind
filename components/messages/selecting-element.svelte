@@ -1,5 +1,5 @@
 <script>
-  import { getPlatform } from '~lib/misc'
+  import { getPlatform } from '~/lib/misc'
   import { match } from 'ts-pattern'
 
   const platform = getPlatform()

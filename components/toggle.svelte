@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { TestId } from '~lib/test-id'
+  import type { TestId } from '~/lib/test-id'
   import Button from './button.svelte'
 
   export let testId: TestId | undefined = undefined

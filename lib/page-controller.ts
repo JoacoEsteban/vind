@@ -1,4 +1,4 @@
-import { Binding, bindingsAsMap } from '~lib/binding'
+import { Binding, bindingsAsMap } from '~/lib/binding'
 import { log } from './log'
 import {
   BehaviorSubject,

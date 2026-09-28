@@ -1,14 +1,14 @@
-import type { NotificationSettingDoc } from '~background/storage/db'
+import type { NotificationSettingDoc } from '~/background/storage/db'
 import { Subject, type Observable } from 'rxjs'
 import {
   createDefaultNotificationSettings,
   notificationSettingKeyList,
   type NotificationSettingKey,
   defaultNotificationSettings,
-} from '~lib/notification-settings'
-import { notificationSettingsMessages } from '~messages/storage'
+} from '~/lib/notification-settings'
+import { notificationSettingsMessages } from '~/messages/storage'
 import { throwOnResponseError } from '.'
-import { entries } from '~lib/object'
+import { entries } from '~/lib/object'
 
 export interface NotificationSettingsChannel {
   getAllSettings: () => Promise<

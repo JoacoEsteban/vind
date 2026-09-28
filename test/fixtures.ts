@@ -5,14 +5,21 @@ import {
   type Worker,
 } from '@playwright/test'
 import path from 'path'
+import { match } from 'ts-pattern'
 import { openOverlay } from './lib/actions'
 
-const extensionPath = (
-  {
-    development: 'build/chrome-mv3-dev',
-    production: 'build/chrome-mv3-prod',
-  } as Record<typeof process.env.NODE_ENV, string>
-)[process.env.NODE_ENV ?? 'production']
+const extensionPath = match(process.env.NODE_ENV)
+  .with('development', () => 'build/chrome-mv3-dev')
+  .otherwise(() => 'build/chrome-mv3')
+
+// The dev service worker is reachable before Chrome binds the extension APIs to it.
+const waitForExtensionApis = async (background: Worker): Promise<void> =>
+  match(await background.evaluate(() => typeof chrome.action))
+    .with('object', () => undefined)
+    .otherwise(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      return waitForExtensionApis(background)
+    })
 
 export const test = base.extend<{
   context: BrowserContext
@@ -37,6 +44,8 @@ export const test = base.extend<{
   extensionContext: async ({ context }, use) => {
     const [background = await context.waitForEvent('serviceworker')] =
       context.serviceWorkers()
+
+    await waitForExtensionApis(background)
 
     await use({
       extensionId: background.url().split('/')[2],

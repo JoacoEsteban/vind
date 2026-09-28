@@ -1,7 +1,7 @@
 import type { DisabledBindingPathDoc, VindDB } from './db'
-import { log } from '~lib/log'
+import { log } from '~/lib/log'
 import { Observable, Subject } from 'rxjs'
-import { Domain, Path } from '~lib/url'
+import { Domain, Path } from '~/lib/url'
 import { match } from 'ts-pattern'
 
 export interface DisabledBindingPathsStorage {

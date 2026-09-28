@@ -3,8 +3,8 @@
   import { quintOut } from 'svelte/easing'
   import { fade, scale } from 'svelte/transition'
   import { match } from 'ts-pattern'
-  import { colorSeeds } from '~lib/definitions'
-  import { autofocus } from '~lib/autofocus'
+  import { colorSeeds } from '~/lib/definitions'
+  import { autofocus } from '~/lib/autofocus'
   import {
     BooleanPrompt$,
     Prompt$,
@@ -12,9 +12,9 @@
     type AnyPrompt,
     type AnyReturnOfPrompt,
     type Prompt,
-  } from '~lib/dialog'
-  import { waitForKey } from '~lib/element'
-  import { noop, promiseToSignal } from '~lib/misc'
+  } from '~/lib/dialog'
+  import { waitForKey } from '~/lib/element'
+  import { noop, promiseToSignal } from '~/lib/misc'
   import Button from './button.svelte'
   import Symbol from './symbol.svelte'
 

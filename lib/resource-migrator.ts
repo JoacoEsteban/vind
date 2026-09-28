@@ -4,7 +4,7 @@ import {
   fromManyBindingDoc,
 } from './messages/bindings'
 import { type DisabledPathsChannel } from './messages/disabled-paths'
-import { type BindingDoc } from '~background/storage/db'
+import { type BindingDoc } from '~/background/storage/db'
 import { Err } from 'ts-results'
 import { wrapResult, wrapResultAsync } from './control-flow'
 import { ImportedResourceVersionError, InvalidImportedJSONError } from './error'

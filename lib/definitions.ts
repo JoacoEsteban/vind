@@ -1,4 +1,4 @@
-import SelectingElement from '~components/messages/selecting-element.svelte'
+import SelectingElement from '~/components/messages/selecting-element.svelte'
 import { RegistrationState } from './registration-controller'
 import { SymbolComponent, type SymbolName } from './symbols'
 import type { Renderable } from 'svelte-french-toast'

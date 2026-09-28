@@ -3,8 +3,8 @@ import type {
   BindingDoc,
   DisabledBindingPathDoc,
   NotificationSettingDoc,
-} from '~background/storage/db'
-import type { NotificationSettingKey } from '~lib/notification-settings'
+} from '~/background/storage/db'
+import type { NotificationSettingKey } from '~/lib/notification-settings'
 import { splitMessage } from './lib'
 
 export type ErrResponse<T = void> = {

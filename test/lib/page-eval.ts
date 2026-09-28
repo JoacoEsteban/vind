@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
-import type { TestId } from '~lib/test-id'
-import { expect } from '~test/fixtures'
+import type { TestId } from '~/lib/test-id'
+import { expect } from '~/test/fixtures'
 
 export async function writeConditionOnAddedElement(page: Page, testId: TestId) {
   await page.evaluate((testId) => {

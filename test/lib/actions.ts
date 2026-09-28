@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
-import { OpenOptionsButtonId } from '~lib/test-id'
-import type { BrowserClickedEvent } from '~test/types'
+import { OpenOptionsButtonId } from '~/lib/test-id'
+import type { BrowserClickedEvent } from '~/test/types'
 
 export async function openOverlay() {
   ;(chrome.action.onClicked as unknown as BrowserClickedEvent).dispatch() // TODO make TS infer this type

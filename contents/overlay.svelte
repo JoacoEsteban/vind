@@ -1,47 +1,30 @@
-<script context="module" lang="ts">
-  import '~lib/fonts-importer'
-  import styleText from 'data-text:~/style.scss'
-  import type { PlasmoCSConfig, PlasmoGetStyle } from 'plasmo'
-
-  export const config: PlasmoCSConfig = {
-    matches: ['<all_urls>'],
-    all_frames: true,
-  }
-
-  export const getStyle: PlasmoGetStyle = () => {
-    const style = document.createElement('style')
-    style.textContent = styleText
-    return style
-  }
-</script>
-
 <script lang="ts">
-  // @ts-expect-error Resolved by Parcel named pipeline in .parcelrc
-  import COMMIT_SHA from 'buildconst:./commit-sha.stub'
-  import Filters from '~components/filters.svelte'
-  import Popup from '~components/popup.svelte'
-  import Toaster from '~components/toaster.svelte'
-  import { getOverlayBuildLabel } from '~lib/build-label'
-  import { log } from '~lib/log'
-  import { themeController } from '~lib/theme-controller'
-  import type { Path } from '~lib/url'
-  import { askForOptionsPage, newBinding } from '~messages/index'
-  import { showOverlayStream } from '~messages/tabs'
+  import '~/lib/fonts-importer'
+  import COMMIT_SHA from 'virtual:commit-sha'
+  import Filters from '~/components/filters.svelte'
+  import Popup from '~/components/popup.svelte'
+  import Toaster from '~/components/toaster.svelte'
+  import { getOverlayBuildLabel } from '~/lib/build-label'
+  import { log } from '~/lib/log'
+  import { themeController } from '~/lib/theme-controller'
+  import type { Path } from '~/lib/url'
+  import { askForOptionsPage, newBinding } from '~/messages/index'
+  import { showOverlayStream } from '~/messages/tabs'
   import { DocumentClient } from './document-client'
   import OverlayTarget from '../components/overlay-target.svelte'
   import { map, of, switchMap } from 'rxjs'
   import {
     ElementSelectionState,
     RegistrationState,
-  } from '~lib/registration-controller'
+  } from '~/lib/registration-controller'
   import { match } from 'ts-pattern'
-  import { ENV_PROD } from '~lib/env'
-  import { OverlayId } from '~lib/test-id'
+  import { ENV_PROD } from '~/lib/env'
+  import { OverlayId } from '~/lib/test-id'
 
   const client = new DocumentClient()
   const testid = OverlayId
   const { pageControllerInstance, registrationControllerInstance } = client
-  let showingOverlay = !ENV_PROD
+  let showingOverlay = false
   const registering$ = registrationControllerInstance.registrationInProgress$
   const disableUi$ = registrationControllerInstance.elementSelectionState$.pipe(
     map((state) =>
