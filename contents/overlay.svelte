@@ -1,23 +1,6 @@
-<script context="module" lang="ts">
-  import '~/lib/fonts-importer'
-  import styleText from 'data-text:~/style.scss'
-  import type { PlasmoCSConfig, PlasmoGetStyle } from 'plasmo'
-
-  export const config: PlasmoCSConfig = {
-    matches: ['<all_urls>'],
-    all_frames: true,
-  }
-
-  export const getStyle: PlasmoGetStyle = () => {
-    const style = document.createElement('style')
-    style.textContent = styleText
-    return style
-  }
-</script>
-
 <script lang="ts">
-  // @ts-expect-error Resolved by Parcel named pipeline in .parcelrc
-  import COMMIT_SHA from 'buildconst:./commit-sha.stub'
+  import '~/lib/fonts-importer'
+  import COMMIT_SHA from 'virtual:commit-sha'
   import Filters from '~/components/filters.svelte'
   import Popup from '~/components/popup.svelte'
   import Toaster from '~/components/toaster.svelte'

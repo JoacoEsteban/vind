@@ -100,7 +100,7 @@ jobs:
           name: build-zip
       - run: unzip build.zip
       - name: Upload and Publish to Chrome Web Store
-        run: bunx chrome-webstore-upload-cli@3 --source build/chrome-mv3-prod.zip
+        run: bunx chrome-webstore-upload-cli@3 --source build/chrome-mv3.zip
         env:
           EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
           CLIENT_ID: ${{ secrets.CHROME_WEB_STORE_CLIENT_ID }}
@@ -118,7 +118,7 @@ jobs:
         with:
           name: build-zip
       - run: unzip build.zip
-      - run: unzip build/firefox-mv2-prod.zip -d build/extension
+      - run: unzip build/firefox-mv2.zip -d build/extension
       - run: git archive --output build/source.zip HEAD ":!test" ":!.github"
       - name: Upload and Publish to Firefox Web Store
         run: bunx web-ext@8 sign --channel listed --upload-source-code ../source.zip

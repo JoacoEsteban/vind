@@ -35,7 +35,7 @@ test('getting-started page behavior', async ({
   extensionContext: { openOverlay, extensionId },
 }) => {
   await page.goto(
-    `chrome-extension://${extensionId}/tabs/getting-started.html?framerate=0`,
+    `chrome-extension://${extensionId}/getting-started.html?framerate=0`,
   )
   page.bringToFront()
 

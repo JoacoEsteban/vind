@@ -1,4 +1,4 @@
-import '@virtualstate/navigation/polyfill'
+import '@virtualstate/navigation/polyfill/rollup'
 import {
   Subject,
   filter,
@@ -9,7 +9,7 @@ import {
   throttleTime,
   withLatestFrom,
 } from 'rxjs'
-import toast from 'svelte-french-toast/dist'
+import toast from 'svelte-french-toast'
 import { match } from 'ts-pattern'
 import { registrationStateToastOptions } from '~/lib/definitions'
 import {

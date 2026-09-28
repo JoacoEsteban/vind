@@ -71,7 +71,7 @@ const config = {
     utils: !ENV_PROD, // adds responsive and modifier utility classes
     prefix: '', // prefix for daisyUI classnames (components, modifiers and responsive class names. Not colors)
     logs: !ENV_PROD, // Shows info about daisyUI version and used config in the console when building your CSS
-    themeRoot: '[data-plasmo-styles-target]', // The element that receives theme color CSS variables
+    themeRoot: '[data-vind-theme-root]', // The element that receives theme color CSS variables
   },
 } satisfies Config
 

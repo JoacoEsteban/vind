@@ -1,6 +1,6 @@
 <script lang="ts">
   import '~/lib/fonts-importer'
-  import styleText from 'data-text:~/style.scss'
+  import styleText from '~/style.scss?inline'
   import { BehaviorSubject, map, share, startWith } from 'rxjs'
   import chroma from 'chroma-js'
   import CrabsScene from '~/three/lib/components/CrabsScene.svelte'

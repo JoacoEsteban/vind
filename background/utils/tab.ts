@@ -38,6 +38,6 @@ export async function sendToActiveTab<T>(
 
 export async function openTab(tab: string) {
   return tabs.create({
-    url: runtime.getURL(`tabs/${tab}.html`),
+    url: runtime.getURL(`/${tab}.html`),
   })
 }

@@ -1,5 +1,5 @@
 export function themeController(node: HTMLElement): void {
-  node.setAttribute('data-plasmo-styles-target', '')
+  node.setAttribute('data-vind-theme-root', '')
   node.style.setProperty('display', 'contents')
 
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
@@ -11,5 +11,5 @@ export function themeController(node: HTMLElement): void {
     'data-theme',
     matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
   )
-  node.classList.add(`browser-${process.env.PLASMO_BROWSER}`)
+  node.classList.add(`browser-${import.meta.env.BROWSER}`)
 }

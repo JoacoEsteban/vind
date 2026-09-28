@@ -106,12 +106,12 @@ export function waitForKeyDown(
 
 export function isHighlightableElement(el: HTMLElement) {
   return !(
-    el.nodeName === 'PLASMO-CSUI' ||
+    el.nodeName === 'VIND-OVERLAY' ||
     ['vind-ignore-self'].some((className) =>
       el.classList.contains(className),
     ) ||
     el.closest('.vind-ignore-\\*') !== null ||
-    el.id === '__plasmo'
+    el.id === 'vind-root'
   )
 }
 

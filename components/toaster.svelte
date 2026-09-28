@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Toaster } from 'svelte-french-toast/dist'
+  import { Toaster } from 'svelte-french-toast'
   import clsx from 'clsx'
   export let disabled = false
 </script>

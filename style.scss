@@ -2,12 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-:host,
-plasmo-csui {
+:host {
   opacity: 1 !important;
   isolation: auto !important;
 }
-[data-plasmo-styles-target] {
+[data-vind-theme-root] {
   font-size: 16px;
   --bezier: cubic-bezier(0, 1, 0, 1);
   --bezier-chill: cubic-bezier(0, 1, 0.5, 1);

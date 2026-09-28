@@ -1,6 +1,6 @@
 <script lang="ts">
   import { pEvent } from 'p-event'
-  import toast from 'svelte-french-toast/dist'
+  import toast from 'svelte-french-toast'
   import { match } from 'ts-pattern'
   import { Err, None, Ok, type Result } from 'ts-results'
   import Button from '~/components/button.svelte'

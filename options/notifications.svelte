@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
-  import toast from 'svelte-french-toast/dist'
+  import toast from 'svelte-french-toast'
   import Button from '~/components/button.svelte'
   import Toggle from '~/components/toggle.svelte'
   import {

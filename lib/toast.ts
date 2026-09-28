@@ -1,4 +1,4 @@
-import toast from 'svelte-french-toast/dist'
+import toast from 'svelte-french-toast'
 
 export function withToast<T> (msg: string = 'Loading', fn: () => Promise<T>) {
   const loadingToast = toast.loading(msg)
